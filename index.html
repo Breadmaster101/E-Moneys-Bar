@@ -47,7 +47,6 @@
             --card-back-motif: var(--accent-gold);
         }
 
-        /* General Styles */
         body { 
             font-family: var(--font-family); 
             margin: 0; 
@@ -106,11 +105,10 @@
             transform: none; 
             box-shadow: inset 0 -2px 0px rgba(0,0,0,0.1); 
         }
-        /* Base Textarea, Input - for non-copy-button ones */
         textarea, input[type="text"], input[type="number"], select { 
             width: calc(100% - 24px); 
             max-width: 500px; 
-            margin: 10px auto; /* Centering */
+            margin: 10px auto;
             padding: 12px; 
             border-radius: var(--border-radius); 
             border: 1px solid var(--input-border); 
@@ -128,7 +126,6 @@
             box-shadow: 0 0 0 3px rgba(207, 175, 123, 0.4); 
         }
 
-        /* Modal styles */
         .modal { position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(17, 23, 30, 0.85); display: flex; justify-content: center; align-items: center; backdrop-filter: blur(6px); opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
         .modal.visible { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
         .modal-content { 
@@ -155,7 +152,6 @@
         }
         .modal-content button { margin: 15px 8px 0; }
 
-        /* Connection Setup Screen */
         #connection-setup { padding: 35px; text-align: center; overflow-y: auto; height: 100%; display: flex; flex-direction: column; align-items: center; background-color: var(--primary-bg); }
         #connection-setup h2 { color: var(--primary-text); margin-bottom: 30px; font-size: 2.8em; font-weight: 700; font-family: var(--font-family-serif); text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
         #connection-setup > div:first-of-type { margin-bottom: 20px; } /* Button group container */
@@ -216,13 +212,11 @@
         #client-status { margin-top: 20px; font-weight: bold; font-size: 1.1em; padding: 10px; border-radius: var(--border-radius); background-color: rgba(0,0,0,0.1); }
         #connectToHostBtn { margin-top: 15px; } 
         
-        /* Debug Log styles */
         #debug-log { margin-top: 35px; background: var(--tertiary-bg); padding: 18px; border-radius: var(--border-radius); max-height: 180px; overflow-y: auto; font-size: 0.9em; text-align: left; width: 100%; max-width: 750px; box-sizing: border-box; border: 1px solid #4a6075; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); margin-left: auto; margin-right: auto; }
         #debug-log strong { color: var(--accent-highlight); display: block; margin-bottom: 8px; font-size: 1.1em; font-family: var(--font-family-serif); }
         #debug-log p { margin: 3px 0; line-height: 1.5; color: var(--secondary-text); }
         #debug-log p:nth-child(odd) { background-color: rgba(255,255,255,0.03); }
 
-        /* Game Board */
         #game-board { 
             display: flex; 
             flex-direction: column; 
@@ -550,7 +544,6 @@
         #exitGameBtn { background-color: var(--secondary-text); color: var(--primary-bg); } 
         #exitGameBtn:hover { background-color: #95a5a6; }
 
-        /* Responsive Adjustments */
         @media (max-width: 1200px) { 
             .player-area { min-width: 160px; padding: 10px 15px;} 
             #game-log { width: 240px; max-height: 160px; } 
@@ -901,22 +894,18 @@
                     rotate: '0deg'
                 });
             } else if (numOpponents === 2) { 
-                // MODIFIED SECTION FOR 2 OPPONENTS
-                // Slot for the left side
                 layoutSlots.push({ 
                     top: `50%`, 
                     left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
                     translateX: '0%', translateY: '-50%', 
                     rotate: '0deg'
                 });
-                // Slot for the right side
                 layoutSlots.push({ 
                     top: `50%`,
                     left: `${ctRightRel + sidePlayerHorizontalGap}px`, 
                     translateX: '0%', translateY: '-50%', 
                     rotate: '0deg'
                 });
-                // END OF MODIFIED SECTION
             } else if (numOpponents === 3) { 
                  layoutSlots.push({ 
                     top: `50%`,
@@ -1154,7 +1143,7 @@
             return connectedIds.filter(id => gameState.players.some(p => p.id === id));
         }
 
-        function handleIncomingMessage(data) { // data is now the actual object from PeerJS
+        function handleIncomingMessage(data) {
             const msg = data; 
             logDebug(`Received: ${msg.type} from ${msg.senderId === localPlayer.id ? 'Self' : (gameState.players.find(p=>p.id === msg.senderId)?.name || msg.senderId )}`);
             const oldGameStateForLog = localPlayer.isHost ? null : JSON.parse(JSON.stringify(lastLoggedGameStateForClient)); 
@@ -1206,7 +1195,7 @@
                         }
                         break;
                 }
-            } else { // Client-side
+            } else {
                 switch (msg.type) {
                     case 'GAME_STATE_UPDATE':
                         const oldPhase = lastLoggedGameStateForClient?.gamePhase; 
@@ -1269,9 +1258,7 @@
                     case 'PLAYER_JOINED_ACK': 
                         clientStatusP.textContent = `Joined room hosted by ${msg.payload.hostName}! Waiting for game...`;
                         clientStatusP.style.color = "var(--accent-green)";
-                        // localPlayer.id is already set from client's peer.on('open')
                         gameState.players = msg.payload.players; 
-                        // Ensure localPlayer object is updated based on the authoritative list from host
                         const myInitialData = gameState.players.find(p => p.id === localPlayer.id);
                         if (myInitialData) Object.assign(localPlayer, myInitialData);
                         updatePlayerNameDisplay(); 
