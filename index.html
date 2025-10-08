@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Money's Bar 1.2</title>
+    <title>E-Money's Bar 1.3</title>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
@@ -154,7 +154,7 @@
 
         #connection-setup { padding: 35px; text-align: center; overflow-y: auto; height: 100%; display: flex; flex-direction: column; align-items: center; background-color: var(--primary-bg); }
         #connection-setup h2 { color: var(--primary-text); margin-bottom: 30px; font-size: 2.8em; font-weight: 700; font-family: var(--font-family-serif); text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
-        #connection-setup > div:first-of-type { margin-bottom: 20px; } /* Button group container */
+        #connection-setup > div:first-of-type { margin-bottom: 20px; } 
         .setup-section { background-color: var(--secondary-bg); padding: 30px; margin-top: 30px; border-radius: var(--border-radius); box-shadow: inset 0 3px 6px rgba(0,0,0,0.2), var(--box-shadow-light); width: 100%; max-width: 750px; box-sizing: border-box; border: 1px solid var(--tertiary-bg); }
         .setup-section h3 { color: var(--accent-gold); margin-top: 0; margin-bottom: 25px; font-size: 1.8em; border-bottom: 2px solid var(--accent-gold-darker); padding-bottom: 12px; font-family: var(--font-family-serif); }
         #host-controls p, #client-controls p { margin: 12px 0; font-size: 1.1em; color: var(--secondary-text); }
@@ -173,7 +173,6 @@
             max-width: 90%;
         }
         #roomCodeDisplay { 
-            flex-grow: 1;
             background-color: var(--primary-bg); 
             padding: 15px 20px; 
             border-radius: var(--border-radius); 
@@ -182,8 +181,13 @@
             font-size: 1.1em;
             font-weight: bold;
             color: var(--accent-highlight);
-            text-align: left;
+            text-align: center; 
         }
+        #client-controls #roomCodeInput {
+            max-width: 150px; 
+            text-align: center;
+        }
+
         .copy-btn-beside {
             padding: 10px 15px; 
             font-size: 1em;  
@@ -208,6 +212,16 @@
             cursor: default;
         }
 
+        #how-to-play-btn {
+            margin-top: 20px;
+            background-color: var(--secondary-text);
+            color: var(--primary-bg);
+            padding: 10px 20px;
+            font-size: 0.9em;
+        }
+        #how-to-play-btn:hover {
+            background-color: #95a5a6;
+        }
 
         #client-status { margin-top: 20px; font-weight: bold; font-size: 1.1em; padding: 10px; border-radius: var(--border-radius); background-color: rgba(0,0,0,0.1); }
         #connectToHostBtn { margin-top: 15px; } 
@@ -539,6 +553,22 @@
         #rematch-status-list .ready { color: var(--accent-green); font-weight: bold; }
         #rematch-status-list .not-ready { color: var(--secondary-text); }
 
+        #rules-modal .modal-content {
+            text-align: left;
+            max-width: 700px;
+        }
+        #rules-modal ul {
+            padding-left: 20px;
+            list-style: disc;
+            margin: 15px 0 25px 0;
+            line-height: 1.6;
+            color: var(--secondary-text);
+        }
+        #rules-modal ul strong {
+            color: var(--accent-gold);
+        }
+
+
         #playAgainBtn { background-color: var(--accent-gold); color: var(--primary-bg); } 
         #playAgainBtn:hover { background-color: var(--accent-gold-darker); }
         #exitGameBtn { background-color: var(--secondary-text); color: var(--primary-bg); } 
@@ -582,12 +612,14 @@
 <body>
     <div id="app-container">
         <div id="connection-setup">
-            <h2>E-Money's Bar 1.2</h2>
+            <h2>E-Money's Bar 1.3</h2>
             <input type="text" id="playerNameInput" placeholder="Enter Your Name (Min 3 chars)" value="">
             <div>
                 <button id="createRoomBtn">Create Room</button>
                 <button id="joinRoomBtn">Join Room</button>
             </div>
+            
+            <button id="showRulesBtn" class="inverted-btn">How to Play</button>
 
             <div id="host-controls" class="setup-section" style="display:none;">
                 <h3>Host Controls</h3>
@@ -663,6 +695,37 @@
                 </div>
             </div>
         </div>
+
+        <div id="rules-modal" class="modal">
+            <div class="modal-content">
+                <h3>How to Play E-Money's Bar</h3>
+                <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a twist of Russian Roulette.</p>
+                
+                <ul>
+                    <li><strong>Goal:</strong> Be the last player standing.</li>
+                    <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot revolver (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is chosen for the round.</li>
+                    <li><strong>Playing Cards (The Bluff):</strong>
+                        <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring them all to be the <strong>current Table Suit</strong>.</p>
+                        <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who challenges you determines the truth.</p>
+                    </li>
+                    <li><strong>Running Out of Cards (Roulette Trigger):</strong>
+                        <p>If you successfully play your last card, you immediately face the **Revolver Roulette** challenge. If you survive, the round ends, and you start the next round with a reloaded revolver and a full hand.</p>
+                    </li>
+                    <li><strong>Challenging ("LIAR!"):</strong>
+                        <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
+                        <p>A player who has run out of cards is **not** eliminated. If it is their turn and a play has been made, they **must** call LIAR, as they cannot play cards.</p>
+                    </li>
+                    <li><strong>The Challenge Reveal & Roulette:</strong>
+                        <p>The played cards are revealed. If the previous player was lying (one or more played cards did not match the Table Suit), <strong>the lying player faces the revolver.</strong></p>
+                        <p>If the previous player was truthful, <strong>the challenger faces the revolver.</strong></p>
+                        <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet, they are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded for the next round.</p>
+                    </li>
+                    <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced the revolver (or survived card depletion) starts the next round.</li>
+                </ul>
+
+                <button id="closeRulesBtn">Got It</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -713,9 +776,25 @@
         const rematchStatusContainer = $('#rematch-status-container');
         const rematchStatusListDiv = $('#rematch-status-list');
         const playAgainBtn = $('#playAgainBtn'); const exitGameBtn = $('#exitGameBtn');
+        const rulesModal = $('#rules-modal');
+        const showRulesBtn = $('#showRulesBtn');
+        const closeRulesBtn = $('#closeRulesBtn');
         
         let localPlayer = { id: null, name: "", peer: null, isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
-        let gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {} };
+        let gameState = { 
+            players: [], 
+            liarsDeck: [], 
+            tableDeck: [], 
+            centerPile: [], 
+            currentPlayerId: null, 
+            currentTableSuit: null, 
+            lastPlayedTurn: null, 
+            gamePhase: 'lobby', 
+            config: { handSize: HAND_SIZE }, 
+            centerPileCardCount: 0, 
+            rematchReadyStatus: {},
+            lastChallengeRouletteTargetId: null 
+        };
         
         let hostConnections = {}; 
         let clientConnectionToHost = null; 
@@ -724,8 +803,18 @@
         let lastLoggedGameStateForClient = {}; 
         let rouletteSymbolInterval = null;
 
+        function generateShortCode(length = 5) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < length; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+
         function copyToClipboard(text, buttonElement) {
-            if (!text || text.trim() === "" || text.startsWith("Waiting")) {
+            if (!text || text.trim() === "" || text.startsWith("Waiting") || text.startsWith("Connecting") || text.startsWith("Error")) {
                 alert("No valid content to copy yet.");
                 return;
             }
@@ -757,7 +846,7 @@
                     func.apply(this, args);
                 };
                 clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
+                timeout = setTimeout(later, wait, 250);
             };
         }
 
@@ -1034,7 +1123,7 @@
         }
 
 
-        function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`;} else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
+        function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${gameState.lastPlayedTurn.playerName} played ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`;} else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
         
         function updateCenterPileVisual() {
             if (!centerPileVisualStack) return;
@@ -1071,7 +1160,7 @@
             }
 
             const gameBoardRect = gameBoardDiv.getBoundingClientRect(); 
-            const cardToAnimateContainer = createCardElement('A', 'S', false, true); 
+            const cardToAnimateContainer = createCardElement('X', 'X', false, true); 
             const cardToAnimate = cardToAnimateContainer.querySelector('svg');
             if (!cardToAnimate) return;
 
@@ -1114,11 +1203,29 @@
             }, { once: true });
         }
 
-        function updateActionButtons() { const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id; const localPlayerData = gameState.players.find(p => p.id === localPlayer.id); const amEliminated = localPlayerData ? localPlayerData.eliminated : true; playCardsBtn.disabled = !amICurrentPlayer || amEliminated || gameState.gamePhase !== 'playing' || playConfirmArea.style.display === 'block'; callLiarBtn.disabled = !amICurrentPlayer || amEliminated || gameState.gamePhase !== 'playing' || !gameState.lastPlayedTurn || playConfirmArea.style.display === 'block'; if (amICurrentPlayer && !amEliminated) { playerHandArea.classList.add('current-player-hand'); } else { playerHandArea.classList.remove('current-player-hand');}}
+        function updateActionButtons() { 
+            const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id; 
+            const localPlayerData = gameState.players.find(p => p.id === localPlayer.id); 
+            const amEliminated = localPlayerData ? localPlayerData.eliminated : true; 
+            const hasCards = localPlayer.hand.length > 0;
+            const isPlayConfirmActive = playConfirmArea.style.display === 'block';
+
+            
+            playCardsBtn.disabled = !amICurrentPlayer || amEliminated || !hasCards || isPlayConfirmActive; 
+            
+            
+            callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn || isPlayConfirmActive;
+            
+            if (amICurrentPlayer && !amEliminated) { 
+                playerHandArea.classList.add('current-player-hand'); 
+            } else { 
+                playerHandArea.classList.remove('current-player-hand');
+            }
+        }
         class LiarsDeckGameManager { static shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; }} static createLiarsDeck() { const d = []; SUITS.forEach(s => { RANKS.forEach(r => { d.push({ rank:r, suit:s, id: `${r}${s}` }); }); }); this.shuffleArray(d); return d;} static createTableDeck() { const sS=[...SUITS]; this.shuffleArray(sS); return sS;} static createRevolverDeck(){const d=[];for(let i=0;i<REVOLVER_CHAMBERS-REVOLVER_BULLETS;i++)d.push('blank');for(let i=0;i<REVOLVER_BULLETS;i++)d.push('lethal');this.shuffleArray(d);return d;} static dealCardsFromLiarsDeck(pl,dk,hs){pl.forEach(p=>{if(!p.eliminated){p.hand=[];for(let i=0;i<hs;i++)if(dk.length>0)p.hand.push(dk.pop());}else p.hand=[];p.cardCount=p.hand.length;});} static checkPlayedCardsTruth(pc,ts){if(!pc||pc.length===0)return true;for(const c of pc)if(c.suit!==ts)return false;return true;}}
         
         function sendMessage(type, payload, targetClientId = null) { 
-            const msgObject = { type, payload, senderId: localPlayer.id }; // Send object directly
+            const msgObject = { type, payload, senderId: localPlayer.id }; 
             if (localPlayer.isHost) { 
                 if (targetClientId) { 
                     if (hostConnections[targetClientId]?.open) hostConnections[targetClientId].send(msgObject); 
@@ -1229,6 +1336,9 @@
                             if (gameOverOverlay.classList.contains('visible')) {
                                 toggleModal(gameOverOverlay, false); 
                             }
+                            if (challengeRouletteOverlay.classList.contains('visible')) {
+                                toggleModal(challengeRouletteOverlay, false); 
+                            }
                             showGameBoard(); 
                         } else if ((gameState.gamePhase !== 'lobby') && connectionSetupDiv.style.display !== 'none') {
                             showGameBoard();
@@ -1252,6 +1362,7 @@
                         break;
                     case 'CHALLENGE_ROULETTE_RESULTS': 
                         handleClientChallengeRouletteResults(msg.payload); 
+                        
                         lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState)); 
                         break;
                     case 'GAME_OVER': handleClientGameOver(msg.payload); lastLoggedGameStateForClient = {}; break;
@@ -1316,6 +1427,7 @@
             gameState.centerPileCardCount = 0;
             gameState.lastPlayedTurn = null;
             gameState.currentPlayerId = null; 
+            gameState.lastChallengeRouletteTargetId = null; 
 
             if (gameOverOverlay.classList.contains('visible')) {
                  toggleModal(gameOverOverlay, false);
@@ -1324,25 +1436,195 @@
             startNewRound();
         }
 
-        function startNewRound() { if (!localPlayer.isHost) return; logDebug("Host: Starting new round (suit based)."); if (gameState.tableDeck.length === 0) gameState.tableDeck = LiarsDeckGameManager.createTableDeck(); gameState.currentTableSuit = gameState.tableDeck.pop(); addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system"); const activePlayers = gameState.players.filter(p => !p.eliminated); if (gameState.liarsDeck.length < activePlayers.length * HAND_SIZE) { gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck(); addLogMessage("Liar's Deck (standard) reshuffled.", "system"); } LiarsDeckGameManager.dealCardsFromLiarsDeck(gameState.players, gameState.liarsDeck, HAND_SIZE); gameState.centerPile = []; gameState.centerPileCardCount = 0; gameState.lastPlayedTurn = null; const uneliminatedPlayers = gameState.players.filter(p => !p.eliminated); if (uneliminatedPlayers.length === 0) { logDebug("Error: No uneliminated players."); return; } let currentPlayerIndex = 0; if (gameState.currentPlayerId) { const lastPlayerOrderIndex = gameState.players.findIndex(p => p.id === gameState.currentPlayerId); if (lastPlayerOrderIndex !== -1) { currentPlayerIndex = (lastPlayerOrderIndex + 1) % gameState.players.length; }} let attempts = 0; while (attempts < gameState.players.length && gameState.players[currentPlayerIndex].eliminated) { currentPlayerIndex = (currentPlayerIndex + 1) % gameState.players.length; attempts++; } if (gameState.players[currentPlayerIndex].eliminated) { logDebug("Error: Could not find uneliminated starting player."); const firstActiveFallback = gameState.players.findIndex(p => !p.eliminated); if (firstActiveFallback !== -1) currentPlayerIndex = firstActiveFallback; else { logDebug("CRITICAL Error: No uneliminated players."); return; }} gameState.currentPlayerId = gameState.players[currentPlayerIndex].id; gameState.gamePhase = 'playing'; const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || "Unknown"; addLogMessage(`${currentPlayerName}'s turn.`, "system"); broadcastGameState(); }
+        function startNewRound() { 
+            if (!localPlayer.isHost) return; 
+            
+            logDebug("Host: Starting new round (suit based)."); 
+            
+            if (gameState.tableDeck.length === 0) gameState.tableDeck = LiarsDeckGameManager.createTableDeck(); 
+            gameState.currentTableSuit = gameState.tableDeck.pop(); 
+            addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system"); 
+            
+            const activePlayers = gameState.players.filter(p => !p.eliminated); 
+            if (gameState.liarsDeck.length < activePlayers.length * HAND_SIZE) { 
+                gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck(); 
+                addLogMessage("Liar's Deck (standard) reshuffled.", "system"); 
+            } 
+            
+            LiarsDeckGameManager.dealCardsFromLiarsDeck(gameState.players, gameState.liarsDeck, HAND_SIZE); 
+            gameState.centerPile = []; 
+            gameState.centerPileCardCount = 0; 
+            gameState.lastPlayedTurn = null; 
+
+            
+            let starterPlayerId = null;
+
+            if (gameState.lastChallengeRouletteTargetId) {
+                const potentialStarter = gameState.players.find(p => p.id === gameState.lastChallengeRouletteTargetId);
+                
+                if (potentialStarter && !potentialStarter.eliminated) {
+                    starterPlayerId = potentialStarter.id;
+                    addLogMessage(`${potentialStarter.name} starts the round (Last Challenge Consequence).`, "system");
+                }
+                
+                gameState.lastChallengeRouletteTargetId = null; 
+            }
+
+            if (!starterPlayerId) {
+                if (activePlayers.length === 0) { logDebug("CRITICAL Error: No uneliminated players."); return; }
+                const randomIndex = Math.floor(Math.random() * activePlayers.length);
+                starterPlayerId = activePlayers[randomIndex].id;
+                addLogMessage(`${activePlayers.find(p => p.id === starterPlayerId).name} starts the round (Random Pick).`, "system");
+            }
+
+            gameState.currentPlayerId = starterPlayerId; 
+            
+            gameState.gamePhase = 'playing'; 
+            const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || "Unknown"; 
+            
+            if (starterPlayerId !== localPlayer.id) { 
+                 addLogMessage(`${currentPlayerName}'s turn.`, "system"); 
+            }
+            broadcastGameState(); 
+        }
+
         
+        function executeRoulette(targetPlayer) {
+            if (!localPlayer.isHost) return;
+
+            const target = gameState.players.find(p => p.id === targetPlayer.id); 
+            if (!target || target.eliminated) { logDebug(`Roulette target ${targetPlayer.name} gone.`); return null; } 
+
+            if (!target.revolverDeck || target.revolverDeck.length === 0) { 
+                target.revolverDeck = LiarsDeckGameManager.createRevolverDeck(); 
+                target.revolverChambersLeft = REVOLVER_CHAMBERS; 
+                addLogMessage(`${target.name}'s revolver reloaded.`, "system"); 
+            } 
+            
+            const fired = target.revolverDeck.pop(); 
+            target.revolverChambersLeft = target.revolverDeck.length; 
+            
+            let outcomeText; 
+            if (fired === 'lethal') { 
+                target.eliminated = true; 
+                target.cardCount = 0; 
+                outcomeText = `BANG! ${target.name} ELIMINATED!`; 
+                addLogMessage(outcomeText, "error"); 
+            } else { 
+                outcomeText = `CLICK! ${target.name} survives.`; 
+                addLogMessage(outcomeText, "system"); 
+                if (target.revolverDeck.length === 0) { 
+                    addLogMessage(`${target.name}'s revolver empty, reloaded.`, "system"); 
+                    target.revolverDeck = LiarsDeckGameManager.createRevolverDeck(); 
+                    target.revolverChambersLeft = REVOLVER_CHAMBERS;
+                }
+            } 
+            
+            
+            gameState.lastChallengeRouletteTargetId = target.id;
+
+            gameState.players.forEach(p => p.cardCount = p.eliminated ? 0 : p.hand.length); 
+            
+            return {
+                rouletteTarget: { id: target.id, name: target.name },
+                rouletteOutcome: fired,
+                rouletteOutcomeText: outcomeText,
+                updatedPlayersData: gameState.players.map(p=>({id:p.id,name:p.name,eliminated:p.eliminated,revolverChambersLeft:p.revolverChambersLeft,cardCount:p.cardCount}))
+            };
+        }
+
+
         function handleHostPlayerPlayCards(playerId, playedCardIds) { 
             if (!localPlayer.isHost || playerId !== gameState.currentPlayerId || gameState.gamePhase !== 'playing') return; 
             const player = gameState.players.find(p => p.id === playerId); 
-            if (!player || player.eliminated) return; 
-            if (!playedCardIds || playedCardIds.length === 0 || playedCardIds.length > 3) { logDebug(`Invalid play count for ${playerId}.`); return; } 
-            const actualPlayedCards = []; const remainingHand = []; 
-            player.hand.forEach(card => { (playedCardIds.includes(card.id)) ? actualPlayedCards.push(card) : remainingHand.push(card); }); 
-            if (actualPlayedCards.length !== playedCardIds.length) { logDebug(`Card mismatch for ${playerId}.`); return; } 
-            player.hand = remainingHand; player.cardCount = player.hand.length; 
+            if (!player || player.eliminated || player.cardCount === 0) return; 
+
+            if (!playedCardIds || playedCardIds.length === 0 || playedCardIds.length > 3) { 
+                 logDebug(`Host: Invalid play count for ${playerId}.`); 
+                 broadcastGameState(playerId); 
+                 return; 
+            } 
+            
+            const actualPlayedCards = []; 
+            const remainingHand = [...player.hand]; 
+            let validPlay = true;
+
+            playedCardIds.forEach(cardId => {
+                const cardIndex = remainingHand.findIndex(c => c.id === cardId);
+                if (cardIndex === -1) {
+                    logDebug(`Host: Player ${playerId} attempted to play card ${cardId} not in their hand.`);
+                    validPlay = false;
+                } else {
+                    actualPlayedCards.push(remainingHand.splice(cardIndex, 1)[0]);
+                }
+            });
+
+            if (!validPlay || actualPlayedCards.length !== playedCardIds.length) {
+                logDebug(`Host: Validation failed for player ${playerId}. Dropping message.`);
+                broadcastGameState(playerId); 
+                return;
+            }
+
+            
+            player.hand = remainingHand; 
+            player.cardCount = player.hand.length; 
+            
             gameState.lastPlayedTurn = { playerId, playerName: player.name, cardsPlayed: actualPlayedCards, cardsPlayedCount: actualPlayedCards.length, declaredSuit: gameState.currentTableSuit }; 
-            gameState.centerPile.push(...actualPlayedCards); gameState.centerPileCardCount = gameState.centerPile.length; 
+            gameState.centerPile.push(...actualPlayedCards); 
+            gameState.centerPileCardCount = gameState.centerPile.length; 
+            
             addLogMessage(`${player.name} plays ${actualPlayedCards.length} as ${SUIT_SYMBOLS[gameState.currentTableSuit]}.`, "system"); 
             
             if (gameBoardDiv.style.display === 'block') {
                 animatePlayedCards(playerId, actualPlayedCards.length);
             }
 
+            
+            if (player.cardCount === 0) {
+                logDebug(`${player.name} ran out of cards! Triggering roulette.`);
+                gameState.gamePhase = 'roulette'; 
+                
+                const rouletteResults = executeRoulette(player);
+                if (!rouletteResults) return;
+
+                const results = {
+                    isCardDepletion: true,
+                    rouletteTarget: rouletteResults.rouletteTarget,
+                    rouletteOutcome: rouletteResults.rouletteOutcome,
+                    rouletteOutcomeText: rouletteResults.rouletteOutcomeText,
+                    updatedPlayersData: rouletteResults.updatedPlayersData
+                };
+
+                
+                sendMessage('CHALLENGE_ROULETTE_RESULTS', results); 
+                handleClientChallengeRouletteResults(results); 
+                
+                
+                gameState.gamePhase = 'roulette_resolved';
+                broadcastGameState(); 
+
+                
+                setTimeout(() => {
+                    const uneliminated = gameState.players.filter(p => !p.eliminated); 
+                    if (uneliminated.length <= 1) {
+                        gameState.gamePhase = 'game_over';
+                        const winner = uneliminated.length === 1 ? uneliminated[0] : null;
+                        const goData = {
+                            winner: winner ? { id: winner.id, name: winner.name } : null,
+                            reason: winner ? `${winner.name} wins the game!` : "It's a draw!"
+                        };
+                        sendMessage('GAME_OVER', goData);
+                        handleClientGameOver(goData);
+                    } else {
+                        startNewRound();
+                    }
+                }, 3500); 
+
+                return; 
+            }
+            
+
+            
             let currentIdx = gameState.players.findIndex(p => p.id === playerId); 
             let attempts = 0; let nextFound = false; 
             if (gameState.players.length > 0) { 
@@ -1350,31 +1632,88 @@
             } 
             if (nextFound) gameState.currentPlayerId = gameState.players[currentIdx].id; 
             else logDebug("No next player found after play."); 
-            const totalCardsInHands = gameState.players.reduce((sum, p) => sum + (p.eliminated ? 0 : p.hand.length), 0); 
-            if (totalCardsInHands === 0 && gameState.liarsDeck.length === 0) { 
-                addLogMessage("All cards played! Auto-challenge.", "system"); 
-                if (nextFound) handleHostPlayerCallLiar(gameState.players[currentIdx].id); 
-                else logDebug("All cards played, no challenger."); 
-                return; 
-            } 
+            
             broadcastGameState(); 
         }
 
-        function handleHostPlayerCallLiar(challengerId) { if (!localPlayer.isHost || challengerId !== gameState.currentPlayerId || !gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return; const challenger = gameState.players.find(p => p.id === challengerId); const accusedId = gameState.lastPlayedTurn.playerId; const accused = gameState.players.find(p => p.id === accusedId); if (!challenger || challenger.eliminated || !accused) { logDebug("Challenge error: invalid players."); return; } addLogMessage(`${challenger.name} calls LIAR! on ${accused.name}.`, "system"); gameState.gamePhase = 'challenge_reveal'; const played = gameState.lastPlayedTurn.cardsPlayed; const tableSuit = gameState.currentTableSuit; const wasLie = !LiarsDeckGameManager.checkPlayedCardsTruth(played, tableSuit); let rouletteTargetId; if (wasLie) { addLogMessage(`${accused.name} was LYING! (Not all ${SUIT_SYMBOLS[tableSuit]})`, "error"); rouletteTargetId = accusedId; } else { addLogMessage(`${accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[tableSuit]})`, "success"); rouletteTargetId = challengerId; } const target = gameState.players.find(p => p.id === rouletteTargetId); if (!target || target.eliminated) { logDebug(`Roulette target ${target?.name || rouletteTargetId} gone.`); startNewRound(); return; } if (!target.revolverDeck || target.revolverDeck.length === 0) { target.revolverDeck = LiarsDeckGameManager.createRevolverDeck(); target.revolverChambersLeft = REVOLVER_CHAMBERS; addLogMessage(`${target.name}'s revolver reloaded.`, "system"); } const fired = target.revolverDeck.pop(); target.revolverChambersLeft = target.revolverDeck.length; let outcomeText; if (fired === 'lethal') { target.eliminated = true; target.cardCount = 0; outcomeText = `BANG! ${target.name} ELIMINATED!`; addLogMessage(outcomeText, "error"); } else { outcomeText = `CLICK! ${target.name} survives.`; addLogMessage(outcomeText, "system"); if (target.revolverDeck.length === 0) { addLogMessage(`${target.name}'s revolver empty, reloaded.`, "system"); target.revolverDeck = LiarsDeckGameManager.createRevolverDeck(); target.revolverChambersLeft = REVOLVER_CHAMBERS;}} gameState.players.forEach(p => p.cardCount = p.eliminated ? 0 : p.hand.length); const results = { challenger:{id:challenger.id,name:challenger.name}, accused:{id:accused.id,name:accused.name}, playedCards:played, tableSuit:tableSuit, claimWasLie:wasLie, rouletteTarget:{id:target.id,name:target.name}, rouletteOutcome:fired, rouletteOutcomeText:outcomeText, updatedPlayersData: gameState.players.map(p=>({id:p.id,name:p.name,eliminated:p.eliminated,revolverChambersLeft:p.revolverChambersLeft,cardCount:p.cardCount}))}; sendMessage('CHALLENGE_ROULETTE_RESULTS',results); handleClientChallengeRouletteResults(results); const uneliminated = gameState.players.filter(p=>!p.eliminated); if(uneliminated.length<=1){gameState.gamePhase='game_over';const winner=uneliminated.length===1?uneliminated[0]:null;const goData={winner:winner?{id:winner.id,name:winner.name}:null,reason:winner?`${winner.name} is the last one standing!`:"It's a draw... or mutual destruction!"};sendMessage('GAME_OVER',goData);handleClientGameOver(goData);}else{gameState.gamePhase='roulette_resolved';broadcastGameState();setTimeout(()=>{if(gameState.gamePhase==='roulette_resolved')startNewRound();},3500);}}
+        function handleHostPlayerCallLiar(challengerId) { 
+            if (!localPlayer.isHost || challengerId !== gameState.currentPlayerId || !gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return; 
+            const challenger = gameState.players.find(p => p.id === challengerId); 
+            const accusedId = gameState.lastPlayedTurn.playerId; 
+            const accused = gameState.players.find(p => p.id === accusedId); 
+            if (!challenger || challenger.eliminated || !accused) { logDebug("Challenge error: invalid players."); return; } 
+            
+            addLogMessage(`${challenger.name} calls LIAR! on ${accused.name}.`, "system"); 
+            
+            gameState.gamePhase = 'challenge_reveal'; 
+            
+            const played = gameState.lastPlayedTurn.cardsPlayed; 
+            const tableSuit = gameState.currentTableSuit; 
+            const wasLie = !LiarsDeckGameManager.checkPlayedCardsTruth(played, tableSuit); 
+            
+            let rouletteTarget; 
+            if (wasLie) { 
+                addLogMessage(`${accused.name} was LYING! (Not all ${SUIT_SYMBOLS[tableSuit]})`, "error"); 
+                rouletteTarget = accused; 
+            } else { 
+                addLogMessage(`${accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[tableSuit]})`, "success"); 
+                rouletteTarget = challenger; 
+            } 
+            
+            const rouletteResults = executeRoulette(rouletteTarget);
+            if (!rouletteResults) return;
+            
+            const results = { challenger:{id:challenger.id,name:challenger.name}, accused:{id:accused.id,name:accused.name}, playedCards:played, tableSuit:tableSuit, claimWasLie:wasLie, isCardDepletion: false, rouletteTarget:rouletteResults.rouletteTarget, rouletteOutcome:rouletteResults.rouletteOutcome, rouletteOutcomeText:rouletteResults.rouletteOutcomeText, updatedPlayersData: rouletteResults.updatedPlayersData}; 
+            
+            
+            sendMessage('CHALLENGE_ROULETTE_RESULTS',results); 
+            handleClientChallengeRouletteResults(results); 
+            
+            
+            gameState.gamePhase = 'roulette_resolved';
+            broadcastGameState(); 
+            
+            
+            setTimeout(()=>{
+                const uneliminated = gameState.players.filter(p=>!p.eliminated); 
+                
+                if(uneliminated.length <= 1){
+                    gameState.gamePhase='game_over';
+                    const winner=uneliminated.length===1?uneliminated[0]:null;
+                    const goData={winner:winner?{id:winner.id,name:winner.name}:null,reason:winner?`${winner.name} is the last one standing!`:"It's a draw... or mutual destruction!"};
+                    
+                    sendMessage('GAME_OVER',goData);
+                    handleClientGameOver(goData); 
+                    
+                }else{
+                    startNewRound();
+                }
+            }, 3500); 
+        }
         
         function handleClientChallengeRouletteResults(data) { 
             rouletteResultTextP.textContent = ''; 
-            if (localPlayer.id !== data.challenger.id && localPlayer.id !== data.accused.id) { 
-                addLogMessage(`${data.challenger.name} calls LIAR! on ${data.accused.name}.`, "system");
-            }
-            if (data.claimWasLie) { addLogMessage(`${data.accused.name} was LYING! (Not all ${SUIT_SYMBOLS[data.tableSuit]})`, "error");} 
-            else { addLogMessage(`${data.accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[data.tableSuit]})`, "success");}
+            
+            if (data.isCardDepletion) {
+                addLogMessage(`${data.rouletteTarget.name} ran out of cards! Facing roulette.`, "system");
+                challengeRouletteTitle.textContent = `${data.rouletteTarget.name} RAN OUT OF CARDS!`;
+                challengeRouletteDetailsP.textContent = `Player ran out of cards during their turn.`;
+                revealedCardsDisplay.innerHTML = '';
+            } else {
+                if (localPlayer.id !== data.challenger.id && localPlayer.id !== data.accused.id) { 
+                    addLogMessage(`${data.challenger.name} calls LIAR! on ${data.accused.name}.`, "system");
+                }
+                if (data.claimWasLie) { addLogMessage(`${data.accused.name} was LYING! (Not all ${SUIT_SYMBOLS[data.tableSuit]})`, "error");} 
+                else { addLogMessage(`${data.accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[data.tableSuit]})`, "success");}
 
+                challengeRouletteTitle.textContent = data.claimWasLie ? `${data.accused.name} CAUGHT LYING!` : `CHALLENGE FAILED!`; 
+                challengeRouletteDetailsP.textContent = `${data.challenger.name} challenged ${data.accused.name}. Claimed Suit: ${SUIT_SYMBOLS[data.tableSuit]}.`; 
+                revealedCardsDisplay.innerHTML = ''; data.playedCards.forEach(c => revealedCardsDisplay.appendChild(createCardElement(c.rank, c.suit, true, true))); 
+            }
+            
             gameState.gamePhase = 'roulette'; 
             data.updatedPlayersData.forEach(updP => { const pLocal = gameState.players.find(p => p.id === updP.id); if (pLocal) Object.assign(pLocal, updP); if (localPlayer.id === updP.id) Object.assign(localPlayer, updP); }); 
-            challengeRouletteTitle.textContent = data.claimWasLie ? `${data.accused.name} CAUGHT LYING!` : `CHALLENGE FAILED!`; 
-            challengeRouletteDetailsP.textContent = `${data.challenger.name} challenged ${data.accused.name}. Claimed Suit: ${SUIT_SYMBOLS[data.tableSuit]}.`; 
-            revealedCardsDisplay.innerHTML = ''; data.playedCards.forEach(c => revealedCardsDisplay.appendChild(createCardElement(c.rank, c.suit, true, true))); 
+            
             challengeRouletteConsequenceP.textContent = `${data.rouletteTarget.name} faces the Roulette!`; 
             
             if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
@@ -1457,7 +1796,8 @@
                 lastPlayedTurn: gameState.lastPlayedTurn ? { playerId:gameState.lastPlayedTurn.playerId,playerName:gameState.lastPlayedTurn.playerName,cardsPlayedCount:gameState.lastPlayedTurn.cardsPlayedCount,declaredSuit:gameState.lastPlayedTurn.declaredSuit}:null, 
                 gamePhase: gameState.gamePhase, 
                 centerPileCardCount: gameState.centerPile.length,
-                rematchReadyStatus: gameState.rematchReadyStatus 
+                rematchReadyStatus: gameState.rematchReadyStatus,
+                lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId 
             }; 
             gameState.players.forEach(p => { 
                 if (p.id !== localPlayer.id && hostConnections[p.id]?.open) { 
@@ -1473,6 +1813,7 @@
             gameBoardDiv.style.display = 'none'; 
             toggleModal(gameOverOverlay, false); 
             toggleModal(challengeRouletteOverlay, false); 
+            toggleModal(rulesModal, false);
             hostControlsDiv.style.display = 'none'; 
             clientControlsDiv.style.display = 'none'; 
             roomCodeDisplay.textContent = 'Waiting for Room Code...';
@@ -1492,7 +1833,7 @@
             localPlayer = { id: null, name: currentName, peer: null, isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount:0, readyForRematch: false }; 
             if(currentName) playerNameInput.value = currentName; 
             
-            gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {} }; 
+            gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {}, lastChallengeRouletteTargetId: null }; 
             
             hostConnections = {}; 
             clientConnectionToHost = null; 
@@ -1537,7 +1878,11 @@
         
         function initializePeerJSHost() {
             if (localPlayer.peer) localPlayer.peer.destroy();
-            localPlayer.peer = new Peer();
+            
+            const requestedId = generateShortCode(); 
+            logDebug(`Host requesting short ID: ${requestedId}`);
+
+            localPlayer.peer = new Peer(requestedId);
 
             localPlayer.peer.on('open', (id) => {
                 localPlayer.id = id; 
@@ -1604,14 +1949,16 @@
             });
             localPlayer.peer.on('error', (err) => {
                 logDebug(`Host: PeerJS error: ${err.type} - ${err}`);
-                roomCodeDisplay.textContent = 'Error connecting to PeerServer';
                 if (err.type === 'unavailable-id') {
-                    alert("Error: The chosen Room ID is already in use. Please try creating the room again, a new ID will be generated.");
-                    showConnectionSetup();
+                    roomCodeDisplay.textContent = 'ID taken. Try Again.';
+                    alert("Error: The generated Room ID was already in use. Please try creating the room again for a new code.");
+                    showConnectionSetup(); 
                 } else if (err.type === 'network' || err.type === 'server-error' || err.type === 'socket-error' || err.type === 'socket-closed') {
+                     roomCodeDisplay.textContent = 'Error: Check Connection.';
                      clientStatusP.textContent = "Error connecting to PeerJS server. Check connection or try refreshing.";
                      clientStatusP.style.color = "var(--accent-red)";
                 } else {
+                    roomCodeDisplay.textContent = `Connection error: ${err.type}.`;
                     clientStatusP.textContent = `Connection error: ${err.type}. Try refreshing.`;
                     clientStatusP.style.color = "var(--accent-red)";
                 }
@@ -1726,7 +2073,7 @@
                         let cpi=gameState.players.findIndex(p=>p.id===clientId);
                         let att=0;let nextF=false;
                         if(gameState.players.length>0){
-                            do {cpi=(cpi+1)%gameState.players.length;att++;if(!gameState.players[cpi].eliminated){nextF=true;break;}}
+                            do {cpi=(cpi+1)%gameState.players.length;att++;if(!gameState.players[cpi].eliminated)nextF=true;break;}
                             while(att<gameState.players.length*2);
                         }
                         if(nextF){gameState.currentPlayerId=gameState.players[cpi].id;addLogMessage(`Turn passed to ${gameState.players.find(p=>p.id===gameState.currentPlayerId)?.name}.`,"system");}
@@ -1809,6 +2156,9 @@
                 }
                 const hostIdToJoin = roomCodeInput.value.trim();
                 if(!hostIdToJoin){alert("Please enter the Host's Room Code."); roomCodeInput.focus(); return;}
+                if(hostIdToJoin.length !== 5){
+                    alert("Room Code must be exactly 5 characters long."); roomCodeInput.focus(); return;
+                }
 
                 clientStatusP.textContent = `Attempting to connect to host: ${hostIdToJoin}...`;
                 clientStatusP.style.color = "var(--accent-highlight)";
@@ -1819,11 +2169,7 @@
             if (copyRoomCodeBtn) {
                 copyRoomCodeBtn.onclick = () => {
                     const roomCode = roomCodeDisplay.textContent;
-                    if (roomCode && !roomCode.startsWith("Waiting") && !roomCode.startsWith("Connecting") && !roomCode.startsWith("Error")) {
-                        copyToClipboard(roomCode, copyRoomCodeBtn); 
-                    } else {
-                        alert("Room Code not available yet.");
-                    }
+                    copyToClipboard(roomCode, copyRoomCodeBtn); 
                 };
             }
             
@@ -1842,10 +2188,31 @@
             }; 
 
             playCardsBtn.onclick=()=>{enableHandCardSelectionForPlay(true);}; 
-            confirmPlayBtn.onclick=()=>{if(selectedCardsForPlayUI.length>0&&selectedCardsForPlayUI.length<=3){const cIds=selectedCardsForPlayUI.map(c=>c.id);if(localPlayer.isHost)handleHostPlayerPlayCards(localPlayer.id,cIds);else sendMessage('PLAYER_ACTION_PLAY_CARDS',{cards:cIds});enableHandCardSelectionForPlay(false);}else alert("Please select 1 to 3 cards to play.");}; 
+            confirmPlayBtn.onclick=()=>{
+                if(selectedCardsForPlayUI.length>0&&selectedCardsForPlayUI.length<=3){
+                    const cIds=selectedCardsForPlayUI.map(c=>c.id);
+                    if(localPlayer.isHost) {
+                        handleHostPlayerPlayCards(localPlayer.id,cIds);
+                    } else {
+                        sendMessage('PLAYER_ACTION_PLAY_CARDS',{cards:cIds});
+                    }
+                    enableHandCardSelectionForPlay(false);
+                }else alert("Please select 1 to 3 cards to play.");
+            }; 
             cancelPlayBtn.onclick=()=>{enableHandCardSelectionForPlay(false);}; 
             callLiarBtn.onclick=()=>{if(confirm("Are you sure you want to call LIAR!? This cannot be undone.")){if(localPlayer.isHost)handleHostPlayerCallLiar(localPlayer.id);else sendMessage('PLAYER_ACTION_CALL_LIAR',{});}}; 
-            continueGameBtn.onclick=()=>{toggleModal(challengeRouletteOverlay,false);if(gameState.gamePhase==='game_over')toggleModal(gameOverOverlay,true);}; 
+            
+            
+            showRulesBtn.onclick = () => toggleModal(rulesModal, true);
+            closeRulesBtn.onclick = () => toggleModal(rulesModal, false);
+
+            continueGameBtn.onclick=()=>{
+                toggleModal(challengeRouletteOverlay, false);
+                
+                if (gameState.gamePhase === 'game_over' && !gameOverOverlay.classList.contains('visible')) {
+                    toggleModal(gameOverOverlay, true);
+                }
+            };
             
             playAgainBtn.onclick = () => {
                 if (gameState.gamePhase !== 'game_over') return;
@@ -1874,7 +2241,7 @@
 
             exitGameBtn.onclick=()=>{
                 if(localPlayer.isHost && Object.keys(hostConnections).length > 0) {
-                    sendMessage('HOST_DISCONNECTED',{message:"Host ended game and exited."});
+                    sendMessage('HOST_DISCONNECTED',{message:"Host has left the page."});
                 }
                 addLogMessage("Exiting game to setup screen.", "system");
                 showConnectionSetup(); 
