@@ -556,6 +556,15 @@
         #rules-modal .modal-content {
             text-align: left;
             max-width: 700px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #rules-scroll-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-bottom: 15px;
         }
         #rules-modal ul {
             padding-left: 20px;
@@ -699,30 +708,31 @@
         <div id="rules-modal" class="modal">
             <div class="modal-content">
                 <h3>How to Play E-Money's Bar</h3>
-                <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a twist of Russian Roulette.</p>
-                
-                <ul>
-                    <li><strong>Goal:</strong> Be the last player standing.</li>
-                    <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot revolver (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is chosen for the round.</li>
-                    <li><strong>Playing Cards (The Bluff):</strong>
-                        <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring them all to be the <strong>current Table Suit</strong>.</p>
-                        <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who challenges you determines the truth.</p>
-                    </li>
-                    <li><strong>Running Out of Cards (Roulette Trigger):</strong>
-                        <p>If you successfully play your last card, you immediately face the **Revolver Roulette** challenge. If you survive, the round ends, and you start the next round with a reloaded revolver and a full hand.</p>
-                    </li>
-                    <li><strong>Challenging ("LIAR!"):</strong>
-                        <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
-                        <p>A player who has run out of cards is **not** eliminated. If it is their turn and a play has been made, they **must** call LIAR, as they cannot play cards.</p>
-                    </li>
-                    <li><strong>The Challenge Reveal & Roulette:</strong>
-                        <p>The played cards are revealed. If the previous player was lying (one or more played cards did not match the Table Suit), <strong>the lying player faces the revolver.</strong></p>
-                        <p>If the previous player was truthful, <strong>the challenger faces the revolver.</strong></p>
-                        <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet, they are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded for the next round.</p>
-                    </li>
-                    <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced the revolver (or survived card depletion) starts the next round.</li>
-                </ul>
-
+                <div id="rules-scroll-content">
+                    <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a twist of Russian Roulette.</p>
+                    
+                    <ul>
+                        <li><strong>Goal:</strong> Be the last player standing.</li>
+                        <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot revolver (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is chosen for the round.</li>
+                        <li><strong>Playing Cards (The Bluff):</strong>
+                            <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring them all to be the <strong>current Table Suit</strong>.</p>
+                            <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who challenges you determines the truth.</p>
+                        </li>
+                        <li><strong>Running Out of Cards (Roulette Trigger):</strong>
+                            <p>If you successfully play your last card, you immediately face the **Revolver Roulette** challenge. If you survive, the round ends, and you start the next round with a reloaded revolver and a full hand.</p>
+                        </li>
+                        <li><strong>Challenging ("LIAR!"):</strong>
+                            <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
+                            <p>A player who has run out of cards is **not** eliminated. If it is their turn and a play has been made, they **must** call LIAR, as they cannot play cards.</p>
+                        </li>
+                        <li><strong>The Challenge Reveal & Roulette:</strong>
+                            <p>The played cards are revealed. If the previous player was lying (one or more played cards did not match the Table Suit), <strong>the lying player faces the revolver.</strong></p>
+                            <p>If the previous player was truthful, <strong>the challenger faces the revolver.</strong></p>
+                            <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet, they are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded for the next round.</p>
+                        </li>
+                        <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced the revolver (or survived card depletion) starts the next round.</li>
+                    </ul>
+                </div>
                 <button id="closeRulesBtn">Got It</button>
             </div>
         </div>
