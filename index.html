@@ -1427,7 +1427,8 @@
                 newGamePlayersList = [...new Map(newGamePlayersList.map(item => [item.id, item])).values()];
             }
 
-            newGamePlayersList.sort((a, b) => { if (a.isHost) return -1; if (b.isHost) return 1; return 0; }); 
+            // Randomize the seating order for a fairer game experience
+            LiarsDeckGameManager.shuffleArray(newGamePlayersList);
             gameState.players = newGamePlayersList; 
 
             gameState.rematchReadyStatus = {}; 
