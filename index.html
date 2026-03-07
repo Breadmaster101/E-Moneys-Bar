@@ -483,18 +483,29 @@
                 inset 2px 0 0 0 var(--accent-highlight),  
                 0 0 0 2px rgba(0,0,0,0.15); 
         }
-        #player-hand-area.card-selection-active { 
-            border-top-color: var(--accent-gold);
-            box-shadow: 
-                0 0 18px 6px var(--accent-gold), 
-                inset 0 -2px 0 0 var(--accent-gold), 
-                inset -2px 0 0 0 var(--accent-gold), 
-                inset 2px 0 0 0 var(--accent-gold), 
-                0 0 0 2px rgba(0,0,0,0.15); 
-        } 
-        #player-hand-area.card-selection-active .card-container { cursor: pointer; opacity: 0.75; filter: saturate(0.7); }
-        #player-hand-area.card-selection-active .card-container.selected-for-play { opacity: 1; transform: translateY(-18px) scale(1.12); filter: saturate(1); }
-        #player-hand-area.card-selection-active .card-container.selected-for-play svg { box-shadow: var(--card-selected-glow); }
+
+        /* Intuitive Clickable Selection CSS updates */
+        #player-hand-area.current-player-hand .card-container { 
+            cursor: pointer; 
+            transition: transform 0.2s, opacity 0.2s; 
+        }
+        #player-hand-area.current-player-hand .card-container:not(.selected-for-play) { 
+            opacity: 0.85; 
+            filter: saturate(0.85); 
+        }
+        #player-hand-area.current-player-hand .card-container:not(.selected-for-play):hover { 
+            opacity: 1; 
+            filter: saturate(1); 
+        }
+        #player-hand-area.current-player-hand .card-container.selected-for-play { 
+            opacity: 1; 
+            transform: translateY(-18px) scale(1.12); 
+            filter: saturate(1); 
+            z-index: 10; 
+        }
+        #player-hand-area.current-player-hand .card-container.selected-for-play svg { 
+            box-shadow: var(--card-selected-glow); 
+        }
 
         .card-container { display: inline-block; perspective: 1000px; transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .card-container svg { display: block; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 6px; }
@@ -503,23 +514,7 @@
             transform: translateY(-18px) scale(1.12) rotateX(8deg); 
             box-shadow: 0 10px 20px rgba(0,0,0,0.25); 
         }
-        #player-hand-area > .card-container.selected-for-play svg { 
-            transform: translateY(-12px) scale(1.08); 
-            box-shadow: var(--card-selected-glow); 
-        }
 
-
-        #play-confirm-area { 
-            position: absolute; bottom: 110px; 
-            left: 50%; transform: translateX(-50%); 
-            padding: 12px 18px; 
-            background-color: rgba(39, 52, 64, 0.95); 
-            border-radius: var(--border-radius); 
-            box-shadow: var(--box-shadow); 
-            z-index: 22; text-align: center; 
-            border: 1px solid var(--tertiary-bg);
-        }
-        #play-confirm-area p { margin:0 0 12px 0; font-size: 0.95em; color: var(--primary-text); }
         #actions-area { 
             position: absolute; bottom: 25px; right: 25px; 
             display: flex; flex-direction: column; gap: 12px; z-index: 25; 
@@ -531,9 +526,6 @@
         #playCardsBtn:hover { background-color: var(--accent-green-darker); }
         #callLiarBtn { background-color: var(--accent-red); color: white; } 
         #callLiarBtn:hover { background-color: var(--accent-red-darker); }
-        #confirmPlayBtn { background-color: var(--accent-green); color: white; }
-        #cancelPlayBtn { background-color: var(--secondary-text); color: var(--primary-bg); }
-        #cancelPlayBtn:hover { background-color: #BCC1C6; }
 
 
         #challenge-roulette-overlay .modal-content { max-width: 700px; padding: 40px; }
@@ -603,7 +595,6 @@
             #log-messages { height: 35px; font-size: 0.78em; } 
             #player-hand-area { bottom: 85px; max-width: 95%; gap: 4px; padding: 8px; } 
             .card-container svg { width: 45px; height: 68px;} 
-            #play-confirm-area { bottom: 165px; width: 90%; padding: 10px;} 
             #actions-area { flex-direction: row; bottom: 15px; left: 50%; transform: translateX(-50%); width: 95%; justify-content: space-around; gap: 8px; } 
             #actions-area button { width: auto; flex-grow: 1; padding: 12px 10px; font-size: 0.9em; } 
             
@@ -666,11 +657,6 @@
                 <div id="played-cards-pile-info">Played this turn: 0 cards</div>
             </div>
             <div id="game-log"><h4>Game Log</h4><div id="log-messages"></div></div>
-            <div id="play-confirm-area" style="display:none;">
-                <p id="play-confirm-text">Play 0 cards as X?</p>
-                <button id="confirmPlayBtn">Confirm</button>
-                <button id="cancelPlayBtn">Cancel</button>
-            </div>
             <div id="player-hand-area"></div>
             <div id="actions-area">
                 <button id="playCardsBtn" disabled>Play Cards</button>
@@ -767,10 +753,6 @@
         const localPlayerStatsArea = $('#local-player-stats-area');
         const localRevolverVisuals = $('#local-revolver-visuals');
         const playerHandArea = $('#player-hand-area');
-        const playConfirmArea = $('#play-confirm-area');
-        const playConfirmText = $('#play-confirm-text');
-        const confirmPlayBtn = $('#confirmPlayBtn');
-        const cancelPlayBtn = $('#cancelPlayBtn');
         const playCardsBtn = $('#playCardsBtn'); 
         const callLiarBtn = $('#callLiarBtn');   
         const challengeRouletteOverlay = $('#challenge-roulette-overlay');
@@ -821,7 +803,6 @@
             }
             return code;
         }
-
 
         function copyToClipboard(text, buttonElement) {
             if (!text || text.trim() === "" || text.startsWith("Waiting") || text.startsWith("Connecting") || text.startsWith("Error")) {
@@ -876,7 +857,6 @@
             } else console.warn("Log div not ready:", message); 
         }
 
-
         function createCardElement(rank, suit, faceUp = true, isSmall = false) {
             const cc = document.createElement('div'); cc.className = 'card-container'; const cardId = `${rank}${suit}`;
             const w = isSmall ? (window.innerWidth <= 768 ? 45 : 50) : 60;
@@ -901,8 +881,50 @@
             cc.innerHTML = svg; cc.dataset.cardId = cardId; cc.dataset.rank = rank; cc.dataset.suit = suit; return cc;
         }
 
-        function renderPlayerHand() { playerHandArea.innerHTML = ''; localPlayer.hand.sort((a, b) => { const sO={'H':0,'D':1,'C':2,'S':3}; if(sO[a.suit]!==sO[b.suit])return sO[a.suit]-sO[b.suit]; const rV=r=>RANKS.indexOf(r); return rV(a.rank)-rV(b.rank);}).forEach(card => { playerHandArea.appendChild(createCardElement(card.rank, card.suit, true)); });}
+        function renderPlayerHand() { 
+            playerHandArea.innerHTML = ''; 
+            localPlayer.hand.sort((a, b) => { 
+                const sO={'H':0,'D':1,'C':2,'S':3}; 
+                if(sO[a.suit]!==sO[b.suit]) return sO[a.suit]-sO[b.suit]; 
+                const rV=r=>RANKS.indexOf(r); 
+                return rV(a.rank)-rV(b.rank);
+            }).forEach(card => { 
+                const cardEl = createCardElement(card.rank, card.suit, true);
+                cardEl.addEventListener('click', handleHandCardClickForPlay);
+                
+                if (selectedCardsForPlayUI.some(c => c.id === card.id)) {
+                    cardEl.classList.add('selected-for-play');
+                }
+                playerHandArea.appendChild(cardEl); 
+            });
+        }
         
+        function handleHandCardClickForPlay(event) {
+            const amICurr = gameState.currentPlayerId === localPlayer.id;
+            if (!amICurr || gameState.gamePhase !== 'playing') return;
+
+            const cE = event.currentTarget;
+            const cId = cE.dataset.cardId;
+            const idx = selectedCardsForPlayUI.findIndex(c => c.id === cId);
+
+            if (idx > -1) {
+                selectedCardsForPlayUI.splice(idx, 1);
+                cE.classList.remove('selected-for-play');
+            } else {
+                if (selectedCardsForPlayUI.length < 3) {
+                    const cardInH = localPlayer.hand.find(c => c.id === cId);
+                    if (cardInH) {
+                        selectedCardsForPlayUI.push(cardInH);
+                        cE.classList.add('selected-for-play');
+                    }
+                } else {
+                    alert("Warning: You can only select a maximum of 3 cards.");
+                    addLogMessage("Warning: You can only select a maximum of 3 cards.", "error");
+                }
+            }
+            updateActionButtons();
+        }
+
         function renderPlayerAreas() {
             playerAreasContainer.innerHTML = '';
             const orderedPlayers = [...gameState.players];
@@ -1132,7 +1154,6 @@
             }
         }
 
-
         function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${gameState.lastPlayedTurn.playerName} played ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`;} else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
         
         function updateCenterPileVisual() {
@@ -1217,14 +1238,20 @@
             const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id; 
             const localPlayerData = gameState.players.find(p => p.id === localPlayer.id); 
             const amEliminated = localPlayerData ? localPlayerData.eliminated : true; 
-            const hasCards = localPlayer.hand.length > 0;
-            const isPlayConfirmActive = playConfirmArea.style.display === 'block';
 
+            if (!amICurrentPlayer) {
+                selectedCardsForPlayUI = [];
+            }
             
-            playCardsBtn.disabled = !amICurrentPlayer || amEliminated || !hasCards || isPlayConfirmActive; 
+            playCardsBtn.disabled = !amICurrentPlayer || amEliminated || selectedCardsForPlayUI.length === 0; 
+
+            if (selectedCardsForPlayUI.length > 0) {
+                playCardsBtn.textContent = `Play ${selectedCardsForPlayUI.length} Card(s)`;
+            } else {
+                playCardsBtn.textContent = "Play Cards";
+            }
             
-            
-            callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn || isPlayConfirmActive;
+            callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn;
             
             if (amICurrentPlayer && !amEliminated) { 
                 playerHandArea.classList.add('current-player-hand'); 
@@ -1848,6 +1875,7 @@
             
             hostConnections = {}; 
             clientConnectionToHost = null; 
+            selectedCardsForPlayUI = [];
             
             logDebug("UI reset to connection setup."); 
             lastLoggedGameStateForClient = {}; 
@@ -1874,12 +1902,6 @@
             renderLocalPlayerStats(); 
             updateTableDisplay(); 
             updateActionButtons(); 
-            if (playConfirmArea.style.display === 'block') { 
-                const amICurr = gameState.currentPlayerId === localPlayer.id; 
-                if(!amICurr || gameState.gamePhase !== 'playing') { 
-                    enableHandCardSelectionForPlay(false); 
-                }
-            }
             if (gameState.gamePhase === 'game_over') { 
                 updateRematchStatusDisplay();
             }
@@ -2129,10 +2151,6 @@
             startGameBtn.disabled = !(totalPlayersInGame >= MIN_PLAYERS && totalPlayersInGame <= MAX_PLAYERS);
         }
         
-        function handleHandCardClickForPlay(event){const cE=event.currentTarget;const cId=cE.dataset.cardId;const idx=selectedCardsForPlayUI.findIndex(c=>c.id===cId);if(idx>-1){selectedCardsForPlayUI.splice(idx,1);cE.classList.remove('selected-for-play');}else{if(selectedCardsForPlayUI.length<3){const cardInH=localPlayer.hand.find(c=>c.id===cId);if(cardInH){selectedCardsForPlayUI.push(cardInH);cE.classList.add('selected-for-play');}}else addLogMessage("Max 3 cards can be selected.", "error");}updatePlayConfirmArea();}
-        function updatePlayConfirmArea(){if(selectedCardsForPlayUI.length>0&&gameState.currentTableSuit){playConfirmText.textContent=`Play ${selectedCardsForPlayUI.length} card${selectedCardsForPlayUI.length > 1 ? 's' : ''} as ${SUIT_SYMBOLS[gameState.currentTableSuit]}?`;playConfirmArea.style.display='block';}else playConfirmArea.style.display='none';}
-        function enableHandCardSelectionForPlay(enable){const hCs=playerHandArea.querySelectorAll('.card-container');if(enable){selectedCardsForPlayUI=[];playerHandArea.classList.add('card-selection-active');playerHandArea.classList.remove('current-player-hand'); hCs.forEach(c=>{c.classList.remove('selected-for-play');c.addEventListener('click',handleHandCardClickForPlay);});playCardsBtn.disabled=true;callLiarBtn.disabled=true;updatePlayConfirmArea();}else{playerHandArea.classList.remove('card-selection-active');if(gameState.currentPlayerId === localPlayer.id && !localPlayer.eliminated) playerHandArea.classList.add('current-player-hand');hCs.forEach(c=>{c.classList.remove('selected-for-play');c.removeEventListener('click',handleHandCardClickForPlay);});playConfirmArea.style.display='none';selectedCardsForPlayUI=[];updateActionButtons();}}
-        
         function init() { 
             createRoomBtn.onclick=()=>{
                 localPlayer.name=playerNameInput.value.trim();
@@ -2198,19 +2216,22 @@
                 }
             }; 
 
-            playCardsBtn.onclick=()=>{enableHandCardSelectionForPlay(true);}; 
-            confirmPlayBtn.onclick=()=>{
-                if(selectedCardsForPlayUI.length>0&&selectedCardsForPlayUI.length<=3){
-                    const cIds=selectedCardsForPlayUI.map(c=>c.id);
-                    if(localPlayer.isHost) {
-                        handleHostPlayerPlayCards(localPlayer.id,cIds);
+            playCardsBtn.onclick=()=>{
+                if (selectedCardsForPlayUI.length > 0 && selectedCardsForPlayUI.length <= 3) {
+                    const cIds = selectedCardsForPlayUI.map(c => c.id);
+                    if (localPlayer.isHost) {
+                        handleHostPlayerPlayCards(localPlayer.id, cIds);
                     } else {
-                        sendMessage('PLAYER_ACTION_PLAY_CARDS',{cards:cIds});
+                        sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: cIds });
                     }
-                    enableHandCardSelectionForPlay(false);
-                }else alert("Please select 1 to 3 cards to play.");
+                    selectedCardsForPlayUI = [];
+                    updateActionButtons();
+                    renderPlayerHand();
+                } else {
+                    alert("Please select 1 to 3 cards to play.");
+                }
             }; 
-            cancelPlayBtn.onclick=()=>{enableHandCardSelectionForPlay(false);}; 
+            
             callLiarBtn.onclick=()=>{if(confirm("Are you sure you want to call LIAR!? This cannot be undone.")){if(localPlayer.isHost)handleHostPlayerCallLiar(localPlayer.id);else sendMessage('PLAYER_ACTION_CALL_LIAR',{});}}; 
             
             
@@ -2258,7 +2279,14 @@
                 showConnectionSetup(); 
             }; 
 
-            document.addEventListener('keydown',e=>{const modalVis=Array.from(document.querySelectorAll('.modal')).some(m=>m.classList.contains('visible'));const inputFoc=['INPUT','TEXTAREA'].includes(document.activeElement.tagName);if(modalVis||inputFoc||connectionSetupDiv.style.display!=='none')return;if(e.key.toUpperCase()==='P'&&!playCardsBtn.disabled&&playConfirmArea.style.display==='none'){e.preventDefault();playCardsBtn.click();}if(e.key.toUpperCase()==='L'&&!callLiarBtn.disabled&&playConfirmArea.style.display==='none'){e.preventDefault();callLiarBtn.click();}}); 
+            document.addEventListener('keydown',e=>{
+                const modalVis=Array.from(document.querySelectorAll('.modal')).some(m=>m.classList.contains('visible'));
+                const inputFoc=['INPUT','TEXTAREA'].includes(document.activeElement.tagName);
+                if(modalVis||inputFoc||connectionSetupDiv.style.display!=='none')return;
+                
+                if(e.key.toUpperCase()==='P'&&!playCardsBtn.disabled){e.preventDefault();playCardsBtn.click();}
+                if(e.key.toUpperCase()==='L'&&!callLiarBtn.disabled){e.preventDefault();callLiarBtn.click();}
+            }); 
             
             const debouncedRender = debounce(updateFullUI, 250);
             window.addEventListener('resize', debouncedRender);
