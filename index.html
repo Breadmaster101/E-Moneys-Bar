@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-Money's Bar 1.3</title>
+    <title>E-Money's Bar</title>
     <link
         href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <!-- Replaced PeerJS with Socket.IO -->
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         :root {
@@ -405,6 +404,8 @@
         #game-board {
             display: flex;
             flex-direction: column;
+            flex: 1;
+            width: 100%;
             height: 100%;
             background-color: var(--table-green);
             background-image:
@@ -1176,7 +1177,7 @@
                 Connecting to server... (Please allow up to 1 minute for the server to wake up).
             </div>
 
-            <h2>E-Money's Bar 1.3</h2>
+            <h2>E-Money's Bar</h2>
             <input type="text" id="playerNameInput" placeholder="Enter Your Name (Min 3 chars)" value="">
             <div>
                 <button id="createRoomBtn">Create Room</button>
@@ -1204,542 +1205,506 @@
                 <p id="client-status">Enter your name above, then the Room Code from the host and click "Connect to
                     Host".</p>
             </div>
+        </div>
 
-            <div id="game-board" style="display:none;">
-                <div id="local-player-stats-area" style="display:none;">
-                    <span class="stat-label">My Revolver:</span>
-                    <div id="local-revolver-visuals" class="player-revolver-visuals has-tooltip"></div>
-                </div>
-                <div id="player-areas-container"></div>
-                <div id="center-table">
-                    <div id="center-pile-visual">
-                        <div class="card-stack"></div>
-                    </div>
-                    <div id="table-type-display-area">
-                        <h4>Table Suit:</h4>
-                        <div id="table-type-card"></div>
-                    </div>
-                    <div id="played-cards-pile-info">Played this turn: 0 cards</div>
-                </div>
-                <div id="game-log">
-                    <h4>Game Log</h4>
-                    <div id="log-messages"></div>
-                </div>
-                <div id="player-hand-area"></div>
-                <div id="actions-area">
-                    <button id="playCardsBtn" disabled>Play Cards</button>
-                    <button id="callLiarBtn" disabled>"LIAR!"</button>
-                </div>
+        <div id="game-board" style="display:none;">
+            <div id="local-player-stats-area" style="display:none;">
+                <span class="stat-label">My Revolver:</span>
+                <div id="local-revolver-visuals" class="player-revolver-visuals has-tooltip"></div>
             </div>
-
-            <div id="challenge-roulette-overlay" class="modal">
-                <div class="modal-content">
-                    <h3 id="challenge-roulette-title">Challenge Result!</h3>
-                    <p id="challenge-roulette-details"></p>
-                    <div id="revealed-cards-display"></div>
-                    <p id="challenge-roulette-consequence"></p>
-                    <div id="roulette-animation"></div>
-                    <p id="roulette-result-text"></p>
-                    <button id="continueGameBtn">Continue</button>
+            <div id="player-areas-container"></div>
+            <div id="center-table">
+                <div id="center-pile-visual">
+                    <div class="card-stack"></div>
                 </div>
-            </div>
-
-            <div id="game-over-overlay" class="modal">
-                <div class="modal-content">
-                    <h3 id="gameOverTitle">Game Over!</h3>
-                    <p id="gameOverMessageP"></p>
-                    <div id="rematch-status-container" style="display:none;">
-                        <h4>Rematch Status:</h4>
-                        <div id="rematch-status-list"></div>
-                    </div>
-                    <div>
-                        <button id="playAgainBtn">Ready for Rematch</button>
-                        <button id="exitGameBtn">Exit to Setup</button>
-                    </div>
+                <div id="table-type-display-area">
+                    <h4>Table Suit:</h4>
+                    <div id="table-type-card"></div>
                 </div>
+                <div id="played-cards-pile-info">Played this turn: 0 cards</div>
             </div>
+            <div id="game-log">
+                <h4>Game Log</h4>
+                <div id="log-messages"></div>
+            </div>
+            <div id="player-hand-area"></div>
+            <div id="actions-area">
+                <button id="playCardsBtn" disabled>Play Cards</button>
+                <button id="callLiarBtn" disabled>"LIAR!"</button>
+            </div>
+        </div>
 
-            <div id="rules-modal" class="modal">
-                <div class="modal-content">
-                    <h3>How to Play E-Money's Bar</h3>
-                    <div id="rules-scroll-content">
-                        <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a
-                            twist
-                            of Russian Roulette.</p>
+        <div id="challenge-roulette-overlay" class="modal">
+            <div class="modal-content">
+                <h3 id="challenge-roulette-title">Challenge Result!</h3>
+                <p id="challenge-roulette-details"></p>
+                <div id="revealed-cards-display"></div>
+                <p id="challenge-roulette-consequence"></p>
+                <div id="roulette-animation"></div>
+                <p id="roulette-result-text"></p>
+                <button id="continueGameBtn">Continue</button>
+            </div>
+        </div>
 
-                        <ul>
-                            <li><strong>Goal:</strong> Be the last player standing.</li>
-                            <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot
-                                revolver
-                                (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is
-                                chosen for the round.</li>
-                            <li><strong>Playing Cards (The Bluff):</strong>
-                                <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring
-                                    them
-                                    all to be the <strong>current Table Suit</strong>.</p>
-                                <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who
-                                    challenges
-                                    you determines the truth.</p>
-                            </li>
-                            <li><strong>Running Out of Cards (Roulette Trigger):</strong>
-                                <p>If you successfully play your last card, you immediately face the **Revolver
-                                    Roulette**
-                                    challenge. If you survive, the round ends, and you start the next round with a
-                                    reloaded
-                                    revolver and a full hand.</p>
-                            </li>
-                            <li><strong>Challenging ("LIAR!"):</strong>
-                                <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
-                                <p>A player who has run out of cards is **not** eliminated. If it is their turn and a
-                                    play
-                                    has been made, they **must** call LIAR, as they cannot play cards.</p>
-                            </li>
-                            <li><strong>The Challenge Reveal & Roulette:</strong>
-                                <p>The played cards are revealed. If the previous player was lying (one or more played
-                                    cards
-                                    did not match the Table Suit), <strong>the lying player faces the revolver.</strong>
-                                </p>
-                                <p>If the previous player was truthful, <strong>the challenger faces the
-                                        revolver.</strong>
-                                </p>
-                                <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet,
-                                    they
-                                    are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded
-                                    for
-                                    the next round.</p>
-                            </li>
-                            <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced
-                                the
-                                revolver (or survived card depletion) starts the next round.</li>
-                        </ul>
-                    </div>
-                    <button id="closeRulesBtn">Got It</button>
+        <div id="game-over-overlay" class="modal">
+            <div class="modal-content">
+                <h3 id="gameOverTitle">Game Over!</h3>
+                <p id="gameOverMessageP"></p>
+                <div id="rematch-status-container" style="display:none;">
+                    <h4>Rematch Status:</h4>
+                    <div id="rematch-status-list"></div>
+                </div>
+                <div>
+                    <button id="playAgainBtn">Ready for Rematch</button>
+                    <button id="exitGameBtn">Exit to Setup</button>
                 </div>
             </div>
         </div>
 
-        <script>
-            const MAX_PLAYERS = 4;
-            const MIN_PLAYERS = 2;
-            const HAND_SIZE = 5;
+        <div id="rules-modal" class="modal">
+            <div class="modal-content">
+                <h3>How to Play E-Money's Bar</h3>
+                <div id="rules-scroll-content">
+                    <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a
+                        twist
+                        of Russian Roulette.</p>
 
-            const SUITS = ['H', 'D', 'C', 'S'];
-            const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-            const SUIT_SYMBOLS = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
-            const SUIT_COLORS = { 'H': 'var(--suit-red)', 'D': 'var(--suit-red)', 'C': 'var(--suit-black)', 'S': 'var(--suit-black)' };
+                    <ul>
+                        <li><strong>Goal:</strong> Be the last player standing.</li>
+                        <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot
+                            revolver
+                            (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is
+                            chosen for the round.</li>
+                        <li><strong>Playing Cards (The Bluff):</strong>
+                            <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring
+                                them
+                                all to be the <strong>current Table Suit</strong>.</p>
+                            <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who
+                                challenges
+                                you determines the truth.</p>
+                        </li>
+                        <li><strong>Running Out of Cards (Roulette Trigger):</strong>
+                            <p>If you successfully play your last card, you immediately face the **Revolver
+                                Roulette**
+                                challenge. If you survive, the round ends, and you start the next round with a
+                                reloaded
+                                revolver and a full hand.</p>
+                        </li>
+                        <li><strong>Challenging ("LIAR!"):</strong>
+                            <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
+                            <p>A player who has run out of cards is **not** eliminated. If it is their turn and a
+                                play
+                                has been made, they **must** call LIAR, as they cannot play cards.</p>
+                        </li>
+                        <li><strong>The Challenge Reveal & Roulette:</strong>
+                            <p>The played cards are revealed. If the previous player was lying (one or more played
+                                cards
+                                did not match the Table Suit), <strong>the lying player faces the revolver.</strong>
+                            </p>
+                            <p>If the previous player was truthful, <strong>the challenger faces the
+                                    revolver.</strong>
+                            </p>
+                            <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet,
+                                they
+                                are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded
+                                for
+                                the next round.</p>
+                        </li>
+                        <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced
+                            the
+                            revolver (or survived card depletion) starts the next round.</li>
+                    </ul>
+                </div>
+                <button id="closeRulesBtn">Got It</button>
+            </div>
+        </div>
+    </div>
 
-            const REVOLVER_CHAMBERS = 6;
-            const REVOLVER_BULLETS = 1;
+    <script>
+        const MAX_PLAYERS = 4;
+        const MIN_PLAYERS = 2;
+        const HAND_SIZE = 5;
 
-            const $ = (s) => document.querySelector(s);
-            const appContainer = $('#app-container'); const connectionSetupDiv = $('#connection-setup'); const gameBoardDiv = $('#game-board');
-            const playerNameInput = $('#playerNameInput'); const createRoomBtn = $('#createRoomBtn'); const joinRoomBtn = $('#joinRoomBtn');
-            const hostControlsDiv = $('#host-controls'); const roomCodeDisplay = $('#roomCodeDisplay'); const copyRoomCodeBtn = $('#copyRoomCodeBtn');
-            const connectedPlayersCountSpan = $('#connected-players-count'); const connectedPlayersListDiv = $('#connected-players-list'); const startGameBtn = $('#startGameBtn');
-            const clientControlsDiv = $('#client-controls'); const roomCodeInput = $('#roomCodeInput'); const connectToHostBtn = $('#connectToHostBtn');
-            const clientStatusP = $('#client-status');
-            const playerAreasContainer = $('#player-areas-container');
-            const centerPileVisualStack = $('#center-pile-visual .card-stack');
-            const tableTypeCardDiv = $('#table-type-card');
-            const playedCardsPileInfo = $('#played-cards-pile-info');
-            const logMessagesDiv = $('#log-messages');
-            const localPlayerStatsArea = $('#local-player-stats-area');
-            const localRevolverVisuals = $('#local-revolver-visuals');
-            const playerHandArea = $('#player-hand-area');
-            const playCardsBtn = $('#playCardsBtn');
-            const callLiarBtn = $('#callLiarBtn');
-            const challengeRouletteOverlay = $('#challenge-roulette-overlay');
-            const challengeRouletteTitle = $('#challenge-roulette-title');
-            const challengeRouletteDetailsP = $('#challenge-roulette-details');
-            const revealedCardsDisplay = $('#revealed-cards-display');
-            const challengeRouletteConsequenceP = $('#challenge-roulette-consequence');
-            const rouletteAnimationDiv = $('#roulette-animation');
-            const rouletteResultTextP = $('#roulette-result-text');
-            const continueGameBtn = $('#continueGameBtn');
-            const gameOverOverlay = $('#game-over-overlay');
-            const gameOverTitle = $('#gameOverTitle'); const gameOverMessageP = $('#gameOverMessageP');
-            const rematchStatusContainer = $('#rematch-status-container');
-            const rematchStatusListDiv = $('#rematch-status-list');
-            const playAgainBtn = $('#playAgainBtn'); const exitGameBtn = $('#exitGameBtn');
-            const rulesModal = $('#rules-modal');
-            const showRulesBtn = $('#showRulesBtn');
-            const closeRulesBtn = $('#closeRulesBtn');
-            const serverStatusBanner = $('#server-status-banner');
+        const SUITS = ['H', 'D', 'C', 'S'];
+        const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const SUIT_SYMBOLS = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
+        const SUIT_COLORS = { 'H': 'var(--suit-red)', 'D': 'var(--suit-red)', 'C': 'var(--suit-black)', 'S': 'var(--suit-black)' };
 
-            // Socket.IO Variables
-            let socket = null;
-            let currentRoomCode = null;
+        const REVOLVER_CHAMBERS = 6;
+        const REVOLVER_BULLETS = 1;
 
-            let localPlayer = { id: null, name: "", isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
-            let gameState = {
-                players: [],
-                liarsDeck: [],
-                tableDeck: [],
-                centerPile: [],
-                currentPlayerId: null,
-                currentTableSuit: null,
-                lastPlayedTurn: null,
-                gamePhase: 'lobby',
-                config: { handSize: HAND_SIZE },
-                centerPileCardCount: 0,
-                rematchReadyStatus: {},
-                lastChallengeRouletteTargetId: null
-            };
+        const $ = (s) => document.querySelector(s);
+        const appContainer = $('#app-container'); const connectionSetupDiv = $('#connection-setup'); const gameBoardDiv = $('#game-board');
+        const playerNameInput = $('#playerNameInput'); const createRoomBtn = $('#createRoomBtn'); const joinRoomBtn = $('#joinRoomBtn');
+        const hostControlsDiv = $('#host-controls'); const roomCodeDisplay = $('#roomCodeDisplay'); const copyRoomCodeBtn = $('#copyRoomCodeBtn');
+        const connectedPlayersCountSpan = $('#connected-players-count'); const connectedPlayersListDiv = $('#connected-players-list'); const startGameBtn = $('#startGameBtn');
+        const clientControlsDiv = $('#client-controls'); const roomCodeInput = $('#roomCodeInput'); const connectToHostBtn = $('#connectToHostBtn');
+        const clientStatusP = $('#client-status');
+        const playerAreasContainer = $('#player-areas-container');
+        const centerPileVisualStack = $('#center-pile-visual .card-stack');
+        const tableTypeCardDiv = $('#table-type-card');
+        const playedCardsPileInfo = $('#played-cards-pile-info');
+        const logMessagesDiv = $('#log-messages');
+        const localPlayerStatsArea = $('#local-player-stats-area');
+        const localRevolverVisuals = $('#local-revolver-visuals');
+        const playerHandArea = $('#player-hand-area');
+        const playCardsBtn = $('#playCardsBtn');
+        const callLiarBtn = $('#callLiarBtn');
+        const challengeRouletteOverlay = $('#challenge-roulette-overlay');
+        const challengeRouletteTitle = $('#challenge-roulette-title');
+        const challengeRouletteDetailsP = $('#challenge-roulette-details');
+        const revealedCardsDisplay = $('#revealed-cards-display');
+        const challengeRouletteConsequenceP = $('#challenge-roulette-consequence');
+        const rouletteAnimationDiv = $('#roulette-animation');
+        const rouletteResultTextP = $('#roulette-result-text');
+        const continueGameBtn = $('#continueGameBtn');
+        const gameOverOverlay = $('#game-over-overlay');
+        const gameOverTitle = $('#gameOverTitle'); const gameOverMessageP = $('#gameOverMessageP');
+        const rematchStatusContainer = $('#rematch-status-container');
+        const rematchStatusListDiv = $('#rematch-status-list');
+        const playAgainBtn = $('#playAgainBtn'); const exitGameBtn = $('#exitGameBtn');
+        const rulesModal = $('#rules-modal');
+        const showRulesBtn = $('#showRulesBtn');
+        const closeRulesBtn = $('#closeRulesBtn');
+        const serverStatusBanner = $('#server-status-banner');
 
-            let hostConnections = {}; // Track connected client socket IDs natively
+        // Socket.IO Variables
+        let socket = null;
+        let currentRoomCode = null;
 
-            let selectedCardsForPlayUI = [];
-            let lastLoggedGameStateForClient = {};
-            let rouletteSymbolInterval = null;
+        let localPlayer = { id: null, name: "", isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
+        let gameState = {
+            players: [],
+            liarsDeck: [],
+            tableDeck: [],
+            centerPile: [],
+            currentPlayerId: null,
+            currentTableSuit: null,
+            lastPlayedTurn: null,
+            gamePhase: 'lobby',
+            config: { handSize: HAND_SIZE },
+            centerPileCardCount: 0,
+            rematchReadyStatus: {},
+            lastChallengeRouletteTargetId: null
+        };
 
-            function generateShortCode(length = 5) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let code = '';
-                for (let i = 0; i < length; i++) {
-                    code += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return code;
+        let hostConnections = {}; // Track connected client socket IDs natively
+
+        let selectedCardsForPlayUI = [];
+        let lastLoggedGameStateForClient = {};
+        let rouletteSymbolInterval = null;
+
+        function generateShortCode(length = 5) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < length; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
+            return code;
+        }
 
-            function copyToClipboard(text, buttonElement) {
-                if (!text || text.trim() === "" || text.startsWith("Waiting") || text.startsWith("Connecting") || text.startsWith("Error")) {
-                    alert("No valid content to copy yet.");
-                    return;
-                }
-                navigator.clipboard.writeText(text).then(() => {
-                    if (buttonElement) {
-                        const originalText = buttonElement.textContent;
-                        const originalTitle = buttonElement.title;
-                        buttonElement.textContent = 'Copied!';
-                        buttonElement.title = 'Copied!';
-                        buttonElement.disabled = true;
-                        setTimeout(() => {
-                            buttonElement.textContent = originalText;
-                            buttonElement.title = originalTitle;
-                            buttonElement.disabled = false;
-                        }, 1500);
-                    }
-                    logDebug('Content copied to clipboard.');
-                }).catch(err => {
-                    logDebug('Could not copy text: ', err);
-                    alert('Failed to copy text.');
-                });
+        function copyToClipboard(text, buttonElement) {
+            if (!text || text.trim() === "" || text.startsWith("Waiting") || text.startsWith("Connecting") || text.startsWith("Error")) {
+                alert("No valid content to copy yet.");
+                return;
             }
+            navigator.clipboard.writeText(text).then(() => {
+                if (buttonElement) {
+                    const originalText = buttonElement.textContent;
+                    const originalTitle = buttonElement.title;
+                    buttonElement.textContent = 'Copied!';
+                    buttonElement.title = 'Copied!';
+                    buttonElement.disabled = true;
+                    setTimeout(() => {
+                        buttonElement.textContent = originalText;
+                        buttonElement.title = originalTitle;
+                        buttonElement.disabled = false;
+                    }, 1500);
+                }
+                logDebug('Content copied to clipboard.');
+            }).catch(err => {
+                logDebug('Could not copy text: ', err);
+                alert('Failed to copy text.');
+            });
+        }
 
-            function debounce(func, wait) {
-                let timeout;
-                return function executedFunction(...args) {
-                    const later = () => {
-                        clearTimeout(timeout);
-                        func.apply(this, args);
-                    };
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
                     clearTimeout(timeout);
-                    timeout = setTimeout(later, wait, 250);
+                    func.apply(this, args);
                 };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait, 250);
+            };
+        }
+
+        function toggleModal(modalElement, show) { if (show) { modalElement.style.display = 'flex'; setTimeout(() => modalElement.classList.add('visible'), 10); } else { modalElement.classList.remove('visible'); setTimeout(() => modalElement.style.display = 'none', 300); } }
+        function logDebug(message) { console.log(message); }
+
+        function addLogMessage(message, type = "info") {
+            const p = document.createElement('p');
+            p.textContent = message;
+            if (type === "error") p.classList.add('error');
+            else if (type === "system") p.classList.add('system');
+            else if (type === "success") p.classList.add('success');
+
+            if (logMessagesDiv) {
+                logMessagesDiv.appendChild(p);
+                logMessagesDiv.scrollTop = logMessagesDiv.scrollHeight;
+            } else console.warn("Log div not ready:", message);
+        }
+
+        function createCardElement(rank, suit, faceUp = true, isSmall = false) {
+            const cc = document.createElement('div'); cc.className = 'card-container'; const cardId = `${rank}${suit}`;
+            const w = isSmall ? (window.innerWidth <= 768 ? 45 : 50) : 60;
+            const h = isSmall ? (window.innerWidth <= 768 ? 68 : 75) : 90;
+            let svg;
+            if (!faceUp) {
+                svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card back" preserveAspectRatio="xMidYMid meet">
+                <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-back-bg)" stroke="var(--card-back-border)" stroke-width="1"/>
+                <rect x="3.5" y="3.5" width="53" height="83" rx="2.5" ry="2.5" fill="none" stroke="var(--card-back-motif)" stroke-width="1.5" opacity="0.7"/>
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--card-back-motif)" font-size="40" font-family="'Merriweather', serif" font-weight="bold" opacity="0.85">L</text>
+            </svg>`;
             }
-
-            function toggleModal(modalElement, show) { if (show) { modalElement.style.display = 'flex'; setTimeout(() => modalElement.classList.add('visible'), 10); } else { modalElement.classList.remove('visible'); setTimeout(() => modalElement.style.display = 'none', 300); } }
-            function logDebug(message) { console.log(message); }
-
-            function addLogMessage(message, type = "info") {
-                const p = document.createElement('p');
-                p.textContent = message;
-                if (type === "error") p.classList.add('error');
-                else if (type === "system") p.classList.add('system');
-                else if (type === "success") p.classList.add('success');
-
-                if (logMessagesDiv) {
-                    logMessagesDiv.appendChild(p);
-                    logMessagesDiv.scrollTop = logMessagesDiv.scrollHeight;
-                } else console.warn("Log div not ready:", message);
+            else {
+                const rankDisplay = rank === '10' ? '10' : rank.charAt(0); const suitSymbol = SUIT_SYMBOLS[suit] || suit; const color = SUIT_COLORS[suit] || 'var(--primary-text)';
+                svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card" preserveAspectRatio="xMidYMid meet">
+                <defs><filter id="cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0.5" dy="0.5" result="offsetblur"/><feFlood flood-color="rgba(0,0,0,0.15)"/><feComposite in2="offsetblur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1" filter="url(#cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')})"/>
+                <text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text>
+                <text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text>
+                <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="36" fill="${color}">${suitSymbol}</text>
+                <g transform="rotate(180 30 45)"><text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text><text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text></g>
+            </svg>`;
             }
+            cc.innerHTML = svg; cc.dataset.cardId = cardId; cc.dataset.rank = rank; cc.dataset.suit = suit; return cc;
+        }
 
-            function createCardElement(rank, suit, faceUp = true, isSmall = false) {
-                const cc = document.createElement('div'); cc.className = 'card-container'; const cardId = `${rank}${suit}`;
-                const w = isSmall ? (window.innerWidth <= 768 ? 45 : 50) : 60;
-                const h = isSmall ? (window.innerWidth <= 768 ? 68 : 75) : 90;
-                let svg;
-                if (!faceUp) {
-                    svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card back" preserveAspectRatio="xMidYMid meet">
-                    <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-back-bg)" stroke="var(--card-back-border)" stroke-width="1"/>
-                    <rect x="3.5" y="3.5" width="53" height="83" rx="2.5" ry="2.5" fill="none" stroke="var(--card-back-motif)" stroke-width="1.5" opacity="0.7"/>
-                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--card-back-motif)" font-size="40" font-family="'Merriweather', serif" font-weight="bold" opacity="0.85">L</text>
-                </svg>`;
+        function renderPlayerHand() {
+            playerHandArea.innerHTML = '';
+            localPlayer.hand.sort((a, b) => {
+                const sO = { 'H': 0, 'D': 1, 'C': 2, 'S': 3 };
+                if (sO[a.suit] !== sO[b.suit]) return sO[a.suit] - sO[b.suit];
+                const rV = r => RANKS.indexOf(r);
+                return rV(a.rank) - rV(b.rank);
+            }).forEach(card => {
+                const cardEl = createCardElement(card.rank, card.suit, true);
+                cardEl.addEventListener('click', handleHandCardClickForPlay);
+
+                if (selectedCardsForPlayUI.some(c => c.id === card.id)) {
+                    cardEl.classList.add('selected-for-play');
                 }
-                else {
-                    const rankDisplay = rank === '10' ? '10' : rank.charAt(0); const suitSymbol = SUIT_SYMBOLS[suit] || suit; const color = SUIT_COLORS[suit] || 'var(--primary-text)';
-                    svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card" preserveAspectRatio="xMidYMid meet">
-                    <defs><filter id="cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0.5" dy="0.5" result="offsetblur"/><feFlood flood-color="rgba(0,0,0,0.15)"/><feComposite in2="offsetblur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-                    <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1" filter="url(#cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')})"/>
-                    <text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text>
-                    <text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text>
-                    <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="36" fill="${color}">${suitSymbol}</text>
-                    <g transform="rotate(180 30 45)"><text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text><text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text></g>
-                </svg>`;
-                }
-                cc.innerHTML = svg; cc.dataset.cardId = cardId; cc.dataset.rank = rank; cc.dataset.suit = suit; return cc;
-            }
+                playerHandArea.appendChild(cardEl);
+            });
+        }
 
-            function renderPlayerHand() {
-                playerHandArea.innerHTML = '';
-                localPlayer.hand.sort((a, b) => {
-                    const sO = { 'H': 0, 'D': 1, 'C': 2, 'S': 3 };
-                    if (sO[a.suit] !== sO[b.suit]) return sO[a.suit] - sO[b.suit];
-                    const rV = r => RANKS.indexOf(r);
-                    return rV(a.rank) - rV(b.rank);
-                }).forEach(card => {
-                    const cardEl = createCardElement(card.rank, card.suit, true);
-                    cardEl.addEventListener('click', handleHandCardClickForPlay);
+        function handleHandCardClickForPlay(event) {
+            const amICurr = gameState.currentPlayerId === localPlayer.id;
+            if (!amICurr || gameState.gamePhase !== 'playing') return;
 
-                    if (selectedCardsForPlayUI.some(c => c.id === card.id)) {
-                        cardEl.classList.add('selected-for-play');
+            const cE = event.currentTarget;
+            const cId = cE.dataset.cardId;
+            const idx = selectedCardsForPlayUI.findIndex(c => c.id === cId);
+
+            if (idx > -1) {
+                selectedCardsForPlayUI.splice(idx, 1);
+                cE.classList.remove('selected-for-play');
+            } else {
+                if (selectedCardsForPlayUI.length < 3) {
+                    const cardInH = localPlayer.hand.find(c => c.id === cId);
+                    if (cardInH) {
+                        selectedCardsForPlayUI.push(cardInH);
+                        cE.classList.add('selected-for-play');
                     }
-                    playerHandArea.appendChild(cardEl);
-                });
+                } else {
+                    alert("Warning: You can only select a maximum of 3 cards.");
+                    addLogMessage("Warning: You can only select a maximum of 3 cards.", "error");
+                }
+            }
+            updateActionButtons();
+        }
+
+        function renderPlayerAreas() {
+            playerAreasContainer.innerHTML = '';
+            const orderedPlayers = [...gameState.players];
+            if (orderedPlayers.length === 0) return;
+
+            const localPIndexInOrdered = orderedPlayers.findIndex(p => p.id === localPlayer.id);
+            let viewPlayers = [...orderedPlayers];
+            if (localPIndexInOrdered !== -1) {
+                viewPlayers = [...orderedPlayers.slice(localPIndexInOrdered), ...orderedPlayers.slice(0, localPIndexInOrdered)];
+            } else if (gameState.gamePhase !== 'lobby') {
+                logDebug("CRITICAL: Local player not found for layout."); return;
             }
 
-            function handleHandCardClickForPlay(event) {
-                const amICurr = gameState.currentPlayerId === localPlayer.id;
-                if (!amICurr || gameState.gamePhase !== 'playing') return;
+            const opponents = viewPlayers.filter(p => p.id !== localPlayer.id);
+            const numOpponents = opponents.length;
 
-                const cE = event.currentTarget;
-                const cId = cE.dataset.cardId;
-                const idx = selectedCardsForPlayUI.findIndex(c => c.id === cId);
+            if (numOpponents === 0 && gameState.players.length <= 1) return;
 
-                if (idx > -1) {
-                    selectedCardsForPlayUI.splice(idx, 1);
-                    cE.classList.remove('selected-for-play');
-                } else {
-                    if (selectedCardsForPlayUI.length < 3) {
-                        const cardInH = localPlayer.hand.find(c => c.id === cId);
-                        if (cardInH) {
-                            selectedCardsForPlayUI.push(cardInH);
-                            cE.classList.add('selected-for-play');
-                        }
-                    } else {
-                        alert("Warning: You can only select a maximum of 3 cards.");
-                        addLogMessage("Warning: You can only select a maximum of 3 cards.", "error");
-                    }
-                }
-                updateActionButtons();
-            }
+            const gameBoardPadding = parseFloat(getComputedStyle(gameBoardDiv).paddingTop) || 20;
+            let playerAreaWidthEstimate = 200;
+            let playerAreaHeightEstimate = 140;
 
-            function renderPlayerAreas() {
-                playerAreasContainer.innerHTML = '';
-                const orderedPlayers = [...gameState.players];
-                if (orderedPlayers.length === 0) return;
-
-                const localPIndexInOrdered = orderedPlayers.findIndex(p => p.id === localPlayer.id);
-                let viewPlayers = [...orderedPlayers];
-                if (localPIndexInOrdered !== -1) {
-                    viewPlayers = [...orderedPlayers.slice(localPIndexInOrdered), ...orderedPlayers.slice(0, localPIndexInOrdered)];
-                } else if (gameState.gamePhase !== 'lobby') {
-                    logDebug("CRITICAL: Local player not found for layout."); return;
-                }
-
-                const opponents = viewPlayers.filter(p => p.id !== localPlayer.id);
-                const numOpponents = opponents.length;
-
-                if (numOpponents === 0 && gameState.players.length <= 1) return;
-
-                const gameBoardPadding = parseFloat(getComputedStyle(gameBoardDiv).paddingTop) || 20;
-                let playerAreaWidthEstimate = 200;
-                let playerAreaHeightEstimate = 140;
-
-                const tempPlayerAreaForEstimates = document.createElement('div');
-                tempPlayerAreaForEstimates.className = 'player-area';
-                tempPlayerAreaForEstimates.style.visibility = 'hidden';
-                tempPlayerAreaForEstimates.style.position = 'absolute';
-                playerAreasContainer.appendChild(tempPlayerAreaForEstimates);
-                playerAreaWidthEstimate = tempPlayerAreaForEstimates.offsetWidth || 200;
-                playerAreaHeightEstimate = tempPlayerAreaForEstimates.offsetHeight || 140;
-                playerAreasContainer.removeChild(tempPlayerAreaForEstimates);
+            const tempPlayerAreaForEstimates = document.createElement('div');
+            tempPlayerAreaForEstimates.className = 'player-area';
+            tempPlayerAreaForEstimates.style.visibility = 'hidden';
+            tempPlayerAreaForEstimates.style.position = 'absolute';
+            playerAreasContainer.appendChild(tempPlayerAreaForEstimates);
+            playerAreaWidthEstimate = tempPlayerAreaForEstimates.offsetWidth || 200;
+            playerAreaHeightEstimate = tempPlayerAreaForEstimates.offsetHeight || 140;
+            playerAreasContainer.removeChild(tempPlayerAreaForEstimates);
 
 
-                const centerTableEl = $('#center-table');
-                if (!gameBoardDiv || !centerTableEl) {
-                    logDebug("Board or center table not found for dynamic positioning - using fallback.");
-                    const fallbackPositions = window.innerWidth <= 768 ?
-                        [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '30%', left: '10%', translateX: '0%', translateY: '-50%' }, { top: '30%', right: '10%', translateX: '0%', translateY: '-50%' }] :
-                        [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '50%', left: '15%', translateX: '0%', translateY: '-50%' }, { top: '50%', right: '15%', translateX: '0%', translateY: '-50%' }];
-
-                    opponents.forEach((opponent, idx) => {
-                        const pa = document.createElement('div');
-                        pa.className = 'player-area';
-                        pa.dataset.playerId = opponent.id;
-                        let layoutData = fallbackPositions[idx % fallbackPositions.length] || { top: `${10 + idx * 15}%`, left: '10%' };
-                        Object.assign(pa.style, layoutData);
-                        pa.innerHTML = `<div class="player-avatar">${opponent.isHost ? '👑' : '👤'}</div><div class="player-name">${opponent.name}</div><span>Cards: ${opponent.cardCount}, Revolver: ${opponent.revolverChambersLeft}/${REVOLVER_CHAMBERS}</span>`;
-                        playerAreasContainer.appendChild(pa);
-                    });
-                    return;
-                }
-
-                const gbRect = gameBoardDiv.getBoundingClientRect();
-                const ctRect = centerTableEl.getBoundingClientRect();
-
-                const containerContentTopYAbsolute = gbRect.top + gameBoardPadding;
-                const containerContentLeftXAbsolute = gbRect.left + gameBoardPadding;
-
-                const zoneTopAbsoluteY = containerContentTopYAbsolute;
-                const zoneBottomAbsoluteY = ctRect.top;
-                const verticalZoneHeight = zoneBottomAbsoluteY - zoneTopAbsoluteY;
-
-                let topPlayerCenterCssTopVal;
-                const MIN_TOP_EDGE_GAP = 15;
-
-                const idealCenterInZoneRelative = verticalZoneHeight / 2;
-                const minCenterRequired = MIN_TOP_EDGE_GAP + (playerAreaHeightEstimate / 2);
-
-                if (verticalZoneHeight < (playerAreaHeightEstimate + 2 * MIN_TOP_EDGE_GAP)) {
-                    topPlayerCenterCssTopVal = minCenterRequired;
-                } else {
-                    topPlayerCenterCssTopVal = idealCenterInZoneRelative;
-                    topPlayerCenterCssTopVal = Math.max(minCenterRequired, topPlayerCenterCssTopVal);
-                }
-
-                const actualTopGap = topPlayerCenterCssTopVal - (playerAreaHeightEstimate / 2);
-                const MIN_SIDE_GAP = 20;
-                let sidePlayerHorizontalGap = Math.max(MIN_SIDE_GAP, actualTopGap);
-
-                const ctLeftRel = ctRect.left - containerContentLeftXAbsolute;
-                const ctRightRel = ctRect.right - containerContentLeftXAbsolute;
-
-                const layoutSlots = [];
-
-                if (numOpponents === 1) {
-                    layoutSlots.push({
-                        top: `${topPlayerCenterCssTopVal}px`, left: '50%',
-                        translateX: '-50%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                } else if (numOpponents === 2) {
-                    layoutSlots.push({
-                        top: `50%`,
-                        left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
-                        translateX: '0%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                    layoutSlots.push({
-                        top: `50%`,
-                        left: `${ctRightRel + sidePlayerHorizontalGap}px`,
-                        translateX: '0%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                } else if (numOpponents === 3) {
-                    layoutSlots.push({
-                        top: `50%`,
-                        left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
-                        translateX: '0%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                    layoutSlots.push({
-                        top: `${topPlayerCenterCssTopVal}px`, left: '50%',
-                        translateX: '-50%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                    layoutSlots.push({
-                        top: `50%`,
-                        left: `${ctRightRel + sidePlayerHorizontalGap}px`,
-                        translateX: '0%', translateY: '-50%',
-                        rotate: '0deg'
-                    });
-                }
+            const centerTableEl = $('#center-table');
+            if (!gameBoardDiv || !centerTableEl) {
+                logDebug("Board or center table not found for dynamic positioning - using fallback.");
+                const fallbackPositions = window.innerWidth <= 768 ?
+                    [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '30%', left: '10%', translateX: '0%', translateY: '-50%' }, { top: '30%', right: '10%', translateX: '0%', translateY: '-50%' }] :
+                    [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '50%', left: '15%', translateX: '0%', translateY: '-50%' }, { top: '50%', right: '15%', translateX: '0%', translateY: '-50%' }];
 
                 opponents.forEach((opponent, idx) => {
-                    if (idx >= layoutSlots.length) {
-                        logDebug(`No dynamic layout slot for opponent index ${idx}.`);
-                        return;
-                    }
                     const pa = document.createElement('div');
                     pa.className = 'player-area';
                     pa.dataset.playerId = opponent.id;
-
-                    const layoutData = layoutSlots[idx];
-
-                    pa.style.top = layoutData.top;
-                    pa.style.left = layoutData.left;
-
-                    const baseTX = layoutData.translateX || '0%';
-                    const baseTY = layoutData.translateY || '0%';
-                    const baseRot = layoutData.rotate || '0deg';
-
-                    pa.style.setProperty('--base-translate-x', baseTX);
-                    pa.style.setProperty('--base-translate-y', baseTY);
-                    pa.style.setProperty('--base-rotate', baseRot);
-                    pa.style.transform = `translateX(${baseTX}) translateY(${baseTY}) rotate(${baseRot})`;
-
-                    if (opponent.id === gameState.currentPlayerId) {
-                        pa.classList.add('current-player');
-                    }
-
-                    if (opponent.eliminated) pa.classList.add('eliminated');
-
-                    const av = opponent.isHost ? '👑' : '👤';
-                    pa.innerHTML = `<div class="player-avatar">${av}</div><div class="player-name">${opponent.name}</div>`;
-
-                    const cardVisualsContainer = document.createElement('div');
-                    cardVisualsContainer.className = 'player-card-visuals has-tooltip';
-                    const actualCardCount = opponent.eliminated ? 0 : (opponent.cardCount !== undefined ? opponent.cardCount : 0);
-                    cardVisualsContainer.dataset.tooltip = `Cards: ${actualCardCount}`;
-                    const miniCardStep = 8;
-
-                    if (actualCardCount > 0) {
-                        const baseLeftOffset = (actualCardCount - 1) * -(miniCardStep / 2);
-                        for (let i = 0; i < actualCardCount; i++) {
-                            const cardElWrapper = createCardElement('X', 'X', false, true);
-                            cardElWrapper.classList.add('player-area-mini-card');
-                            cardElWrapper.style.position = 'absolute';
-                            cardElWrapper.style.left = `calc(50% + ${baseLeftOffset + i * miniCardStep}px)`;
-                            cardElWrapper.style.bottom = `${i * 1.5}px`;
-                            cardElWrapper.style.transform = 'translateX(-50%)';
-                            cardElWrapper.style.zIndex = i;
-                            cardVisualsContainer.appendChild(cardElWrapper);
-                        }
-                    }
-                    pa.appendChild(cardVisualsContainer);
-
-                    const revolverVisualsContainer = document.createElement('div');
-                    revolverVisualsContainer.className = 'player-revolver-visuals has-tooltip';
-                    const chambersLeft = opponent.revolverChambersLeft !== undefined ? opponent.revolverChambersLeft : REVOLVER_CHAMBERS;
-                    revolverVisualsContainer.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
-
-                    for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
-                        const chamberEl = document.createElement('span');
-                        chamberEl.className = 'revolver-chamber';
-                        if (i < chambersLeft) {
-                            chamberEl.classList.add('available');
-                        } else {
-                            chamberEl.classList.add('fired');
-                        }
-                        revolverVisualsContainer.appendChild(chamberEl);
-                    }
-                    pa.appendChild(revolverVisualsContainer);
-
+                    let layoutData = fallbackPositions[idx % fallbackPositions.length] || { top: `${10 + idx * 15}%`, left: '10%' };
+                    Object.assign(pa.style, layoutData);
+                    pa.innerHTML = `<div class="player-avatar">${opponent.isHost ? '👑' : '👤'}</div><div class="player-name">${opponent.name}</div><span>Cards: ${opponent.cardCount}, Revolver: ${opponent.revolverChambersLeft}/${REVOLVER_CHAMBERS}</span>`;
                     playerAreasContainer.appendChild(pa);
                 });
-
-                if (gameState.currentPlayerId === localPlayer.id && !localPlayer.eliminated) {
-                    playerHandArea.classList.add('current-player-hand');
-                } else {
-                    playerHandArea.classList.remove('current-player-hand');
-                }
+                return;
             }
 
-            function renderLocalPlayerStats() {
-                if (!localPlayerStatsArea || !localRevolverVisuals) return;
-                const showStats = (gameState.gamePhase === 'playing' ||
-                    gameState.gamePhase === 'challenge_reveal' ||
-                    gameState.gamePhase === 'roulette' ||
-                    gameState.gamePhase === 'roulette_resolved') &&
-                    !localPlayer.eliminated;
+            const gbRect = gameBoardDiv.getBoundingClientRect();
+            const ctRect = centerTableEl.getBoundingClientRect();
 
-                localPlayerStatsArea.style.display = showStats ? 'flex' : 'none';
-                if (!showStats) return;
+            const containerContentTopYAbsolute = gbRect.top + gameBoardPadding;
+            const containerContentLeftXAbsolute = gbRect.left + gameBoardPadding;
 
-                localRevolverVisuals.innerHTML = '';
-                const chambersLeft = localPlayer.revolverChambersLeft !== undefined ? localPlayer.revolverChambersLeft : REVOLVER_CHAMBERS;
-                localRevolverVisuals.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
+            const zoneTopAbsoluteY = containerContentTopYAbsolute;
+            const zoneBottomAbsoluteY = ctRect.top;
+            const verticalZoneHeight = zoneBottomAbsoluteY - zoneTopAbsoluteY;
+
+            let topPlayerCenterCssTopVal;
+            const MIN_TOP_EDGE_GAP = 15;
+
+            const idealCenterInZoneRelative = verticalZoneHeight / 2;
+            const minCenterRequired = MIN_TOP_EDGE_GAP + (playerAreaHeightEstimate / 2);
+
+            if (verticalZoneHeight < (playerAreaHeightEstimate + 2 * MIN_TOP_EDGE_GAP)) {
+                topPlayerCenterCssTopVal = minCenterRequired;
+            } else {
+                topPlayerCenterCssTopVal = idealCenterInZoneRelative;
+                topPlayerCenterCssTopVal = Math.max(minCenterRequired, topPlayerCenterCssTopVal);
+            }
+
+            const actualTopGap = topPlayerCenterCssTopVal - (playerAreaHeightEstimate / 2);
+            const MIN_SIDE_GAP = 20;
+            let sidePlayerHorizontalGap = Math.max(MIN_SIDE_GAP, actualTopGap);
+
+            const ctLeftRel = ctRect.left - containerContentLeftXAbsolute;
+            const ctRightRel = ctRect.right - containerContentLeftXAbsolute;
+
+            const layoutSlots = [];
+
+            if (numOpponents === 1) {
+                layoutSlots.push({
+                    top: `${topPlayerCenterCssTopVal}px`, left: '50%',
+                    translateX: '-50%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+            } else if (numOpponents === 2) {
+                layoutSlots.push({
+                    top: `50%`,
+                    left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
+                    translateX: '0%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+                layoutSlots.push({
+                    top: `50%`,
+                    left: `${ctRightRel + sidePlayerHorizontalGap}px`,
+                    translateX: '0%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+            } else if (numOpponents === 3) {
+                layoutSlots.push({
+                    top: `50%`,
+                    left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
+                    translateX: '0%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+                layoutSlots.push({
+                    top: `${topPlayerCenterCssTopVal}px`, left: '50%',
+                    translateX: '-50%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+                layoutSlots.push({
+                    top: `50%`,
+                    left: `${ctRightRel + sidePlayerHorizontalGap}px`,
+                    translateX: '0%', translateY: '-50%',
+                    rotate: '0deg'
+                });
+            }
+
+            opponents.forEach((opponent, idx) => {
+                if (idx >= layoutSlots.length) {
+                    logDebug(`No dynamic layout slot for opponent index ${idx}.`);
+                    return;
+                }
+                const pa = document.createElement('div');
+                pa.className = 'player-area';
+                pa.dataset.playerId = opponent.id;
+
+                const layoutData = layoutSlots[idx];
+
+                pa.style.top = layoutData.top;
+                pa.style.left = layoutData.left;
+
+                const baseTX = layoutData.translateX || '0%';
+                const baseTY = layoutData.translateY || '0%';
+                const baseRot = layoutData.rotate || '0deg';
+
+                pa.style.setProperty('--base-translate-x', baseTX);
+                pa.style.setProperty('--base-translate-y', baseTY);
+                pa.style.setProperty('--base-rotate', baseRot);
+                pa.style.transform = `translateX(${baseTX}) translateY(${baseTY}) rotate(${baseRot})`;
+
+                if (opponent.id === gameState.currentPlayerId) {
+                    pa.classList.add('current-player');
+                }
+
+                if (opponent.eliminated) pa.classList.add('eliminated');
+
+                const av = opponent.isHost ? '👑' : '👤';
+                pa.innerHTML = `<div class="player-avatar">${av}</div><div class="player-name">${opponent.name}</div>`;
+
+                const cardVisualsContainer = document.createElement('div');
+                cardVisualsContainer.className = 'player-card-visuals has-tooltip';
+                const actualCardCount = opponent.eliminated ? 0 : (opponent.cardCount !== undefined ? opponent.cardCount : 0);
+                cardVisualsContainer.dataset.tooltip = `Cards: ${actualCardCount}`;
+                const miniCardStep = 8;
+
+                if (actualCardCount > 0) {
+                    const baseLeftOffset = (actualCardCount - 1) * -(miniCardStep / 2);
+                    for (let i = 0; i < actualCardCount; i++) {
+                        const cardElWrapper = createCardElement('X', 'X', false, true);
+                        cardElWrapper.classList.add('player-area-mini-card');
+                        cardElWrapper.style.position = 'absolute';
+                        cardElWrapper.style.left = `calc(50% + ${baseLeftOffset + i * miniCardStep}px)`;
+                        cardElWrapper.style.bottom = `${i * 1.5}px`;
+                        cardElWrapper.style.transform = 'translateX(-50%)';
+                        cardElWrapper.style.zIndex = i;
+                        cardVisualsContainer.appendChild(cardElWrapper);
+                    }
+                }
+                pa.appendChild(cardVisualsContainer);
+
+                const revolverVisualsContainer = document.createElement('div');
+                revolverVisualsContainer.className = 'player-revolver-visuals has-tooltip';
+                const chambersLeft = opponent.revolverChambersLeft !== undefined ? opponent.revolverChambersLeft : REVOLVER_CHAMBERS;
+                revolverVisualsContainer.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
 
                 for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
                     const chamberEl = document.createElement('span');
@@ -1749,562 +1714,529 @@
                     } else {
                         chamberEl.classList.add('fired');
                     }
-                    localRevolverVisuals.appendChild(chamberEl);
+                    revolverVisualsContainer.appendChild(chamberEl);
                 }
+                pa.appendChild(revolverVisualsContainer);
+
+                playerAreasContainer.appendChild(pa);
+            });
+
+            if (gameState.currentPlayerId === localPlayer.id && !localPlayer.eliminated) {
+                playerHandArea.classList.add('current-player-hand');
+            } else {
+                playerHandArea.classList.remove('current-player-hand');
             }
+        }
 
-            function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${gameState.lastPlayedTurn.playerName} played ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`; } else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
+        function renderLocalPlayerStats() {
+            if (!localPlayerStatsArea || !localRevolverVisuals) return;
+            const showStats = (gameState.gamePhase === 'playing' ||
+                gameState.gamePhase === 'challenge_reveal' ||
+                gameState.gamePhase === 'roulette' ||
+                gameState.gamePhase === 'roulette_resolved') &&
+                !localPlayer.eliminated;
 
-            function updateCenterPileVisual() {
-                if (!centerPileVisualStack) return;
-                centerPileVisualStack.innerHTML = '';
-                const numCardsInPile = gameState.centerPileCardCount !== undefined ? gameState.centerPileCardCount : 0;
-                const maxVisualCards = 7;
+            localPlayerStatsArea.style.display = showStats ? 'flex' : 'none';
+            if (!showStats) return;
 
-                if (numCardsInPile > 0) {
-                    for (let i = 0; i < Math.min(numCardsInPile, maxVisualCards); i++) {
-                        const cardBackElement = createCardElement('X', 'X', false, true);
-                        const cardSvg = cardBackElement.querySelector('svg');
-                        if (cardSvg) {
-                            cardSvg.classList.add('card-back-dummy');
-                            cardSvg.style.position = 'absolute';
-                            const offsetX = (Math.random() - 0.5) * 4 + (i * 0.8);
-                            const offsetY = (Math.random() - 0.5) * 4 - (i * 0.8);
-                            cardSvg.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${(Math.random() - 0.5) * 3}deg)`;
-                            cardSvg.style.zIndex = i;
-                            centerPileVisualStack.appendChild(cardSvg);
-                        }
+            localRevolverVisuals.innerHTML = '';
+            const chambersLeft = localPlayer.revolverChambersLeft !== undefined ? localPlayer.revolverChambersLeft : REVOLVER_CHAMBERS;
+            localRevolverVisuals.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
+
+            for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
+                const chamberEl = document.createElement('span');
+                chamberEl.className = 'revolver-chamber';
+                if (i < chambersLeft) {
+                    chamberEl.classList.add('available');
+                } else {
+                    chamberEl.classList.add('fired');
+                }
+                localRevolverVisuals.appendChild(chamberEl);
+            }
+        }
+
+        function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${gameState.lastPlayedTurn.playerName} played ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`; } else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
+
+        function updateCenterPileVisual() {
+            if (!centerPileVisualStack) return;
+            centerPileVisualStack.innerHTML = '';
+            const numCardsInPile = gameState.centerPileCardCount !== undefined ? gameState.centerPileCardCount : 0;
+            const maxVisualCards = 7;
+
+            if (numCardsInPile > 0) {
+                for (let i = 0; i < Math.min(numCardsInPile, maxVisualCards); i++) {
+                    const cardBackElement = createCardElement('X', 'X', false, true);
+                    const cardSvg = cardBackElement.querySelector('svg');
+                    if (cardSvg) {
+                        cardSvg.classList.add('card-back-dummy');
+                        cardSvg.style.position = 'absolute';
+                        const offsetX = (Math.random() - 0.5) * 4 + (i * 0.8);
+                        const offsetY = (Math.random() - 0.5) * 4 - (i * 0.8);
+                        cardSvg.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${(Math.random() - 0.5) * 3}deg)`;
+                        cardSvg.style.zIndex = i;
+                        centerPileVisualStack.appendChild(cardSvg);
                     }
                 }
             }
+        }
 
-            function animatePlayedCards(playerId, numCardsPlayed) {
-                if (numCardsPlayed === 0 || !gameBoardDiv) return;
+        function animatePlayedCards(playerId, numCardsPlayed) {
+            if (numCardsPlayed === 0 || !gameBoardDiv) return;
 
-                const sourceElement = (playerId === localPlayer.id) ? playerHandArea : playerAreasContainer.querySelector(`.player-area[data-player-id="${playerId}"]`);
-                const targetElement = centerPileVisualStack;
+            const sourceElement = (playerId === localPlayer.id) ? playerHandArea : playerAreasContainer.querySelector(`.player-area[data-player-id="${playerId}"]`);
+            const targetElement = centerPileVisualStack;
 
-                if (!sourceElement || !targetElement) {
-                    logDebug(`Animation source/target not found for player ${playerId}`);
-                    return;
-                }
+            if (!sourceElement || !targetElement) {
+                logDebug(`Animation source/target not found for player ${playerId}`);
+                return;
+            }
 
-                const gameBoardRect = gameBoardDiv.getBoundingClientRect();
-                const cardToAnimateContainer = createCardElement('X', 'X', false, true);
-                const cardToAnimate = cardToAnimateContainer.querySelector('svg');
-                if (!cardToAnimate) return;
+            const gameBoardRect = gameBoardDiv.getBoundingClientRect();
+            const cardToAnimateContainer = createCardElement('X', 'X', false, true);
+            const cardToAnimate = cardToAnimateContainer.querySelector('svg');
+            if (!cardToAnimate) return;
 
-                const cardWidth = parseFloat(cardToAnimate.getAttribute('width'));
-                const cardHeight = parseFloat(cardToAnimate.getAttribute('height'));
+            const cardWidth = parseFloat(cardToAnimate.getAttribute('width'));
+            const cardHeight = parseFloat(cardToAnimate.getAttribute('height'));
 
-                cardToAnimate.style.position = 'absolute';
-                cardToAnimate.style.zIndex = '100';
+            cardToAnimate.style.position = 'absolute';
+            cardToAnimate.style.zIndex = '100';
 
-                const sourceRect = sourceElement.getBoundingClientRect();
-                const initialX = (sourceRect.left + sourceRect.width / 2) - gameBoardRect.left - (cardWidth / 2);
-                const initialY = (sourceRect.top + sourceRect.height / 2) - gameBoardRect.top - (cardHeight / 2);
+            const sourceRect = sourceElement.getBoundingClientRect();
+            const initialX = (sourceRect.left + sourceRect.width / 2) - gameBoardRect.left - (cardWidth / 2);
+            const initialY = (sourceRect.top + sourceRect.height / 2) - gameBoardRect.top - (cardHeight / 2);
 
-                cardToAnimate.style.left = `${initialX}px`;
-                cardToAnimate.style.top = `${initialY}px`;
-                cardToAnimate.style.transform = 'scale(1.1) rotate(0deg)';
-                cardToAnimate.style.opacity = '1';
+            cardToAnimate.style.left = `${initialX}px`;
+            cardToAnimate.style.top = `${initialY}px`;
+            cardToAnimate.style.transform = 'scale(1.1) rotate(0deg)';
+            cardToAnimate.style.opacity = '1';
 
-                gameBoardDiv.appendChild(cardToAnimate);
+            gameBoardDiv.appendChild(cardToAnimate);
 
-                const targetRect = targetElement.getBoundingClientRect();
-                const finalX = (targetRect.left + targetRect.width / 2) - gameBoardRect.left - (cardWidth / 2) + (Math.random() - 0.5) * 5;
-                const finalY = (targetRect.top + targetRect.height / 2) - gameBoardRect.top - (cardHeight / 2) + (Math.random() - 0.5) * 5;
-                const finalRotation = (Math.random() - 0.5) * 15;
+            const targetRect = targetElement.getBoundingClientRect();
+            const finalX = (targetRect.left + targetRect.width / 2) - gameBoardRect.left - (cardWidth / 2) + (Math.random() - 0.5) * 5;
+            const finalY = (targetRect.top + targetRect.height / 2) - gameBoardRect.top - (cardHeight / 2) + (Math.random() - 0.5) * 5;
+            const finalRotation = (Math.random() - 0.5) * 15;
 
+            requestAnimationFrame(() => {
+                cardToAnimate.style.transition = 'left 0.6s cubic-bezier(0.3, 0, 0.4, 1), top 0.6s cubic-bezier(0.3, 0, 0.4, 1), transform 0.6s cubic-bezier(0.3, 0, 0.4, 1), opacity 0.5s ease-in 0.25s';
                 requestAnimationFrame(() => {
-                    cardToAnimate.style.transition = 'left 0.6s cubic-bezier(0.3, 0, 0.4, 1), top 0.6s cubic-bezier(0.3, 0, 0.4, 1), transform 0.6s cubic-bezier(0.3, 0, 0.4, 1), opacity 0.5s ease-in 0.25s';
-                    requestAnimationFrame(() => {
-                        cardToAnimate.style.left = `${finalX}px`;
-                        cardToAnimate.style.top = `${finalY}px`;
-                        cardToAnimate.style.transform = `scale(0.8) rotate(${finalRotation}deg)`;
-                        cardToAnimate.style.opacity = '0';
-                    });
+                    cardToAnimate.style.left = `${finalX}px`;
+                    cardToAnimate.style.top = `${finalY}px`;
+                    cardToAnimate.style.transform = `scale(0.8) rotate(${finalRotation}deg)`;
+                    cardToAnimate.style.opacity = '0';
                 });
+            });
 
-                cardToAnimate.addEventListener('transitionend', () => {
-                    if (cardToAnimate.parentElement) {
-                        cardToAnimate.remove();
-                    }
-                }, { once: true });
+            cardToAnimate.addEventListener('transitionend', () => {
+                if (cardToAnimate.parentElement) {
+                    cardToAnimate.remove();
+                }
+            }, { once: true });
+        }
+
+        function updateActionButtons() {
+            const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id;
+            const localPlayerData = gameState.players.find(p => p.id === localPlayer.id);
+            const amEliminated = localPlayerData ? localPlayerData.eliminated : true;
+
+            if (!amICurrentPlayer) {
+                selectedCardsForPlayUI = [];
             }
 
-            function updateActionButtons() {
-                const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id;
-                const localPlayerData = gameState.players.find(p => p.id === localPlayer.id);
-                const amEliminated = localPlayerData ? localPlayerData.eliminated : true;
+            playCardsBtn.disabled = !amICurrentPlayer || amEliminated || selectedCardsForPlayUI.length === 0;
 
-                if (!amICurrentPlayer) {
-                    selectedCardsForPlayUI = [];
-                }
-
-                playCardsBtn.disabled = !amICurrentPlayer || amEliminated || selectedCardsForPlayUI.length === 0;
-
-                if (selectedCardsForPlayUI.length > 0) {
-                    playCardsBtn.textContent = `Play ${selectedCardsForPlayUI.length} Card(s)`;
-                } else {
-                    playCardsBtn.textContent = "Play Cards";
-                }
-
-                callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn;
-
-                if (amICurrentPlayer && !amEliminated) {
-                    playerHandArea.classList.add('current-player-hand');
-                } else {
-                    playerHandArea.classList.remove('current-player-hand');
-                }
-            }
-            class LiarsDeckGameManager { static shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; } } static createLiarsDeck() { const d = []; SUITS.forEach(s => { RANKS.forEach(r => { d.push({ rank: r, suit: s, id: `${r}${s}` }); }); }); this.shuffleArray(d); return d; } static createTableDeck() { const sS = [...SUITS]; this.shuffleArray(sS); return sS; } static createRevolverDeck() { const d = []; for (let i = 0; i < REVOLVER_CHAMBERS - REVOLVER_BULLETS; i++)d.push('blank'); for (let i = 0; i < REVOLVER_BULLETS; i++)d.push('lethal'); this.shuffleArray(d); return d; } static dealCardsFromLiarsDeck(pl, dk, hs) { pl.forEach(p => { if (!p.eliminated) { p.hand = []; for (let i = 0; i < hs; i++)if (dk.length > 0) p.hand.push(dk.pop()); } else p.hand = []; p.cardCount = p.hand.length; }); } static checkPlayedCardsTruth(pc, ts) { if (!pc || pc.length === 0) return true; for (const c of pc) if (c.suit !== ts) return false; return true; } }
-
-            // Socket.IO sendMessage adapter
-            function sendMessage(type, payload, targetClientId = null) {
-                const msgObject = { type, payload, senderId: localPlayer.id };
-                if (localPlayer.isHost) {
-                    if (targetClientId) {
-                        if (hostConnections[targetClientId]) {
-                            socket.emit('host_private', { targetId: targetClientId, data: msgObject });
-                        } else logDebug(`Host: Connection to ${targetClientId} not found.`);
-                    } else {
-                        socket.emit('host_broadcast', { roomCode: currentRoomCode, data: msgObject });
-                    }
-                } else if (socket && socket.connected) {
-                    socket.emit('client_send', { roomCode: currentRoomCode, data: msgObject });
-                } else {
-                    logDebug("Client: Connection to host not open.");
-                }
+            if (selectedCardsForPlayUI.length > 0) {
+                playCardsBtn.textContent = `Play ${selectedCardsForPlayUI.length} Card(s)`;
+            } else {
+                playCardsBtn.textContent = "Play Cards";
             }
 
-            function getConnectedAndActivePlayerIds() {
-                let connectedIds = [];
-                if (localPlayer.isHost) {
-                    connectedIds = [localPlayer.id, ...Object.keys(hostConnections).filter(id => hostConnections[id])];
-                } else {
-                    // Clients just read from gameState
-                    connectedIds = gameState.players.map(p => p.id);
-                }
-                return connectedIds.filter(id => gameState.players.some(p => p.id === id));
+            callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn;
+
+            if (amICurrentPlayer && !amEliminated) {
+                playerHandArea.classList.add('current-player-hand');
+            } else {
+                playerHandArea.classList.remove('current-player-hand');
             }
+        }
+        class LiarsDeckGameManager { static shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; } } static createLiarsDeck() { const d = []; SUITS.forEach(s => { RANKS.forEach(r => { d.push({ rank: r, suit: s, id: `${r}${s}` }); }); }); this.shuffleArray(d); return d; } static createTableDeck() { const sS = [...SUITS]; this.shuffleArray(sS); return sS; } static createRevolverDeck() { const d = []; for (let i = 0; i < REVOLVER_CHAMBERS - REVOLVER_BULLETS; i++)d.push('blank'); for (let i = 0; i < REVOLVER_BULLETS; i++)d.push('lethal'); this.shuffleArray(d); return d; } static dealCardsFromLiarsDeck(pl, dk, hs) { pl.forEach(p => { if (!p.eliminated) { p.hand = []; for (let i = 0; i < hs; i++)if (dk.length > 0) p.hand.push(dk.pop()); } else p.hand = []; p.cardCount = p.hand.length; }); } static checkPlayedCardsTruth(pc, ts) { if (!pc || pc.length === 0) return true; for (const c of pc) if (c.suit !== ts) return false; return true; } }
 
-            function handleIncomingMessage(data) {
-                const msg = data;
-                logDebug(`Received: ${msg.type} from ${msg.senderId === localPlayer.id ? 'Self' : (gameState.players.find(p => p.id === msg.senderId)?.name || msg.senderId)}`);
-                const oldGameStateForLog = localPlayer.isHost ? null : JSON.parse(JSON.stringify(lastLoggedGameStateForClient));
+        // Socket.IO sendMessage adapter
+        function sendMessage(type, payload, targetClientId = null) {
+            const msgObject = { type, payload, senderId: localPlayer.id };
+            if (localPlayer.isHost) {
+                if (targetClientId) {
+                    if (hostConnections[targetClientId]) {
+                        socket.emit('host_private', { targetId: targetClientId, data: msgObject });
+                    } else logDebug(`Host: Connection to ${targetClientId} not found.`);
+                } else {
+                    socket.emit('host_broadcast', { roomCode: currentRoomCode, data: msgObject });
+                }
+            } else if (socket && socket.connected) {
+                socket.emit('client_send', { roomCode: currentRoomCode, data: msgObject });
+            } else {
+                logDebug("Client: Connection to host not open.");
+            }
+        }
 
-                if (localPlayer.isHost) {
-                    switch (msg.type) {
-                        case 'PLAYER_ACTION_PLAY_CARDS': handleHostPlayerPlayCards(msg.senderId, msg.payload.cards); break;
-                        case 'PLAYER_ACTION_CALL_LIAR': handleHostPlayerCallLiar(msg.senderId); break;
-                        case 'CLIENT_DISCONNECTED': handleClientDisconnect(msg.senderId); break;
-                        case 'PLAYER_TOGGLE_REMATCH_READY':
-                            if (gameState.gamePhase === 'game_over') {
-                                const clientId = msg.senderId;
-                                const clientPlayer = gameState.players.find(p => p.id === clientId);
-                                const clientName = clientPlayer ? clientPlayer.name : clientId;
+        function getConnectedAndActivePlayerIds() {
+            let connectedIds = [];
+            if (localPlayer.isHost) {
+                connectedIds = [localPlayer.id, ...Object.keys(hostConnections).filter(id => hostConnections[id])];
+            } else {
+                // Clients just read from gameState
+                connectedIds = gameState.players.map(p => p.id);
+            }
+            return connectedIds.filter(id => gameState.players.some(p => p.id === id));
+        }
 
-                                const eligiblePlayers = getConnectedAndActivePlayerIds();
-                                if (!eligiblePlayers.includes(clientId)) {
-                                    logDebug(`Host: Received rematch ready from ${clientName} but they are no longer eligible. Ignoring.`);
-                                    if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
-                                        delete gameState.rematchReadyStatus[clientId];
-                                        broadcastGameState();
-                                    }
-                                    return;
-                                }
+        function handleIncomingMessage(data) {
+            const msg = data;
+            logDebug(`Received: ${msg.type} from ${msg.senderId === localPlayer.id ? 'Self' : (gameState.players.find(p => p.id === msg.senderId)?.name || msg.senderId)}`);
+            const oldGameStateForLog = localPlayer.isHost ? null : JSON.parse(JSON.stringify(lastLoggedGameStateForClient));
 
-                                gameState.rematchReadyStatus[clientId] = msg.payload.isReady;
-                                logDebug(`Host: Player ${clientName} readiness: ${msg.payload.isReady}`);
-                                updateRematchStatusDisplay();
+            if (localPlayer.isHost) {
+                switch (msg.type) {
+                    case 'PLAYER_ACTION_PLAY_CARDS': handleHostPlayerPlayCards(msg.senderId, msg.payload.cards); break;
+                    case 'PLAYER_ACTION_CALL_LIAR': handleHostPlayerCallLiar(msg.senderId); break;
+                    case 'CLIENT_DISCONNECTED': handleClientDisconnect(msg.senderId); break;
+                    case 'PLAYER_TOGGLE_REMATCH_READY':
+                        if (gameState.gamePhase === 'game_over') {
+                            const clientId = msg.senderId;
+                            const clientPlayer = gameState.players.find(p => p.id === clientId);
+                            const clientName = clientPlayer ? clientPlayer.name : clientId;
 
-                                const allActuallyReady = eligiblePlayers.length > 0 &&
-                                    eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                                if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                                    addLogMessage("All players ready! Starting rematch...", "success");
-                                    initializeNewGame();
-                                } else {
+                            const eligiblePlayers = getConnectedAndActivePlayerIds();
+                            if (!eligiblePlayers.includes(clientId)) {
+                                logDebug(`Host: Received rematch ready from ${clientName} but they are no longer eligible. Ignoring.`);
+                                if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
+                                    delete gameState.rematchReadyStatus[clientId];
                                     broadcastGameState();
                                 }
+                                return;
                             }
-                            break;
-                        case 'CLIENT_NAME_UPDATE':
-                            const pToUpdate = gameState.players.find(p => p.id === msg.senderId);
-                            if (pToUpdate) {
-                                pToUpdate.name = msg.payload.name;
-                                logDebug(`Host: Player ${msg.senderId} updated name to ${msg.payload.name}.`);
-                                updateConnectedPlayersDisplay();
-                                broadcastGameState();
+
+                            gameState.rematchReadyStatus[clientId] = msg.payload.isReady;
+                            logDebug(`Host: Player ${clientName} readiness: ${msg.payload.isReady}`);
+                            updateRematchStatusDisplay();
+
+                            const allActuallyReady = eligiblePlayers.length > 0 &&
+                                eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
+
+                            if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
+                                addLogMessage("All players ready! Starting rematch...", "success");
+                                initializeNewGame();
                             } else {
-                                logDebug(`Host: Received CLIENT_NAME_UPDATE for unknown peerId ${msg.senderId}`);
+                                broadcastGameState();
                             }
-                            break;
-                    }
-                } else {
-                    switch (msg.type) {
-                        case 'GAME_STATE_UPDATE':
-                            const oldPhase = lastLoggedGameStateForClient?.gamePhase;
-                            const wasGameOver = oldPhase === 'game_over';
+                        }
+                        break;
+                    case 'CLIENT_NAME_UPDATE':
+                        const pToUpdate = gameState.players.find(p => p.id === msg.senderId);
+                        if (pToUpdate) {
+                            pToUpdate.name = msg.payload.name;
+                            logDebug(`Host: Player ${msg.senderId} updated name to ${msg.payload.name}.`);
+                            updateConnectedPlayersDisplay();
+                            broadcastGameState();
+                        } else {
+                            logDebug(`Host: Received CLIENT_NAME_UPDATE for unknown peerId ${msg.senderId}`);
+                        }
+                        break;
+                }
+            } else {
+                switch (msg.type) {
+                    case 'GAME_STATE_UPDATE':
+                        const oldPhase = lastLoggedGameStateForClient?.gamePhase;
+                        const wasGameOver = oldPhase === 'game_over';
 
-                            Object.assign(gameState, msg.payload.gameState);
-                            localPlayer.hand = msg.payload.yourHand !== undefined ? msg.payload.yourHand : localPlayer.hand;
-                            const myPlayerDataFromState = gameState.players.find(p => p.id === localPlayer.id);
-                            if (myPlayerDataFromState) { Object.assign(localPlayer, myPlayerDataFromState); }
+                        Object.assign(gameState, msg.payload.gameState);
+                        localPlayer.hand = msg.payload.yourHand !== undefined ? msg.payload.yourHand : localPlayer.hand;
+                        const myPlayerDataFromState = gameState.players.find(p => p.id === localPlayer.id);
+                        if (myPlayerDataFromState) { Object.assign(localPlayer, myPlayerDataFromState); }
 
-                            if (gameState.gamePhase === 'playing' && oldGameStateForLog && Object.keys(oldGameStateForLog).length > 0) {
-                                if (gameState.currentTableSuit !== oldGameStateForLog.currentTableSuit && gameState.currentTableSuit) {
-                                    addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
-                                }
-                                if (gameState.lastPlayedTurn && JSON.stringify(gameState.lastPlayedTurn) !== JSON.stringify(oldGameStateForLog.lastPlayedTurn)) {
-                                    addLogMessage(`${gameState.lastPlayedTurn.playerName} plays ${gameState.lastPlayedTurn.cardsPlayedCount} as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit]}.`, "system");
-                                    animatePlayedCards(gameState.lastPlayedTurn.playerId, gameState.lastPlayedTurn.cardsPlayedCount);
-                                }
-                                if (gameState.currentPlayerId !== oldGameStateForLog.currentPlayerId && gameState.currentPlayerId) {
-                                    const currPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-                                    if (currPlayer) addLogMessage(`${currPlayer.name}'s turn.`, "system");
-                                }
-                            } else if (gameState.gamePhase === 'playing' && gameState.currentTableSuit && (!oldGameStateForLog || Object.keys(oldGameStateForLog).length === 0 || !oldGameStateForLog.currentTableSuit)) {
+                        if (gameState.gamePhase === 'playing' && oldGameStateForLog && Object.keys(oldGameStateForLog).length > 0) {
+                            if (gameState.currentTableSuit !== oldGameStateForLog.currentTableSuit && gameState.currentTableSuit) {
                                 addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
+                            }
+                            if (gameState.lastPlayedTurn && JSON.stringify(gameState.lastPlayedTurn) !== JSON.stringify(oldGameStateForLog.lastPlayedTurn)) {
+                                addLogMessage(`${gameState.lastPlayedTurn.playerName} plays ${gameState.lastPlayedTurn.cardsPlayedCount} as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit]}.`, "system");
+                                animatePlayedCards(gameState.lastPlayedTurn.playerId, gameState.lastPlayedTurn.cardsPlayedCount);
+                            }
+                            if (gameState.currentPlayerId !== oldGameStateForLog.currentPlayerId && gameState.currentPlayerId) {
                                 const currPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
                                 if (currPlayer) addLogMessage(`${currPlayer.name}'s turn.`, "system");
                             }
+                        } else if (gameState.gamePhase === 'playing' && gameState.currentTableSuit && (!oldGameStateForLog || Object.keys(oldGameStateForLog).length === 0 || !oldGameStateForLog.currentTableSuit)) {
+                            addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
+                            const currPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
+                            if (currPlayer) addLogMessage(`${currPlayer.name}'s turn.`, "system");
+                        }
 
-                            if (gameState.gamePhase === 'playing' && wasGameOver) {
-                                logDebug("Client: Rematch started! Transitioning UI.");
-                                if (gameOverOverlay.classList.contains('visible')) {
-                                    toggleModal(gameOverOverlay, false);
-                                }
-                                if (challengeRouletteOverlay.classList.contains('visible')) {
-                                    toggleModal(challengeRouletteOverlay, false);
-                                }
-                                showGameBoard();
-                            } else if ((gameState.gamePhase !== 'lobby') && connectionSetupDiv.style.display !== 'none') {
-                                showGameBoard();
-                            } else if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display !== 'none') {
-                                showConnectionSetup();
+                        if (gameState.gamePhase === 'playing' && wasGameOver) {
+                            logDebug("Client: Rematch started! Transitioning UI.");
+                            if (gameOverOverlay.classList.contains('visible')) {
+                                toggleModal(gameOverOverlay, false);
                             }
-
-                            if (gameState.gamePhase !== 'lobby' && !(gameState.gamePhase === 'playing' && wasGameOver)) {
-                                updateFullUI();
+                            if (challengeRouletteOverlay.classList.contains('visible')) {
+                                toggleModal(challengeRouletteOverlay, false);
                             }
-
-                            if (gameState.gamePhase === 'game_over') {
-                                if (JSON.stringify(gameState.rematchReadyStatus) !== JSON.stringify(oldGameStateForLog?.rematchReadyStatus)) {
-                                    updateRematchStatusDisplay();
-                                    localPlayer.readyForRematch = gameState.rematchReadyStatus[localPlayer.id] === true;
-                                    playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
-                                    playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
-                                }
-                            }
-                            lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                            break;
-                        case 'CHALLENGE_ROULETTE_RESULTS':
-                            handleClientChallengeRouletteResults(msg.payload);
-
-                            lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                            break;
-                        case 'GAME_OVER': handleClientGameOver(msg.payload); lastLoggedGameStateForClient = {}; break;
-                        case 'PLAYER_JOINED_ACK':
-                            clientStatusP.textContent = `Joined room hosted by ${msg.payload.hostName}! Waiting for game...`;
-                            clientStatusP.style.color = "var(--accent-green)";
-                            gameState.players = msg.payload.players;
-                            const myInitialData = gameState.players.find(p => p.id === localPlayer.id);
-                            if (myInitialData) Object.assign(localPlayer, myInitialData);
-                            updatePlayerNameDisplay();
-                            lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                            break;
-                        case 'HOST_DISCONNECTED':
-                            alert("Host disconnected. Returning to setup.");
+                            showGameBoard();
+                        } else if ((gameState.gamePhase !== 'lobby') && connectionSetupDiv.style.display !== 'none') {
+                            showGameBoard();
+                        } else if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display !== 'none') {
                             showConnectionSetup();
-                            lastLoggedGameStateForClient = {};
-                            break;
-                    }
+                        }
+
+                        if (gameState.gamePhase !== 'lobby' && !(gameState.gamePhase === 'playing' && wasGameOver)) {
+                            updateFullUI();
+                        }
+
+                        if (gameState.gamePhase === 'game_over') {
+                            if (JSON.stringify(gameState.rematchReadyStatus) !== JSON.stringify(oldGameStateForLog?.rematchReadyStatus)) {
+                                updateRematchStatusDisplay();
+                                localPlayer.readyForRematch = gameState.rematchReadyStatus[localPlayer.id] === true;
+                                playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
+                                playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
+                            }
+                        }
+                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
+                        break;
+                    case 'CHALLENGE_ROULETTE_RESULTS':
+                        handleClientChallengeRouletteResults(msg.payload);
+
+                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
+                        break;
+                    case 'GAME_OVER': handleClientGameOver(msg.payload); lastLoggedGameStateForClient = {}; break;
+                    case 'PLAYER_JOINED_ACK':
+                        clientStatusP.textContent = `Joined room hosted by ${msg.payload.hostName}! Waiting for game...`;
+                        clientStatusP.style.color = "var(--accent-green)";
+                        gameState.players = msg.payload.players;
+                        const myInitialData = gameState.players.find(p => p.id === localPlayer.id);
+                        if (myInitialData) Object.assign(localPlayer, myInitialData);
+                        updatePlayerNameDisplay();
+                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
+                        break;
+                    case 'HOST_DISCONNECTED':
+                        alert("Host disconnected. Returning to setup.");
+                        showConnectionSetup();
+                        lastLoggedGameStateForClient = {};
+                        break;
                 }
             }
+        }
 
-            function initializeNewGame() {
-                if (!localPlayer.isHost) return;
-                logDebug("Host: Initializing new game (standard deck).");
+        function initializeNewGame() {
+            if (!localPlayer.isHost) return;
+            logDebug("Host: Initializing new game (standard deck).");
 
-                const playerIdsFromPreviousGame = gameState.players.map(p => p.id);
-                const connectedAndEligibleIds = getConnectedAndActivePlayerIds()
-                    .filter(id => playerIdsFromPreviousGame.includes(id));
+            const playerIdsFromPreviousGame = gameState.players.map(p => p.id);
+            const connectedAndEligibleIds = getConnectedAndActivePlayerIds()
+                .filter(id => playerIdsFromPreviousGame.includes(id));
 
-                let newGamePlayersList = [];
-                gameState.players.forEach(oldPlayer => {
-                    if (connectedAndEligibleIds.includes(oldPlayer.id)) {
-                        newGamePlayersList.push({
-                            id: oldPlayer.id,
-                            name: oldPlayer.name,
-                            isHost: oldPlayer.isHost,
-                            eliminated: false,
-                            hand: [],
-                            revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
-                            revolverChambersLeft: REVOLVER_CHAMBERS,
-                            cardCount: 0
-                        });
-                    }
-                });
-
-                if (!newGamePlayersList.some(p => p.id === localPlayer.id)) {
-                    newGamePlayersList.unshift({
-                        id: localPlayer.id, name: localPlayer.name, isHost: true,
-                        eliminated: false, hand: [], revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
-                        revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
+            let newGamePlayersList = [];
+            gameState.players.forEach(oldPlayer => {
+                if (connectedAndEligibleIds.includes(oldPlayer.id)) {
+                    newGamePlayersList.push({
+                        id: oldPlayer.id,
+                        name: oldPlayer.name,
+                        isHost: oldPlayer.isHost,
+                        eliminated: false,
+                        hand: [],
+                        revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
+                        revolverChambersLeft: REVOLVER_CHAMBERS,
+                        cardCount: 0
                     });
-                    newGamePlayersList = [...new Map(newGamePlayersList.map(item => [item.id, item])).values()];
                 }
+            });
 
-                // Randomize the seating order for a fairer game experience
-                LiarsDeckGameManager.shuffleArray(newGamePlayersList);
-                gameState.players = newGamePlayersList;
+            if (!newGamePlayersList.some(p => p.id === localPlayer.id)) {
+                newGamePlayersList.unshift({
+                    id: localPlayer.id, name: localPlayer.name, isHost: true,
+                    eliminated: false, hand: [], revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
+                    revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
+                });
+                newGamePlayersList = [...new Map(newGamePlayersList.map(item => [item.id, item])).values()];
+            }
 
-                gameState.rematchReadyStatus = {};
+            // Randomize the seating order for a fairer game experience
+            LiarsDeckGameManager.shuffleArray(newGamePlayersList);
+            gameState.players = newGamePlayersList;
+
+            gameState.rematchReadyStatus = {};
+            gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck();
+            gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
+            gameState.centerPile = [];
+            gameState.centerPileCardCount = 0;
+            gameState.lastPlayedTurn = null;
+            gameState.currentPlayerId = null;
+            gameState.lastChallengeRouletteTargetId = null;
+
+            if (gameOverOverlay.classList.contains('visible')) {
+                toggleModal(gameOverOverlay, false);
+            }
+
+            startNewRound();
+        }
+
+        function startNewRound() {
+            if (!localPlayer.isHost) return;
+
+            logDebug("Host: Starting new round (suit based).");
+
+            if (gameState.tableDeck.length === 0) gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
+            gameState.currentTableSuit = gameState.tableDeck.pop();
+            addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
+
+            const activePlayers = gameState.players.filter(p => !p.eliminated);
+            if (gameState.liarsDeck.length < activePlayers.length * HAND_SIZE) {
                 gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck();
-                gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
-                gameState.centerPile = [];
-                gameState.centerPileCardCount = 0;
-                gameState.lastPlayedTurn = null;
-                gameState.currentPlayerId = null;
+                addLogMessage("Liar's Deck (standard) reshuffled.", "system");
+            }
+
+            LiarsDeckGameManager.dealCardsFromLiarsDeck(gameState.players, gameState.liarsDeck, HAND_SIZE);
+            gameState.centerPile = [];
+            gameState.centerPileCardCount = 0;
+            gameState.lastPlayedTurn = null;
+
+
+            let starterPlayerId = null;
+
+            if (gameState.lastChallengeRouletteTargetId) {
+                const potentialStarter = gameState.players.find(p => p.id === gameState.lastChallengeRouletteTargetId);
+
+                if (potentialStarter && !potentialStarter.eliminated) {
+                    starterPlayerId = potentialStarter.id;
+                    addLogMessage(`${potentialStarter.name} starts the round (Last Challenge Consequence).`, "system");
+                }
+
                 gameState.lastChallengeRouletteTargetId = null;
-
-                if (gameOverOverlay.classList.contains('visible')) {
-                    toggleModal(gameOverOverlay, false);
-                }
-
-                startNewRound();
             }
 
-            function startNewRound() {
-                if (!localPlayer.isHost) return;
-
-                logDebug("Host: Starting new round (suit based).");
-
-                if (gameState.tableDeck.length === 0) gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
-                gameState.currentTableSuit = gameState.tableDeck.pop();
-                addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
-
-                const activePlayers = gameState.players.filter(p => !p.eliminated);
-                if (gameState.liarsDeck.length < activePlayers.length * HAND_SIZE) {
-                    gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck();
-                    addLogMessage("Liar's Deck (standard) reshuffled.", "system");
-                }
-
-                LiarsDeckGameManager.dealCardsFromLiarsDeck(gameState.players, gameState.liarsDeck, HAND_SIZE);
-                gameState.centerPile = [];
-                gameState.centerPileCardCount = 0;
-                gameState.lastPlayedTurn = null;
-
-
-                let starterPlayerId = null;
-
-                if (gameState.lastChallengeRouletteTargetId) {
-                    const potentialStarter = gameState.players.find(p => p.id === gameState.lastChallengeRouletteTargetId);
-
-                    if (potentialStarter && !potentialStarter.eliminated) {
-                        starterPlayerId = potentialStarter.id;
-                        addLogMessage(`${potentialStarter.name} starts the round (Last Challenge Consequence).`, "system");
-                    }
-
-                    gameState.lastChallengeRouletteTargetId = null;
-                }
-
-                if (!starterPlayerId) {
-                    if (activePlayers.length === 0) { logDebug("CRITICAL Error: No uneliminated players."); return; }
-                    const randomIndex = Math.floor(Math.random() * activePlayers.length);
-                    starterPlayerId = activePlayers[randomIndex].id;
-                    addLogMessage(`${activePlayers.find(p => p.id === starterPlayerId).name} starts the round (Random Pick).`, "system");
-                }
-
-                gameState.currentPlayerId = starterPlayerId;
-
-                gameState.gamePhase = 'playing';
-                const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || "Unknown";
-
-                if (starterPlayerId !== localPlayer.id) {
-                    addLogMessage(`${currentPlayerName}'s turn.`, "system");
-                }
-                broadcastGameState();
+            if (!starterPlayerId) {
+                if (activePlayers.length === 0) { logDebug("CRITICAL Error: No uneliminated players."); return; }
+                const randomIndex = Math.floor(Math.random() * activePlayers.length);
+                starterPlayerId = activePlayers[randomIndex].id;
+                addLogMessage(`${activePlayers.find(p => p.id === starterPlayerId).name} starts the round (Random Pick).`, "system");
             }
 
+            gameState.currentPlayerId = starterPlayerId;
 
-            function executeRoulette(targetPlayer) {
-                if (!localPlayer.isHost) return;
+            gameState.gamePhase = 'playing';
+            const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || "Unknown";
 
-                const target = gameState.players.find(p => p.id === targetPlayer.id);
-                if (!target || target.eliminated) { logDebug(`Roulette target ${targetPlayer.name} gone.`); return null; }
+            if (starterPlayerId !== localPlayer.id) {
+                addLogMessage(`${currentPlayerName}'s turn.`, "system");
+            }
+            broadcastGameState();
+        }
 
-                if (!target.revolverDeck || target.revolverDeck.length === 0) {
+
+        function executeRoulette(targetPlayer) {
+            if (!localPlayer.isHost) return;
+
+            const target = gameState.players.find(p => p.id === targetPlayer.id);
+            if (!target || target.eliminated) { logDebug(`Roulette target ${targetPlayer.name} gone.`); return null; }
+
+            if (!target.revolverDeck || target.revolverDeck.length === 0) {
+                target.revolverDeck = LiarsDeckGameManager.createRevolverDeck();
+                target.revolverChambersLeft = REVOLVER_CHAMBERS;
+                addLogMessage(`${target.name}'s revolver reloaded.`, "system");
+            }
+
+            const fired = target.revolverDeck.pop();
+            target.revolverChambersLeft = target.revolverDeck.length;
+
+            let outcomeText;
+            if (fired === 'lethal') {
+                target.eliminated = true;
+                target.cardCount = 0;
+                outcomeText = `BANG! ${target.name} ELIMINATED!`;
+                addLogMessage(outcomeText, "error");
+            } else {
+                outcomeText = `CLICK! ${target.name} survives.`;
+                addLogMessage(outcomeText, "system");
+                if (target.revolverDeck.length === 0) {
+                    addLogMessage(`${target.name}'s revolver empty, reloaded.`, "system");
                     target.revolverDeck = LiarsDeckGameManager.createRevolverDeck();
                     target.revolverChambersLeft = REVOLVER_CHAMBERS;
-                    addLogMessage(`${target.name}'s revolver reloaded.`, "system");
                 }
-
-                const fired = target.revolverDeck.pop();
-                target.revolverChambersLeft = target.revolverDeck.length;
-
-                let outcomeText;
-                if (fired === 'lethal') {
-                    target.eliminated = true;
-                    target.cardCount = 0;
-                    outcomeText = `BANG! ${target.name} ELIMINATED!`;
-                    addLogMessage(outcomeText, "error");
-                } else {
-                    outcomeText = `CLICK! ${target.name} survives.`;
-                    addLogMessage(outcomeText, "system");
-                    if (target.revolverDeck.length === 0) {
-                        addLogMessage(`${target.name}'s revolver empty, reloaded.`, "system");
-                        target.revolverDeck = LiarsDeckGameManager.createRevolverDeck();
-                        target.revolverChambersLeft = REVOLVER_CHAMBERS;
-                    }
-                }
-
-
-                gameState.lastChallengeRouletteTargetId = target.id;
-
-                gameState.players.forEach(p => p.cardCount = p.eliminated ? 0 : p.hand.length);
-
-                return {
-                    rouletteTarget: { id: target.id, name: target.name },
-                    rouletteOutcome: fired,
-                    rouletteOutcomeText: outcomeText,
-                    updatedPlayersData: gameState.players.map(p => ({ id: p.id, name: p.name, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount }))
-                };
             }
 
 
-            function handleHostPlayerPlayCards(playerId, playedCardIds) {
-                if (!localPlayer.isHost || playerId !== gameState.currentPlayerId || gameState.gamePhase !== 'playing') return;
-                const player = gameState.players.find(p => p.id === playerId);
-                if (!player || player.eliminated || player.cardCount === 0) return;
+            gameState.lastChallengeRouletteTargetId = target.id;
 
-                if (!playedCardIds || playedCardIds.length === 0 || playedCardIds.length > 3) {
-                    logDebug(`Host: Invalid play count for ${playerId}.`);
-                    broadcastGameState(playerId);
-                    return;
-                }
+            gameState.players.forEach(p => p.cardCount = p.eliminated ? 0 : p.hand.length);
 
-                const actualPlayedCards = [];
-                const remainingHand = [...player.hand];
-                let validPlay = true;
-
-                playedCardIds.forEach(cardId => {
-                    const cardIndex = remainingHand.findIndex(c => c.id === cardId);
-                    if (cardIndex === -1) {
-                        logDebug(`Host: Player ${playerId} attempted to play card ${cardId} not in their hand.`);
-                        validPlay = false;
-                    } else {
-                        actualPlayedCards.push(remainingHand.splice(cardIndex, 1)[0]);
-                    }
-                });
-
-                if (!validPlay || actualPlayedCards.length !== playedCardIds.length) {
-                    logDebug(`Host: Validation failed for player ${playerId}. Dropping message.`);
-                    broadcastGameState(playerId);
-                    return;
-                }
+            return {
+                rouletteTarget: { id: target.id, name: target.name },
+                rouletteOutcome: fired,
+                rouletteOutcomeText: outcomeText,
+                updatedPlayersData: gameState.players.map(p => ({ id: p.id, name: p.name, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount }))
+            };
+        }
 
 
-                player.hand = remainingHand;
-                player.cardCount = player.hand.length;
+        function handleHostPlayerPlayCards(playerId, playedCardIds) {
+            if (!localPlayer.isHost || playerId !== gameState.currentPlayerId || gameState.gamePhase !== 'playing') return;
+            const player = gameState.players.find(p => p.id === playerId);
+            if (!player || player.eliminated || player.cardCount === 0) return;
 
-                gameState.lastPlayedTurn = { playerId, playerName: player.name, cardsPlayed: actualPlayedCards, cardsPlayedCount: actualPlayedCards.length, declaredSuit: gameState.currentTableSuit };
-                gameState.centerPile.push(...actualPlayedCards);
-                gameState.centerPileCardCount = gameState.centerPile.length;
-
-                addLogMessage(`${player.name} plays ${actualPlayedCards.length} as ${SUIT_SYMBOLS[gameState.currentTableSuit]}.`, "system");
-
-                if (gameBoardDiv.style.display === 'block') {
-                    animatePlayedCards(playerId, actualPlayedCards.length);
-                }
-
-
-                if (player.cardCount === 0) {
-                    logDebug(`${player.name} ran out of cards! Triggering roulette.`);
-                    gameState.gamePhase = 'roulette';
-
-                    const rouletteResults = executeRoulette(player);
-                    if (!rouletteResults) return;
-
-                    const results = {
-                        isCardDepletion: true,
-                        rouletteTarget: rouletteResults.rouletteTarget,
-                        rouletteOutcome: rouletteResults.rouletteOutcome,
-                        rouletteOutcomeText: rouletteResults.rouletteOutcomeText,
-                        updatedPlayersData: rouletteResults.updatedPlayersData
-                    };
-
-
-                    sendMessage('CHALLENGE_ROULETTE_RESULTS', results);
-                    handleClientChallengeRouletteResults(results);
-
-
-                    gameState.gamePhase = 'roulette_resolved';
-                    broadcastGameState();
-
-
-                    setTimeout(() => {
-                        const uneliminated = gameState.players.filter(p => !p.eliminated);
-                        if (uneliminated.length <= 1) {
-                            gameState.gamePhase = 'game_over';
-                            const winner = uneliminated.length === 1 ? uneliminated[0] : null;
-                            const goData = {
-                                winner: winner ? { id: winner.id, name: winner.name } : null,
-                                reason: winner ? `${winner.name} wins the game!` : "It's a draw!"
-                            };
-                            sendMessage('GAME_OVER', goData);
-                            handleClientGameOver(goData);
-                        } else {
-                            startNewRound();
-                        }
-                    }, 3500);
-
-                    return;
-                }
-
-
-
-                let currentIdx = gameState.players.findIndex(p => p.id === playerId);
-                let attempts = 0; let nextFound = false;
-                if (gameState.players.length > 0) {
-                    do { currentIdx = (currentIdx + 1) % gameState.players.length; attempts++; if (!gameState.players[currentIdx].eliminated) { nextFound = true; break; } } while (attempts < gameState.players.length * 2);
-                }
-                if (nextFound) gameState.currentPlayerId = gameState.players[currentIdx].id;
-                else logDebug("No next player found after play.");
-
-                broadcastGameState();
+            if (!playedCardIds || playedCardIds.length === 0 || playedCardIds.length > 3) {
+                logDebug(`Host: Invalid play count for ${playerId}.`);
+                broadcastGameState(playerId);
+                return;
             }
 
-            function handleHostPlayerCallLiar(challengerId) {
-                if (!localPlayer.isHost || challengerId !== gameState.currentPlayerId || !gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return;
-                const challenger = gameState.players.find(p => p.id === challengerId);
-                const accusedId = gameState.lastPlayedTurn.playerId;
-                const accused = gameState.players.find(p => p.id === accusedId);
-                if (!challenger || challenger.eliminated || !accused) { logDebug("Challenge error: invalid players."); return; }
+            const actualPlayedCards = [];
+            const remainingHand = [...player.hand];
+            let validPlay = true;
 
-                addLogMessage(`${challenger.name} calls LIAR! on ${accused.name}.`, "system");
-
-                gameState.gamePhase = 'challenge_reveal';
-
-                const played = gameState.lastPlayedTurn.cardsPlayed;
-                const tableSuit = gameState.currentTableSuit;
-                const wasLie = !LiarsDeckGameManager.checkPlayedCardsTruth(played, tableSuit);
-
-                let rouletteTarget;
-                if (wasLie) {
-                    addLogMessage(`${accused.name} was LYING! (Not all ${SUIT_SYMBOLS[tableSuit]})`, "error");
-                    rouletteTarget = accused;
+            playedCardIds.forEach(cardId => {
+                const cardIndex = remainingHand.findIndex(c => c.id === cardId);
+                if (cardIndex === -1) {
+                    logDebug(`Host: Player ${playerId} attempted to play card ${cardId} not in their hand.`);
+                    validPlay = false;
                 } else {
-                    addLogMessage(`${accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[tableSuit]})`, "success");
-                    rouletteTarget = challenger;
+                    actualPlayedCards.push(remainingHand.splice(cardIndex, 1)[0]);
                 }
+            });
 
-                const rouletteResults = executeRoulette(rouletteTarget);
+            if (!validPlay || actualPlayedCards.length !== playedCardIds.length) {
+                logDebug(`Host: Validation failed for player ${playerId}. Dropping message.`);
+                broadcastGameState(playerId);
+                return;
+            }
+
+
+            player.hand = remainingHand;
+            player.cardCount = player.hand.length;
+
+            gameState.lastPlayedTurn = { playerId, playerName: player.name, cardsPlayed: actualPlayedCards, cardsPlayedCount: actualPlayedCards.length, declaredSuit: gameState.currentTableSuit };
+            gameState.centerPile.push(...actualPlayedCards);
+            gameState.centerPileCardCount = gameState.centerPile.length;
+
+            addLogMessage(`${player.name} plays ${actualPlayedCards.length} as ${SUIT_SYMBOLS[gameState.currentTableSuit]}.`, "system");
+
+            if (gameBoardDiv.style.display !== 'none') {
+                animatePlayedCards(playerId, actualPlayedCards.length);
+            }
+
+
+            if (player.cardCount === 0) {
+                logDebug(`${player.name} ran out of cards! Triggering roulette.`);
+                gameState.gamePhase = 'roulette';
+
+                const rouletteResults = executeRoulette(player);
                 if (!rouletteResults) return;
 
-                const results = { challenger: { id: challenger.id, name: challenger.name }, accused: { id: accused.id, name: accused.name }, playedCards: played, tableSuit: tableSuit, claimWasLie: wasLie, isCardDepletion: false, rouletteTarget: rouletteResults.rouletteTarget, rouletteOutcome: rouletteResults.rouletteOutcome, rouletteOutcomeText: rouletteResults.rouletteOutcomeText, updatedPlayersData: rouletteResults.updatedPlayersData };
+                const results = {
+                    isCardDepletion: true,
+                    rouletteTarget: rouletteResults.rouletteTarget,
+                    rouletteOutcome: rouletteResults.rouletteOutcome,
+                    rouletteOutcomeText: rouletteResults.rouletteOutcomeText,
+                    updatedPlayersData: rouletteResults.updatedPlayersData
+                };
 
 
                 sendMessage('CHALLENGE_ROULETTE_RESULTS', results);
@@ -2317,535 +2249,605 @@
 
                 setTimeout(() => {
                     const uneliminated = gameState.players.filter(p => !p.eliminated);
-
                     if (uneliminated.length <= 1) {
                         gameState.gamePhase = 'game_over';
                         const winner = uneliminated.length === 1 ? uneliminated[0] : null;
-                        const goData = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} is the last one standing!` : "It's a draw... or mutual destruction!" };
-
+                        const goData = {
+                            winner: winner ? { id: winner.id, name: winner.name } : null,
+                            reason: winner ? `${winner.name} wins the game!` : "It's a draw!"
+                        };
                         sendMessage('GAME_OVER', goData);
                         handleClientGameOver(goData);
-
                     } else {
                         startNewRound();
                     }
                 }, 3500);
+
+                return;
             }
 
-            function handleClientChallengeRouletteResults(data) {
-                rouletteResultTextP.textContent = '';
 
-                if (data.isCardDepletion) {
-                    addLogMessage(`${data.rouletteTarget.name} ran out of cards! Facing roulette.`, "system");
-                    challengeRouletteTitle.textContent = `${data.rouletteTarget.name} RAN OUT OF CARDS!`;
-                    challengeRouletteDetailsP.textContent = `Player ran out of cards during their turn.`;
-                    revealedCardsDisplay.innerHTML = '';
+
+            let currentIdx = gameState.players.findIndex(p => p.id === playerId);
+            let attempts = 0; let nextFound = false;
+            if (gameState.players.length > 0) {
+                do { currentIdx = (currentIdx + 1) % gameState.players.length; attempts++; if (!gameState.players[currentIdx].eliminated) { nextFound = true; break; } } while (attempts < gameState.players.length * 2);
+            }
+            if (nextFound) gameState.currentPlayerId = gameState.players[currentIdx].id;
+            else logDebug("No next player found after play.");
+
+            broadcastGameState();
+        }
+
+        function handleHostPlayerCallLiar(challengerId) {
+            if (!localPlayer.isHost || challengerId !== gameState.currentPlayerId || !gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return;
+            const challenger = gameState.players.find(p => p.id === challengerId);
+            const accusedId = gameState.lastPlayedTurn.playerId;
+            const accused = gameState.players.find(p => p.id === accusedId);
+            if (!challenger || challenger.eliminated || !accused) { logDebug("Challenge error: invalid players."); return; }
+
+            addLogMessage(`${challenger.name} calls LIAR! on ${accused.name}.`, "system");
+
+            gameState.gamePhase = 'challenge_reveal';
+
+            const played = gameState.lastPlayedTurn.cardsPlayed;
+            const tableSuit = gameState.currentTableSuit;
+            const wasLie = !LiarsDeckGameManager.checkPlayedCardsTruth(played, tableSuit);
+
+            let rouletteTarget;
+            if (wasLie) {
+                addLogMessage(`${accused.name} was LYING! (Not all ${SUIT_SYMBOLS[tableSuit]})`, "error");
+                rouletteTarget = accused;
+            } else {
+                addLogMessage(`${accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[tableSuit]})`, "success");
+                rouletteTarget = challenger;
+            }
+
+            const rouletteResults = executeRoulette(rouletteTarget);
+            if (!rouletteResults) return;
+
+            const results = { challenger: { id: challenger.id, name: challenger.name }, accused: { id: accused.id, name: accused.name }, playedCards: played, tableSuit: tableSuit, claimWasLie: wasLie, isCardDepletion: false, rouletteTarget: rouletteResults.rouletteTarget, rouletteOutcome: rouletteResults.rouletteOutcome, rouletteOutcomeText: rouletteResults.rouletteOutcomeText, updatedPlayersData: rouletteResults.updatedPlayersData };
+
+
+            sendMessage('CHALLENGE_ROULETTE_RESULTS', results);
+            handleClientChallengeRouletteResults(results);
+
+
+            gameState.gamePhase = 'roulette_resolved';
+            broadcastGameState();
+
+
+            setTimeout(() => {
+                const uneliminated = gameState.players.filter(p => !p.eliminated);
+
+                if (uneliminated.length <= 1) {
+                    gameState.gamePhase = 'game_over';
+                    const winner = uneliminated.length === 1 ? uneliminated[0] : null;
+                    const goData = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} is the last one standing!` : "It's a draw... or mutual destruction!" };
+
+                    sendMessage('GAME_OVER', goData);
+                    handleClientGameOver(goData);
+
                 } else {
-                    if (localPlayer.id !== data.challenger.id && localPlayer.id !== data.accused.id) {
-                        addLogMessage(`${data.challenger.name} calls LIAR! on ${data.accused.name}.`, "system");
-                    }
-                    if (data.claimWasLie) { addLogMessage(`${data.accused.name} was LYING! (Not all ${SUIT_SYMBOLS[data.tableSuit]})`, "error"); }
-                    else { addLogMessage(`${data.accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[data.tableSuit]})`, "success"); }
-
-                    challengeRouletteTitle.textContent = data.claimWasLie ? `${data.accused.name} CAUGHT LYING!` : `CHALLENGE FAILED!`;
-                    challengeRouletteDetailsP.textContent = `${data.challenger.name} challenged ${data.accused.name}. Claimed Suit: ${SUIT_SYMBOLS[data.tableSuit]}.`;
-                    revealedCardsDisplay.innerHTML = ''; data.playedCards.forEach(c => revealedCardsDisplay.appendChild(createCardElement(c.rank, c.suit, true, true)));
+                    startNewRound();
                 }
+            }, 3500);
+        }
 
-                gameState.gamePhase = 'roulette';
-                data.updatedPlayersData.forEach(updP => { const pLocal = gameState.players.find(p => p.id === updP.id); if (pLocal) Object.assign(pLocal, updP); if (localPlayer.id === updP.id) Object.assign(localPlayer, updP); });
+        function handleClientChallengeRouletteResults(data) {
+            rouletteResultTextP.textContent = '';
 
-                challengeRouletteConsequenceP.textContent = `${data.rouletteTarget.name} faces the Roulette!`;
+            if (data.isCardDepletion) {
+                addLogMessage(`${data.rouletteTarget.name} ran out of cards! Facing roulette.`, "system");
+                challengeRouletteTitle.textContent = `${data.rouletteTarget.name} RAN OUT OF CARDS!`;
+                challengeRouletteDetailsP.textContent = `Player ran out of cards during their turn.`;
+                revealedCardsDisplay.innerHTML = '';
+            } else {
+                if (localPlayer.id !== data.challenger.id && localPlayer.id !== data.accused.id) {
+                    addLogMessage(`${data.challenger.name} calls LIAR! on ${data.accused.name}.`, "system");
+                }
+                if (data.claimWasLie) { addLogMessage(`${data.accused.name} was LYING! (Not all ${SUIT_SYMBOLS[data.tableSuit]})`, "error"); }
+                else { addLogMessage(`${data.accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[data.tableSuit]})`, "success"); }
 
+                challengeRouletteTitle.textContent = data.claimWasLie ? `${data.accused.name} CAUGHT LYING!` : `CHALLENGE FAILED!`;
+                challengeRouletteDetailsP.textContent = `${data.challenger.name} challenged ${data.accused.name}. Claimed Suit: ${SUIT_SYMBOLS[data.tableSuit]}.`;
+                revealedCardsDisplay.innerHTML = ''; data.playedCards.forEach(c => revealedCardsDisplay.appendChild(createCardElement(c.rank, c.suit, true, true)));
+            }
+
+            gameState.gamePhase = 'roulette';
+            data.updatedPlayersData.forEach(updP => { const pLocal = gameState.players.find(p => p.id === updP.id); if (pLocal) Object.assign(pLocal, updP); if (localPlayer.id === updP.id) Object.assign(localPlayer, updP); });
+
+            challengeRouletteConsequenceP.textContent = `${data.rouletteTarget.name} faces the Roulette!`;
+
+            if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
+            const rouletteSymbols = ['<span style="font-size:2em; padding: 0 5px;">🃏</span>', '<span style="font-size:2em; padding: 0 5px;">🎲</span>', '<span style="font-size:2em; padding: 0 5px;">❔</span>', '<span style="font-size:2em; padding: 0 5px;">💀</span>', '<span style="font-size:2em; padding: 0 5px;">🤞</span>'];
+            let symbolIndex = 0;
+            rouletteAnimationDiv.innerHTML = rouletteSymbols[0];
+            rouletteAnimationDiv.classList.add('spinning');
+
+            rouletteSymbolInterval = setInterval(() => {
+                symbolIndex = (symbolIndex + 1) % rouletteSymbols.length;
+                rouletteAnimationDiv.innerHTML = rouletteSymbols[symbolIndex];
+            }, 150);
+
+            setTimeout(() => {
                 if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
-                const rouletteSymbols = ['<span style="font-size:2em; padding: 0 5px;">🃏</span>', '<span style="font-size:2em; padding: 0 5px;">🎲</span>', '<span style="font-size:2em; padding: 0 5px;">❔</span>', '<span style="font-size:2em; padding: 0 5px;">💀</span>', '<span style="font-size:2em; padding: 0 5px;">🤞</span>'];
-                let symbolIndex = 0;
-                rouletteAnimationDiv.innerHTML = rouletteSymbols[0];
-                rouletteAnimationDiv.classList.add('spinning');
+                rouletteAnimationDiv.classList.remove('spinning');
+                rouletteAnimationDiv.innerHTML = data.rouletteOutcome === 'lethal' ? `<span style="font-size:2.2em; color: var(--accent-red-darker); font-weight:bold;">💥 BANG! 💥</span>` : `<span style="font-size:2.2em; color: var(--accent-green-darker); font-weight:bold;">💨 Click! 💨</span>`;
+                rouletteResultTextP.textContent = data.rouletteOutcomeText;
+                rouletteResultTextP.style.color = data.rouletteOutcome === 'lethal' ? 'var(--accent-red)' : 'var(--accent-green)';
+                addLogMessage(data.rouletteOutcomeText, data.rouletteOutcome === 'lethal' ? "error" : "system");
+            }, 2000);
 
-                rouletteSymbolInterval = setInterval(() => {
-                    symbolIndex = (symbolIndex + 1) % rouletteSymbols.length;
-                    rouletteAnimationDiv.innerHTML = rouletteSymbols[symbolIndex];
-                }, 150);
+            toggleModal(challengeRouletteOverlay, true); updateFullUI();
+        }
 
-                setTimeout(() => {
-                    if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
-                    rouletteAnimationDiv.classList.remove('spinning');
-                    rouletteAnimationDiv.innerHTML = data.rouletteOutcome === 'lethal' ? `<span style="font-size:2.2em; color: var(--accent-red-darker); font-weight:bold;">💥 BANG! 💥</span>` : `<span style="font-size:2.2em; color: var(--accent-green-darker); font-weight:bold;">💨 Click! 💨</span>`;
-                    rouletteResultTextP.textContent = data.rouletteOutcomeText;
-                    rouletteResultTextP.style.color = data.rouletteOutcome === 'lethal' ? 'var(--accent-red)' : 'var(--accent-green)';
-                    addLogMessage(data.rouletteOutcomeText, data.rouletteOutcome === 'lethal' ? "error" : "system");
-                }, 2000);
-
-                toggleModal(challengeRouletteOverlay, true); updateFullUI();
+        function updateRematchStatusDisplay() {
+            if (gameState.gamePhase !== 'game_over' || !rematchStatusContainer) {
+                if (rematchStatusContainer) rematchStatusContainer.style.display = 'none';
+                return;
             }
+            rematchStatusContainer.style.display = 'block';
+            rematchStatusListDiv.innerHTML = '';
 
-            function updateRematchStatusDisplay() {
-                if (gameState.gamePhase !== 'game_over' || !rematchStatusContainer) {
-                    if (rematchStatusContainer) rematchStatusContainer.style.display = 'none';
-                    return;
+            const eligibleForRematchDisplay = getConnectedAndActivePlayerIds();
+
+            eligibleForRematchDisplay.forEach(playerId => {
+                const player = gameState.players.find(p => p.id === playerId);
+                if (player) {
+                    const statusSpan = document.createElement('span');
+                    const isReady = gameState.rematchReadyStatus[playerId] === true;
+                    statusSpan.textContent = `${player.name}: ${isReady ? 'Ready 👍' : 'Not Ready...'}`;
+                    statusSpan.className = isReady ? 'ready' : 'not-ready';
+                    rematchStatusListDiv.appendChild(statusSpan);
                 }
-                rematchStatusContainer.style.display = 'block';
-                rematchStatusListDiv.innerHTML = '';
+            });
+        }
 
-                const eligibleForRematchDisplay = getConnectedAndActivePlayerIds();
+        function handleClientGameOver(data) {
+            gameState.gamePhase = 'game_over';
+            gameState.rematchReadyStatus = {};
 
-                eligibleForRematchDisplay.forEach(playerId => {
-                    const player = gameState.players.find(p => p.id === playerId);
-                    if (player) {
-                        const statusSpan = document.createElement('span');
-                        const isReady = gameState.rematchReadyStatus[playerId] === true;
-                        statusSpan.textContent = `${player.name}: ${isReady ? 'Ready 👍' : 'Not Ready...'}`;
-                        statusSpan.className = isReady ? 'ready' : 'not-ready';
-                        rematchStatusListDiv.appendChild(statusSpan);
-                    }
-                });
-            }
+            const eligibleForRematchInit = getConnectedAndActivePlayerIds();
+            eligibleForRematchInit.forEach(id => {
+                gameState.rematchReadyStatus[id] = false;
+            });
 
-            function handleClientGameOver(data) {
-                gameState.gamePhase = 'game_over';
-                gameState.rematchReadyStatus = {};
+            localPlayer.readyForRematch = false;
 
-                const eligibleForRematchInit = getConnectedAndActivePlayerIds();
-                eligibleForRematchInit.forEach(id => {
-                    gameState.rematchReadyStatus[id] = false;
-                });
+            gameOverTitle.textContent = data.winner ? `👑 ${data.winner.name} Wins! 👑` : "Game Over!";
+            gameOverMessageP.textContent = data.reason;
+            addLogMessage(data.reason, "system");
 
-                localPlayer.readyForRematch = false;
+            playAgainBtn.textContent = "Ready for Rematch";
+            playAgainBtn.style.backgroundColor = 'var(--accent-gold)';
+            playAgainBtn.disabled = false;
 
-                gameOverTitle.textContent = data.winner ? `👑 ${data.winner.name} Wins! 👑` : "Game Over!";
-                gameOverMessageP.textContent = data.reason;
-                addLogMessage(data.reason, "system");
+            updateRematchStatusDisplay();
+            toggleModal(gameOverOverlay, true);
+            toggleModal(challengeRouletteOverlay, false);
+            updateActionButtons();
+            updateFullUI();
+        }
 
-                playAgainBtn.textContent = "Ready for Rematch";
-                playAgainBtn.style.backgroundColor = 'var(--accent-gold)';
-                playAgainBtn.disabled = false;
+        function broadcastGameState() {
+            if (!localPlayer.isHost) return;
+            const common = {
+                players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount })),
+                currentPlayerId: gameState.currentPlayerId,
+                currentTableSuit: gameState.currentTableSuit,
+                lastPlayedTurn: gameState.lastPlayedTurn ? { playerId: gameState.lastPlayedTurn.playerId, playerName: gameState.lastPlayedTurn.playerName, cardsPlayedCount: gameState.lastPlayedTurn.cardsPlayedCount, declaredSuit: gameState.lastPlayedTurn.declaredSuit } : null,
+                gamePhase: gameState.gamePhase,
+                centerPileCardCount: gameState.centerPile.length,
+                rematchReadyStatus: gameState.rematchReadyStatus,
+                lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId
+            };
+            gameState.players.forEach(p => {
+                if (p.id !== localPlayer.id && hostConnections[p.id]) {
+                    sendMessage('GAME_STATE_UPDATE', { gameState: { ...common }, yourHand: p.hand }, p.id);
+                }
+            });
+            const myPData = gameState.players.find(p => p.id === localPlayer.id);
+            if (myPData) Object.assign(localPlayer, myPData);
+            updateFullUI();
+        }
+        function showConnectionSetup() {
+            connectionSetupDiv.style.display = 'flex';
+            gameBoardDiv.style.display = 'none';
+            toggleModal(gameOverOverlay, false);
+            toggleModal(challengeRouletteOverlay, false);
+            toggleModal(rulesModal, false);
+            hostControlsDiv.style.display = 'none';
+            clientControlsDiv.style.display = 'none';
+            roomCodeDisplay.textContent = 'Waiting for Room Code...';
+            roomCodeInput.value = '';
+            connectedPlayersCountSpan.textContent = `0 / ${MAX_PLAYERS - 1}`;
+            connectedPlayersListDiv.innerHTML = '';
+            startGameBtn.disabled = true;
+            clientStatusP.textContent = 'Enter your name above, then the Room Code from the host and click "Connect to Host".';
+            clientStatusP.style.color = 'var(--secondary-text)';
 
-                updateRematchStatusDisplay();
-                toggleModal(gameOverOverlay, true);
-                toggleModal(challengeRouletteOverlay, false);
-                updateActionButtons();
-                updateFullUI();
-            }
+            const currentName = playerNameInput.value || localPlayer.name;
+            localPlayer = { id: socket?.id, name: currentName, isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
+            if (currentName) playerNameInput.value = currentName;
 
-            function broadcastGameState() {
-                if (!localPlayer.isHost) return;
-                const common = {
-                    players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount })),
-                    currentPlayerId: gameState.currentPlayerId,
-                    currentTableSuit: gameState.currentTableSuit,
-                    lastPlayedTurn: gameState.lastPlayedTurn ? { playerId: gameState.lastPlayedTurn.playerId, playerName: gameState.lastPlayedTurn.playerName, cardsPlayedCount: gameState.lastPlayedTurn.cardsPlayedCount, declaredSuit: gameState.lastPlayedTurn.declaredSuit } : null,
-                    gamePhase: gameState.gamePhase,
-                    centerPileCardCount: gameState.centerPile.length,
-                    rematchReadyStatus: gameState.rematchReadyStatus,
-                    lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId
-                };
-                gameState.players.forEach(p => {
-                    if (p.id !== localPlayer.id && hostConnections[p.id]) {
-                        sendMessage('GAME_STATE_UPDATE', { gameState: { ...common }, yourHand: p.hand }, p.id);
-                    }
-                });
-                const myPData = gameState.players.find(p => p.id === localPlayer.id);
-                if (myPData) Object.assign(localPlayer, myPData);
-                updateFullUI();
-            }
-            function showConnectionSetup() {
-                connectionSetupDiv.style.display = 'flex';
-                gameBoardDiv.style.display = 'none';
+            gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {}, lastChallengeRouletteTargetId: null };
+
+            hostConnections = {};
+            selectedCardsForPlayUI = [];
+
+            logDebug("UI reset to connection setup.");
+            lastLoggedGameStateForClient = {};
+            logMessagesDiv.innerHTML = '';
+            localPlayerStatsArea.style.display = 'none';
+        }
+
+        function showGameBoard() {
+            connectionSetupDiv.style.display = 'none';
+            gameBoardDiv.style.display = 'flex'; // Fix: maintains the flex layout context
+            if (gameOverOverlay.classList.contains('visible')) {
                 toggleModal(gameOverOverlay, false);
+            }
+            if (challengeRouletteOverlay.classList.contains('visible')) {
                 toggleModal(challengeRouletteOverlay, false);
-                toggleModal(rulesModal, false);
-                hostControlsDiv.style.display = 'none';
-                clientControlsDiv.style.display = 'none';
-                roomCodeDisplay.textContent = 'Waiting for Room Code...';
-                roomCodeInput.value = '';
-                connectedPlayersCountSpan.textContent = `0 / ${MAX_PLAYERS - 1}`;
-                connectedPlayersListDiv.innerHTML = '';
-                startGameBtn.disabled = true;
-                clientStatusP.textContent = 'Enter your name above, then the Room Code from the host and click "Connect to Host".';
-                clientStatusP.style.color = 'var(--secondary-text)';
-
-                const currentName = playerNameInput.value || localPlayer.name;
-                localPlayer = { id: socket?.id, name: currentName, isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
-                if (currentName) playerNameInput.value = currentName;
-
-                gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {}, lastChallengeRouletteTargetId: null };
-
-                hostConnections = {};
-                selectedCardsForPlayUI = [];
-
-                logDebug("UI reset to connection setup.");
-                lastLoggedGameStateForClient = {};
-                logMessagesDiv.innerHTML = '';
-                localPlayerStatsArea.style.display = 'none';
             }
+            updateFullUI();
+        }
 
-            function showGameBoard() {
-                connectionSetupDiv.style.display = 'none';
-                gameBoardDiv.style.display = 'block';
-                if (gameOverOverlay.classList.contains('visible')) {
-                    toggleModal(gameOverOverlay, false);
-                }
-                if (challengeRouletteOverlay.classList.contains('visible')) {
-                    toggleModal(challengeRouletteOverlay, false);
-                }
-                updateFullUI();
+        function updateFullUI() {
+            if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display === 'none') return;
+            renderPlayerHand();
+            renderPlayerAreas();
+            renderLocalPlayerStats();
+            updateTableDisplay();
+            updateActionButtons();
+            if (gameState.gamePhase === 'game_over') {
+                updateRematchStatusDisplay();
             }
+        }
 
-            function updateFullUI() {
-                if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display === 'none') return;
-                renderPlayerHand();
-                renderPlayerAreas();
-                renderLocalPlayerStats();
-                updateTableDisplay();
-                updateActionButtons();
-                if (gameState.gamePhase === 'game_over') {
-                    updateRematchStatusDisplay();
-                }
+        function updatePlayerNameDisplay() { playerNameInput.value = localPlayer.name; }
+
+        function initializeSocketHost() {
+            if (!socket || !socket.connected) {
+                alert("Still connecting to server. Please wait a moment.");
+                return;
             }
+            currentRoomCode = generateShortCode();
+            socket.emit('create_room', currentRoomCode);
 
-            function updatePlayerNameDisplay() { playerNameInput.value = localPlayer.name; }
+            localPlayer.id = socket.id;
+            roomCodeDisplay.textContent = currentRoomCode;
+            logDebug(`Host Socket ID: ${socket.id}, Room Code: ${currentRoomCode}`);
+            addLogMessage(`Room created! Share Code: ${currentRoomCode}`, "success");
+            clientStatusP.textContent = "";
 
-            function initializeSocketHost() {
-                if (!socket || !socket.connected) {
-                    alert("Still connecting to server. Please wait a moment.");
+            gameState.players = [{
+                id: localPlayer.id, name: localPlayer.name, isHost: true, eliminated: false,
+                hand: [], revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
+            }];
+            updateConnectedPlayersDisplay();
+
+            socket.off('player_joined');
+            socket.on('player_joined', ({ id, name }) => {
+                logDebug(`Host: Incoming connection from ${name} (${id})`);
+                if (Object.keys(hostConnections).length >= MAX_PLAYERS - 1) {
+                    logDebug(`Host: Room full. Rejecting connection from ${id}`);
+                    socket.emit('host_private', { targetId: id, data: { type: 'ROOM_FULL_REJECT' } });
                     return;
                 }
-                currentRoomCode = generateShortCode();
-                socket.emit('create_room', currentRoomCode);
 
-                localPlayer.id = socket.id;
-                roomCodeDisplay.textContent = currentRoomCode;
-                logDebug(`Host Socket ID: ${socket.id}, Room Code: ${currentRoomCode}`);
-                addLogMessage(`Room created! Share Code: ${currentRoomCode}`, "success");
-                clientStatusP.textContent = "";
+                hostConnections[id] = true;
 
-                gameState.players = [{
-                    id: localPlayer.id, name: localPlayer.name, isHost: true, eliminated: false,
-                    hand: [], revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
-                }];
+                const newPlayer = {
+                    id: id,
+                    name: name || `Player ${Object.keys(hostConnections).length + 1}`,
+                    isHost: false, eliminated: false, hand: [],
+                    revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
+                };
+                gameState.players.push(newPlayer);
                 updateConnectedPlayersDisplay();
 
-                socket.off('player_joined');
-                socket.on('player_joined', ({ id, name }) => {
-                    logDebug(`Host: Incoming connection from ${name} (${id})`);
-                    if (Object.keys(hostConnections).length >= MAX_PLAYERS - 1) {
-                        logDebug(`Host: Room full. Rejecting connection from ${id}`);
-                        socket.emit('host_private', { targetId: id, data: { type: 'ROOM_FULL_REJECT' } });
-                        return;
-                    }
+                sendMessage('PLAYER_JOINED_ACK', {
+                    yourId: id,
+                    hostName: localPlayer.name,
+                    players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, cardCount: p.cardCount }))
+                }, id);
+            });
 
-                    hostConnections[id] = true;
-
-                    const newPlayer = {
-                        id: id,
-                        name: name || `Player ${Object.keys(hostConnections).length + 1}`,
-                        isHost: false, eliminated: false, hand: [],
-                        revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
-                    };
-                    gameState.players.push(newPlayer);
-                    updateConnectedPlayersDisplay();
-
-                    sendMessage('PLAYER_JOINED_ACK', {
-                        yourId: id,
-                        hostName: localPlayer.name,
-                        players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, cardCount: p.cardCount }))
-                    }, id);
-                });
-
-                socket.off('player_data');
-                socket.on('player_data', ({ id, data }) => {
-                    if (data.type === 'CLIENT_DISCONNECTED') {
-                        handleClientDisconnect(id);
-                    } else {
-                        handleIncomingMessage(data);
-                    }
-                });
-            }
-
-            function connectToSocketClient(hostIdToJoin) {
-                if (!socket || !socket.connected) {
-                    alert("Still connecting to server. Please wait a moment.");
-                    return;
-                }
-
-                currentRoomCode = hostIdToJoin;
-                localPlayer.id = socket.id;
-                socket.emit('join_room', { roomCode: currentRoomCode, name: localPlayer.name });
-                logDebug(`Client Socket ID: ${socket.id}. Attempting to connect to room: ${currentRoomCode}`);
-
-                clientStatusP.textContent = `Attempting to join room: ${currentRoomCode}...`;
-                clientStatusP.style.color = "var(--accent-highlight)";
-
-                socket.off('game_data');
-                socket.on('game_data', (data) => {
-                    if (data.type === 'ROOM_FULL_REJECT') {
-                        alert("Host's room is full. Cannot join.");
-                        showConnectionSetup();
-                        return;
-                    }
+            socket.off('player_data');
+            socket.on('player_data', ({ id, data }) => {
+                if (data.type === 'CLIENT_DISCONNECTED') {
+                    handleClientDisconnect(id);
+                } else {
                     handleIncomingMessage(data);
-                });
+                }
+            });
+        }
 
-                socket.off('error_msg');
-                socket.on('error_msg', (msg) => {
-                    alert(msg);
+        function connectToSocketClient(hostIdToJoin) {
+            if (!socket || !socket.connected) {
+                alert("Still connecting to server. Please wait a moment.");
+                return;
+            }
+
+            currentRoomCode = hostIdToJoin;
+            localPlayer.id = socket.id;
+            socket.emit('join_room', { roomCode: currentRoomCode, name: localPlayer.name });
+            logDebug(`Client Socket ID: ${socket.id}. Attempting to connect to room: ${currentRoomCode}`);
+
+            clientStatusP.textContent = `Attempting to join room: ${currentRoomCode}...`;
+            clientStatusP.style.color = "var(--accent-highlight)";
+
+            socket.off('game_data');
+            socket.on('game_data', (data) => {
+                if (data.type === 'ROOM_FULL_REJECT') {
+                    alert("Host's room is full. Cannot join.");
                     showConnectionSetup();
-                });
+                    return;
+                }
+                handleIncomingMessage(data);
+            });
+
+            socket.off('error_msg');
+            socket.on('error_msg', (msg) => {
+                alert(msg);
+                showConnectionSetup();
+            });
+        }
+
+        function handleClientDisconnect(clientId) {
+            logDebug(`Host: Client ${gameState.players.find(p => p.id === clientId)?.name || clientId} disconnect processing.`);
+
+            if (hostConnections[clientId]) {
+                delete hostConnections[clientId];
             }
 
-            function handleClientDisconnect(clientId) {
-                logDebug(`Host: Client ${gameState.players.find(p => p.id === clientId)?.name || clientId} disconnect processing.`);
+            const dP = gameState.players.find(p => p.id === clientId);
+            let gameLogicChanged = false;
 
-                if (hostConnections[clientId]) {
-                    delete hostConnections[clientId];
-                }
-
-                const dP = gameState.players.find(p => p.id === clientId);
-                let gameLogicChanged = false;
-
-                if (dP) {
-                    if (gameState.gamePhase === 'game_over') {
-                        let statusActuallyChanged = false;
-                        if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
-                            delete gameState.rematchReadyStatus[clientId];
-                            statusActuallyChanged = true;
-                        }
-                        addLogMessage(`${dP.name} disconnected. No longer part of rematch.`, "system");
+            if (dP) {
+                if (gameState.gamePhase === 'game_over') {
+                    let statusActuallyChanged = false;
+                    if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
+                        delete gameState.rematchReadyStatus[clientId];
                         statusActuallyChanged = true;
-
-                        const eligibleRematchPlayers = getConnectedAndActivePlayerIds();
-                        const allActuallyReady = eligibleRematchPlayers.length > 0 &&
-                            eligibleRematchPlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                        if (eligibleRematchPlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                            addLogMessage("All remaining players ready! Starting rematch...", "success");
-                            initializeNewGame();
-                        } else if (statusActuallyChanged) {
-                            broadcastGameState();
-                        }
-                    } else if (!dP.eliminated && ['playing', 'challenge_reveal', 'roulette', 'roulette_resolved'].includes(gameState.gamePhase)) {
-                        dP.eliminated = true; dP.cardCount = 0; addLogMessage(`${dP.name} disconnected & was eliminated.`, "system"); gameLogicChanged = true;
-                        const unelim = gameState.players.filter(p => !p.eliminated);
-                        if (unelim.length <= 1 && gameState.gamePhase !== 'game_over') {
-                            gameState.gamePhase = 'game_over';
-                            const winner = unelim.length === 1 ? unelim[0] : null;
-                            const goD = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} wins by default (opponent disconnected)!` : "Game ended due to disconnections." };
-                            sendMessage('GAME_OVER', goD);
-                            handleClientGameOver(goD);
-                        } else if (gameState.gamePhase !== 'game_over' && gameState.currentPlayerId === clientId) {
-                            let cpi = gameState.players.findIndex(p => p.id === clientId);
-                            let att = 0; let nextF = false;
-                            if (gameState.players.length > 0) {
-                                do { cpi = (cpi + 1) % gameState.players.length; att++; if (!gameState.players[cpi].eliminated) nextF = true; break; }
-                                while (att < gameState.players.length * 2);
-                            }
-                            if (nextF) { gameState.currentPlayerId = gameState.players[cpi].id; addLogMessage(`Turn passed to ${gameState.players.find(p => p.id === gameState.currentPlayerId)?.name}.`, "system"); }
-                            else logDebug("Disconnect: No next player found.");
-                        }
-                    } else if (gameState.gamePhase === 'lobby') {
-                        gameState.players = gameState.players.filter(p => p.id !== clientId);
-                        gameLogicChanged = true;
                     }
-                }
+                    addLogMessage(`${dP.name} disconnected. No longer part of rematch.`, "system");
+                    statusActuallyChanged = true;
 
-                updateConnectedPlayersDisplay();
+                    const eligibleRematchPlayers = getConnectedAndActivePlayerIds();
+                    const allActuallyReady = eligibleRematchPlayers.length > 0 &&
+                        eligibleRematchPlayers.every(id => gameState.rematchReadyStatus[id] === true);
 
-                if (gameLogicChanged && gameState.gamePhase !== 'game_over' && gameState.gamePhase !== 'playing_starting_new_round') {
-                    if (!(gameState.gamePhase === 'game_over' && dP && (gameState.players.filter(p => !p.eliminated).length <= 1))) {
-                        if (gameState.gamePhase !== 'lobby' || (gameState.gamePhase === 'lobby' && dP)) {
-                            broadcastGameState();
-                        }
+                    if (eligibleRematchPlayers.length >= MIN_PLAYERS && allActuallyReady) {
+                        addLogMessage("All remaining players ready! Starting rematch...", "success");
+                        initializeNewGame();
+                    } else if (statusActuallyChanged) {
+                        broadcastGameState();
                     }
+                } else if (!dP.eliminated && ['playing', 'challenge_reveal', 'roulette', 'roulette_resolved'].includes(gameState.gamePhase)) {
+                    dP.eliminated = true; dP.cardCount = 0; addLogMessage(`${dP.name} disconnected & was eliminated.`, "system"); gameLogicChanged = true;
+                    const unelim = gameState.players.filter(p => !p.eliminated);
+                    if (unelim.length <= 1 && gameState.gamePhase !== 'game_over') {
+                        gameState.gamePhase = 'game_over';
+                        const winner = unelim.length === 1 ? unelim[0] : null;
+                        const goD = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} wins by default (opponent disconnected)!` : "Game ended due to disconnections." };
+                        sendMessage('GAME_OVER', goD);
+                        handleClientGameOver(goD);
+                    } else if (gameState.gamePhase !== 'game_over' && gameState.currentPlayerId === clientId) {
+                        let cpi = gameState.players.findIndex(p => p.id === clientId);
+                        let att = 0; let nextF = false;
+                        if (gameState.players.length > 0) {
+                            do { cpi = (cpi + 1) % gameState.players.length; att++; if (!gameState.players[cpi].eliminated) nextF = true; break; }
+                            while (att < gameState.players.length * 2);
+                        }
+                        if (nextF) { gameState.currentPlayerId = gameState.players[cpi].id; addLogMessage(`Turn passed to ${gameState.players.find(p => p.id === gameState.currentPlayerId)?.name}.`, "system"); }
+                        else logDebug("Disconnect: No next player found.");
+                    }
+                } else if (gameState.gamePhase === 'lobby') {
+                    gameState.players = gameState.players.filter(p => p.id !== clientId);
+                    gameLogicChanged = true;
                 }
             }
 
-            function updateConnectedPlayersDisplay() {
-                const openConnectionsCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length;
-                connectedPlayersCountSpan.textContent = `${openConnectionsCount} / ${MAX_PLAYERS - 1}`;
+            updateConnectedPlayersDisplay();
 
-                connectedPlayersListDiv.innerHTML = '';
-                if (localPlayer.isHost && gameState.players.find(p => p.id === localPlayer.id)) {
-                    const hostSpan = document.createElement('span');
-                    hostSpan.textContent = `${localPlayer.name} (Host)`;
-                    hostSpan.style.fontWeight = 'bold';
-                    connectedPlayersListDiv.appendChild(hostSpan);
+            if (gameLogicChanged && gameState.gamePhase !== 'game_over' && gameState.gamePhase !== 'playing_starting_new_round') {
+                if (!(gameState.gamePhase === 'game_over' && dP && (gameState.players.filter(p => !p.eliminated).length <= 1))) {
+                    if (gameState.gamePhase !== 'lobby' || (gameState.gamePhase === 'lobby' && dP)) {
+                        broadcastGameState();
+                    }
                 }
+            }
+        }
 
-                gameState.players.filter(p => !p.isHost && hostConnections[p.id]).forEach(p => {
-                    const s = document.createElement('span');
-                    s.textContent = p.name;
-                    connectedPlayersListDiv.appendChild(s);
-                });
+        function updateConnectedPlayersDisplay() {
+            const openConnectionsCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length;
+            connectedPlayersCountSpan.textContent = `${openConnectionsCount} / ${MAX_PLAYERS - 1}`;
 
-                const totalPlayersInGame = gameState.players.filter(p => p.isHost || hostConnections[p.id]).length;
-                startGameBtn.disabled = !(totalPlayersInGame >= MIN_PLAYERS && totalPlayersInGame <= MAX_PLAYERS);
+            connectedPlayersListDiv.innerHTML = '';
+            if (localPlayer.isHost && gameState.players.find(p => p.id === localPlayer.id)) {
+                const hostSpan = document.createElement('span');
+                hostSpan.textContent = `${localPlayer.name} (Host)`;
+                hostSpan.style.fontWeight = 'bold';
+                connectedPlayersListDiv.appendChild(hostSpan);
             }
 
-            function init() {
-                // Initialize Socket.IO connection
-                socket = io('https://quicklash-server.onrender.com');
+            gameState.players.filter(p => !p.isHost && hostConnections[p.id]).forEach(p => {
+                const s = document.createElement('span');
+                s.textContent = p.name;
+                connectedPlayersListDiv.appendChild(s);
+            });
+
+            const totalPlayersInGame = gameState.players.filter(p => p.isHost || hostConnections[p.id]).length;
+            startGameBtn.disabled = !(totalPlayersInGame >= MIN_PLAYERS && totalPlayersInGame <= MAX_PLAYERS);
+        }
+
+        function init() {
+            // Initialize Socket.IO connection
+            socket = io('https://quicklash-server.onrender.com');
+            serverStatusBanner.style.display = 'block';
+
+            socket.on('connect', () => {
+                serverStatusBanner.textContent = "🟢 Server Connected!";
+                serverStatusBanner.style.color = "var(--accent-green)";
+                setTimeout(() => serverStatusBanner.style.display = 'none', 3000);
+            });
+
+            socket.on('disconnect', () => {
                 serverStatusBanner.style.display = 'block';
+                serverStatusBanner.textContent = "🔴 Server Disconnected. Reconnecting...";
+                serverStatusBanner.style.color = "var(--accent-red)";
+            });
 
-                socket.on('connect', () => {
-                    serverStatusBanner.textContent = "🟢 Server Connected!";
-                    serverStatusBanner.style.color = "var(--accent-green)";
-                    setTimeout(() => serverStatusBanner.style.display = 'none', 3000);
-                });
+            createRoomBtn.onclick = () => {
+                localPlayer.name = playerNameInput.value.trim();
+                if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
+                localPlayer.isHost = true;
+                updatePlayerNameDisplay();
+                hostControlsDiv.style.display = 'block';
+                clientControlsDiv.style.display = 'none';
+                roomCodeDisplay.textContent = 'Creating room...';
+                clientStatusP.textContent = "";
+                initializeSocketHost();
+            };
 
-                socket.on('disconnect', () => {
-                    serverStatusBanner.style.display = 'block';
-                    serverStatusBanner.textContent = "🔴 Server Disconnected. Reconnecting...";
-                    serverStatusBanner.style.color = "var(--accent-red)";
-                });
+            joinRoomBtn.onclick = () => {
+                localPlayer.name = playerNameInput.value.trim();
+                if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
+                localPlayer.isHost = false;
+                updatePlayerNameDisplay();
+                hostControlsDiv.style.display = 'none';
+                clientControlsDiv.style.display = 'block';
+                clientStatusP.textContent = "Enter the Host's Room Code and click 'Connect to Host'.";
+                clientStatusP.style.color = "var(--secondary-text)";
+                roomCodeInput.focus();
+            };
 
-                createRoomBtn.onclick = () => {
-                    localPlayer.name = playerNameInput.value.trim();
-                    if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
-                    localPlayer.isHost = true;
-                    updatePlayerNameDisplay();
-                    hostControlsDiv.style.display = 'block';
-                    clientControlsDiv.style.display = 'none';
-                    roomCodeDisplay.textContent = 'Creating room...';
-                    clientStatusP.textContent = "";
-                    initializeSocketHost();
+            connectToHostBtn.onclick = () => {
+                if (localPlayer.name.length < 3) {
+                    alert("Please ensure your name is entered (Min 3 chars).");
+                    playerNameInput.focus();
+                    return;
+                }
+                const hostIdToJoin = roomCodeInput.value.trim().toUpperCase();
+                if (!hostIdToJoin) { alert("Please enter the Host's Room Code."); roomCodeInput.focus(); return; }
+                if (hostIdToJoin.length !== 5) {
+                    alert("Room Code must be exactly 5 characters long."); roomCodeInput.focus(); return;
+                }
+                connectToSocketClient(hostIdToJoin);
+            };
+
+            if (copyRoomCodeBtn) {
+                copyRoomCodeBtn.onclick = () => {
+                    const roomCode = roomCodeDisplay.textContent;
+                    copyToClipboard(roomCode, copyRoomCodeBtn);
                 };
+            }
 
-                joinRoomBtn.onclick = () => {
-                    localPlayer.name = playerNameInput.value.trim();
-                    if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
-                    localPlayer.isHost = false;
-                    updatePlayerNameDisplay();
-                    hostControlsDiv.style.display = 'none';
-                    clientControlsDiv.style.display = 'block';
-                    clientStatusP.textContent = "Enter the Host's Room Code and click 'Connect to Host'.";
-                    clientStatusP.style.color = "var(--secondary-text)";
-                    roomCodeInput.focus();
-                };
-
-                connectToHostBtn.onclick = () => {
-                    if (localPlayer.name.length < 3) {
-                        alert("Please ensure your name is entered (Min 3 chars).");
-                        playerNameInput.focus();
+            startGameBtn.onclick = () => {
+                if (localPlayer.isHost) {
+                    const connectedPlayerCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length + 1;
+                    if (connectedPlayerCount < MIN_PLAYERS) {
+                        alert(`Need at least ${MIN_PLAYERS} players to start. Currently have ${connectedPlayerCount}.`);
                         return;
                     }
-                    const hostIdToJoin = roomCodeInput.value.trim().toUpperCase();
-                    if (!hostIdToJoin) { alert("Please enter the Host's Room Code."); roomCodeInput.focus(); return; }
-                    if (hostIdToJoin.length !== 5) {
-                        alert("Room Code must be exactly 5 characters long."); roomCodeInput.focus(); return;
-                    }
-                    connectToSocketClient(hostIdToJoin);
-                };
-
-                if (copyRoomCodeBtn) {
-                    copyRoomCodeBtn.onclick = () => {
-                        const roomCode = roomCodeDisplay.textContent;
-                        copyToClipboard(roomCode, copyRoomCodeBtn);
-                    };
+                    logDebug("Host starting game (standard deck)...");
+                    addLogMessage("Game starting!", "success");
+                    initializeNewGame();
+                    showGameBoard();
                 }
+            };
 
-                startGameBtn.onclick = () => {
+            playCardsBtn.onclick = () => {
+                if (selectedCardsForPlayUI.length > 0 && selectedCardsForPlayUI.length <= 3) {
+                    const cIds = selectedCardsForPlayUI.map(c => c.id);
                     if (localPlayer.isHost) {
-                        const connectedPlayerCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length + 1;
-                        if (connectedPlayerCount < MIN_PLAYERS) {
-                            alert(`Need at least ${MIN_PLAYERS} players to start. Currently have ${connectedPlayerCount}.`);
-                            return;
-                        }
-                        logDebug("Host starting game (standard deck)...");
-                        addLogMessage("Game starting!", "success");
+                        handleHostPlayerPlayCards(localPlayer.id, cIds);
+                    } else {
+                        sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: cIds });
+                    }
+                    selectedCardsForPlayUI = [];
+                    updateActionButtons();
+                    renderPlayerHand();
+                } else {
+                    alert("Please select 1 to 3 cards to play.");
+                }
+            };
+
+            callLiarBtn.onclick = () => { if (confirm("Are you sure you want to call LIAR!? This cannot be undone.")) { if (localPlayer.isHost) handleHostPlayerCallLiar(localPlayer.id); else sendMessage('PLAYER_ACTION_CALL_LIAR', {}); } };
+
+            showRulesBtn.onclick = () => toggleModal(rulesModal, true);
+            closeRulesBtn.onclick = () => toggleModal(rulesModal, false);
+
+            continueGameBtn.onclick = () => {
+                toggleModal(challengeRouletteOverlay, false);
+
+                if (gameState.gamePhase === 'game_over' && !gameOverOverlay.classList.contains('visible')) {
+                    toggleModal(gameOverOverlay, true);
+                }
+            };
+
+            playAgainBtn.onclick = () => {
+                if (gameState.gamePhase !== 'game_over') return;
+                localPlayer.readyForRematch = !localPlayer.readyForRematch;
+                playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
+                playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
+
+                if (localPlayer.isHost) {
+                    gameState.rematchReadyStatus[localPlayer.id] = localPlayer.readyForRematch;
+                    updateRematchStatusDisplay();
+
+                    const eligiblePlayers = getConnectedAndActivePlayerIds();
+                    const allActuallyReady = eligiblePlayers.length > 0 &&
+                        eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
+
+                    if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
+                        addLogMessage("All players ready! Starting rematch...", "success");
                         initializeNewGame();
-                        showGameBoard();
-                    }
-                };
-
-                playCardsBtn.onclick = () => {
-                    if (selectedCardsForPlayUI.length > 0 && selectedCardsForPlayUI.length <= 3) {
-                        const cIds = selectedCardsForPlayUI.map(c => c.id);
-                        if (localPlayer.isHost) {
-                            handleHostPlayerPlayCards(localPlayer.id, cIds);
-                        } else {
-                            sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: cIds });
-                        }
-                        selectedCardsForPlayUI = [];
-                        updateActionButtons();
-                        renderPlayerHand();
                     } else {
-                        alert("Please select 1 to 3 cards to play.");
+                        broadcastGameState();
                     }
-                };
+                } else {
+                    sendMessage('PLAYER_TOGGLE_REMATCH_READY', { isReady: localPlayer.readyForRematch });
+                }
+            };
 
-                callLiarBtn.onclick = () => { if (confirm("Are you sure you want to call LIAR!? This cannot be undone.")) { if (localPlayer.isHost) handleHostPlayerCallLiar(localPlayer.id); else sendMessage('PLAYER_ACTION_CALL_LIAR', {}); } };
-
-                showRulesBtn.onclick = () => toggleModal(rulesModal, true);
-                closeRulesBtn.onclick = () => toggleModal(rulesModal, false);
-
-                continueGameBtn.onclick = () => {
-                    toggleModal(challengeRouletteOverlay, false);
-
-                    if (gameState.gamePhase === 'game_over' && !gameOverOverlay.classList.contains('visible')) {
-                        toggleModal(gameOverOverlay, true);
-                    }
-                };
-
-                playAgainBtn.onclick = () => {
-                    if (gameState.gamePhase !== 'game_over') return;
-                    localPlayer.readyForRematch = !localPlayer.readyForRematch;
-                    playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
-                    playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
-
-                    if (localPlayer.isHost) {
-                        gameState.rematchReadyStatus[localPlayer.id] = localPlayer.readyForRematch;
-                        updateRematchStatusDisplay();
-
-                        const eligiblePlayers = getConnectedAndActivePlayerIds();
-                        const allActuallyReady = eligiblePlayers.length > 0 &&
-                            eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                        if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                            addLogMessage("All players ready! Starting rematch...", "success");
-                            initializeNewGame();
-                        } else {
-                            broadcastGameState();
-                        }
-                    } else {
-                        sendMessage('PLAYER_TOGGLE_REMATCH_READY', { isReady: localPlayer.readyForRematch });
-                    }
-                };
-
-                exitGameBtn.onclick = () => {
-                    if (localPlayer.isHost && Object.keys(hostConnections).length > 0) {
-                        sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
-                    } else if (!localPlayer.isHost && currentRoomCode) {
-                        sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
-                    }
-                    addLogMessage("Exiting game to setup screen.", "system");
-                    showConnectionSetup();
-                };
-
-                document.addEventListener('keydown', e => {
-                    const modalVis = Array.from(document.querySelectorAll('.modal')).some(m => m.classList.contains('visible'));
-                    const inputFoc = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
-                    if (modalVis || inputFoc || connectionSetupDiv.style.display !== 'none') return;
-
-                    if (e.key.toUpperCase() === 'P' && !playCardsBtn.disabled) { e.preventDefault(); playCardsBtn.click(); }
-                    if (e.key.toUpperCase() === 'L' && !callLiarBtn.disabled) { e.preventDefault(); callLiarBtn.click(); }
-                });
-
-                const debouncedRender = debounce(updateFullUI, 250);
-                window.addEventListener('resize', debouncedRender);
-
-                window.addEventListener('beforeunload', () => {
-                    if (localPlayer.isHost && gameState.gamePhase !== 'lobby' && Object.keys(hostConnections).length > 0) {
-                        sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
-                    } else if (!localPlayer.isHost && currentRoomCode) {
-                        sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
-                    }
-                });
+            exitGameBtn.onclick = () => {
+                if (localPlayer.isHost && Object.keys(hostConnections).length > 0) {
+                    sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
+                } else if (!localPlayer.isHost && currentRoomCode) {
+                    sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
+                }
+                addLogMessage("Exiting game to setup screen.", "system");
                 showConnectionSetup();
-                logDebug("E-Money's Bar initialized with Socket.IO.");
-            }
-            document.addEventListener('DOMContentLoaded', init);
-        </script>
+            };
+
+            document.addEventListener('keydown', e => {
+                const modalVis = Array.from(document.querySelectorAll('.modal')).some(m => m.classList.contains('visible'));
+                const inputFoc = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
+                if (modalVis || inputFoc || connectionSetupDiv.style.display !== 'none') return;
+
+                if (e.key.toUpperCase() === 'P' && !playCardsBtn.disabled) { e.preventDefault(); playCardsBtn.click(); }
+                if (e.key.toUpperCase() === 'L' && !callLiarBtn.disabled) { e.preventDefault(); callLiarBtn.click(); }
+            });
+
+            const debouncedRender = debounce(updateFullUI, 250);
+            window.addEventListener('resize', debouncedRender);
+
+            window.addEventListener('beforeunload', () => {
+                if (localPlayer.isHost && gameState.gamePhase !== 'lobby' && Object.keys(hostConnections).length > 0) {
+                    sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
+                } else if (!localPlayer.isHost && currentRoomCode) {
+                    sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
+                }
+            });
+            showConnectionSetup();
+            logDebug("E-Money's Bar initialized with Socket.IO.");
+        }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
 </body>
 
 </html>
