@@ -1,0 +1,478 @@
+/* ============================================================
+   responsive.css — desktop-first.
+
+   The base scale in tokens.css targets a monitor. Everything below
+   steps that down: width breakpoints trim the chrome, height
+   breakpoints shrink the cards (the board is height-bound, not
+   width-bound), and the phone block re-lays the whole thing.
+   ============================================================ */
+
+/* ---------------- Laptop / small desktop ---------------- */
+
+@media (max-width: 1400px) {
+    :root {
+        --card-w: 98px;
+        --card-h: 147px;
+        --card-w-mini: 38px;
+        --card-h-mini: 57px;
+        --dock-h: 238px;
+        --log-w: 348px;
+    }
+
+    .seat {
+        width: 190px;
+    }
+}
+
+@media (max-width: 1180px) {
+    :root {
+        --card-w: 90px;
+        --card-h: 135px;
+        --card-w-mini: 35px;
+        --card-h-mini: 53px;
+        --dock-h: 222px;
+        --log-w: 324px;
+    }
+
+    .seat {
+        width: 178px;
+    }
+}
+
+/* ---------------- Short viewports ---------------- */
+
+@media (max-height: 880px) {
+    :root {
+        --card-w: 92px;
+        --card-h: 138px;
+        --dock-h: 224px;
+        --hud-h: 64px;
+    }
+}
+
+@media (max-height: 780px) {
+    :root {
+        --card-w: 82px;
+        --card-h: 123px;
+        --card-w-mini: 34px;
+        --card-h-mini: 51px;
+        --dock-h: 202px;
+        --hud-h: 60px;
+    }
+
+    .seat__avatar {
+        width: 34px;
+        height: 34px;
+        font-size: 19px;
+    }
+
+    .suit-medallion__glyph {
+        font-size: 38px;
+    }
+
+    .btn--action {
+        height: 56px;
+        min-width: 168px;
+    }
+}
+
+@media (max-height: 680px) {
+    :root {
+        --card-w: 70px;
+        --card-h: 105px;
+        --card-w-mini: 29px;
+        --card-h-mini: 44px;
+        --dock-h: 172px;
+        --hud-h: 56px;
+    }
+
+    .seat__avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    .seat__name {
+        font-size: 13px;
+    }
+
+    .btn--action {
+        height: 48px;
+        min-width: 144px;
+    }
+
+    .btn--action .btn__label {
+        font-size: 22px;
+    }
+
+    .revolver-stage {
+        height: 178px;
+    }
+
+    .revolver-svg {
+        width: 166px;
+        height: 166px;
+    }
+
+    .suit-medallion__glyph {
+        font-size: 32px;
+    }
+}
+
+/* ---------------- Tablet ---------------- */
+
+@media (max-width: 900px) {
+    :root {
+        --log-w: 100%;
+    }
+
+    #log-panel {
+        max-width: 400px;
+        left: auto;
+    }
+
+    .seat {
+        width: 162px;
+    }
+
+    .seat__name {
+        font-size: 13px;
+    }
+}
+
+/* ---------------- Phone ---------------- */
+
+@media (max-width: 700px) {
+    :root {
+        --card-w: 74px;
+        --card-h: 111px;
+        --card-w-mini: 27px;
+        --card-h-mini: 41px;
+        --hud-h: 56px;
+        --dock-h: 210px;
+    }
+
+    body {
+        font-size: 15px;
+    }
+
+    /* --- lobby --- */
+    .lobby-scroll {
+        padding: var(--sp-4) var(--sp-3) var(--sp-6);
+    }
+
+    .lobby-panel {
+        padding: var(--sp-4);
+    }
+
+    .marquee {
+        padding: var(--sp-3) 0 var(--sp-2);
+    }
+
+    .lobby-choice {
+        grid-template-columns: 1fr;
+    }
+
+    .roomcode__value {
+        font-size: 25px;
+        letter-spacing: .24em;
+        text-indent: .24em;
+    }
+
+    .option-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--sp-2);
+    }
+
+    .segmented {
+        justify-content: space-between;
+    }
+
+    .segmented button {
+        flex: 1;
+    }
+
+    /* --- board: seats become a top row --- */
+    #hud {
+        padding: 0 var(--sp-2);
+    }
+
+    .hud__side {
+        gap: 4px;
+    }
+
+    .icon-btn {
+        width: 38px;
+        height: 38px;
+    }
+
+    #hudRoomCode {
+        display: none;
+    }
+
+    .turn-pill {
+        height: 40px;
+        padding-right: 16px;
+    }
+
+    .turn-pill__ring {
+        width: 38px;
+    }
+
+    .turn-pill__avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
+
+    .turn-pill__text {
+        font-size: 13px;
+        max-width: 40vw;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    #seats {
+        inset: 0 0 auto 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .seat {
+        position: static;
+        transform: none !important;
+        width: auto;
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: 148px;
+        gap: 3px;
+    }
+
+    .seat.is-dying {
+        animation: seatDieFlat .8s var(--ease-out) both;
+    }
+
+    @keyframes seatDieFlat {
+        0% {
+            filter: brightness(1);
+        }
+
+        18% {
+            filter: brightness(2.4) saturate(0);
+        }
+
+        100% {
+            filter: grayscale(1) brightness(.7);
+            opacity: .32;
+        }
+    }
+
+    .seat__plate {
+        padding: 4px 8px 4px 4px;
+        gap: 6px;
+    }
+
+    .seat__avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+
+    .seat__name {
+        font-size: 12px;
+    }
+
+    .seat__host-mark {
+        width: 11px;
+        height: 11px;
+        top: -5px;
+        right: -5px;
+    }
+
+    .chamber {
+        width: 6px;
+        height: 6px;
+    }
+
+    .revolver__count {
+        display: none;
+    }
+
+    #table {
+        top: 58%;
+        width: 84vw;
+        max-height: 56%;
+    }
+
+    .suit-medallion {
+        padding: 4px 16px 6px;
+    }
+
+    .suit-medallion__glyph {
+        font-size: 34px;
+    }
+
+    .suit-medallion__name {
+        font-size: 13px;
+    }
+
+    .last-play {
+        font-size: 12px;
+        padding: 4px 11px;
+    }
+
+    /* --- dock --- */
+    #dock {
+        justify-content: flex-end;
+    }
+
+    /*
+     * There isn't room for your own plate under the hand on a phone — the fanned
+     * cards overflow the dock upward and would sit on top of it. Stand it up
+     * vertically in the gutter to the left of the fan instead.
+     */
+    .self-plate {
+        left: 6px;
+        bottom: 78px;
+        flex-direction: column;
+        gap: 4px;
+        padding: 6px;
+        border-radius: var(--r-md);
+    }
+
+    .self-plate .seat__avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 17px;
+    }
+
+    .self-plate .revolver {
+        gap: 2px;
+        margin-top: 0;
+    }
+
+    .self-plate__label {
+        display: none;
+    }
+
+    #hand-wrap {
+        padding: 0 var(--sp-2);
+    }
+
+    #actions {
+        gap: var(--sp-2);
+        margin-top: var(--sp-3);
+        width: 100%;
+        padding: 0 var(--sp-3);
+    }
+
+    .btn--action {
+        flex: 1;
+        min-width: 0;
+        height: 54px;
+    }
+
+    .btn--action .btn__label {
+        font-size: 23px;
+    }
+
+    .btn--action kbd {
+        display: none;
+    }
+
+    .select-counter {
+        min-width: 68px;
+        font-size: 10px;
+        letter-spacing: .06em;
+    }
+
+    /* --- log becomes a full drawer --- */
+    #log-panel {
+        top: 0;
+        width: 100%;
+        max-width: none;
+        border-left: 0;
+    }
+
+    .log-panel__head {
+        padding-top: max(var(--sp-3), env(safe-area-inset-top));
+    }
+
+    /* --- modals --- */
+    .modal {
+        padding: var(--sp-3);
+    }
+
+    .modal__box {
+        padding: var(--sp-5) var(--sp-4) var(--sp-4);
+    }
+
+    .modal__actions .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .revealed-cards .card {
+        width: calc(var(--card-w) * .85);
+        height: calc(var(--card-h) * .85);
+    }
+
+    .revolver-stage {
+        height: 186px;
+    }
+
+    .revolver-svg {
+        width: 172px;
+        height: 172px;
+    }
+
+    .gameover-ornament {
+        width: 180px;
+        height: 32px;
+    }
+
+    .server-status {
+        left: var(--sp-3);
+        right: var(--sp-3);
+        justify-content: center;
+    }
+}
+
+/* ---------------- Very small phones ---------------- */
+
+@media (max-width: 400px) {
+    :root {
+        --card-w: 64px;
+        --card-h: 96px;
+    }
+
+    .seat__cards {
+        display: none;
+    }
+
+    .seat {
+        gap: 0;
+    }
+}
+
+/* ---------------- Touch: no hover lift, bigger targets ---------------- */
+
+@media (hover: none) {
+    .btn:hover:not(:disabled) {
+        filter: none;
+    }
+
+    .hand.is-live .card:hover {
+        transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
+        filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+        z-index: auto;
+    }
+
+    .hand.is-live .card.is-selected:hover {
+        transform: rotate(var(--rot, 0deg)) translateY(calc(var(--lift, 0px) - 34px)) scale(1.04);
+    }
+}

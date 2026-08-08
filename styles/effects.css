@@ -1,0 +1,293 @@
+/* ============================================================
+   effects.css — the atmosphere: room light, grain, vignette,
+   particle canvas, impact flash, screen shake, neon flicker.
+   ============================================================ */
+
+#ambience {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(120% 90% at 50% 118%, #241a10 0%, transparent 55%),
+        linear-gradient(180deg, #0d0b12 0%, #14111c 45%, #191521 100%);
+}
+
+/* Warm pools of light spilling into the room */
+.amb-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    will-change: opacity, transform;
+}
+
+.amb-glow--key {
+    top: -22vh;
+    left: 50%;
+    width: 90vw;
+    height: 70vh;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(255, 168, 64, .22), transparent 68%);
+    animation: lampBreathe 9s var(--ease-in-out) infinite;
+}
+
+.amb-glow--red {
+    bottom: -18vh;
+    left: -14vw;
+    width: 55vw;
+    height: 55vh;
+    background: radial-gradient(circle, rgba(255, 47, 78, .1), transparent 70%);
+    animation: lampBreathe 13s var(--ease-in-out) infinite reverse;
+}
+
+.amb-glow--cyan {
+    top: 28vh;
+    right: -16vw;
+    width: 45vw;
+    height: 50vh;
+    background: radial-gradient(circle, rgba(79, 227, 255, .07), transparent 70%);
+    animation: lampBreathe 17s var(--ease-in-out) infinite;
+}
+
+@keyframes lampBreathe {
+
+    0%,
+    100% {
+        opacity: .85;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+/* Film grain — a tiny inline SVG noise tile, cheap and tileable */
+#grain {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    opacity: .04;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grainDrift .6s steps(3) infinite;
+}
+
+@keyframes grainDrift {
+    0% {
+        transform: translate(0, 0);
+    }
+
+    33% {
+        transform: translate(-2%, 1.5%);
+    }
+
+    66% {
+        transform: translate(1.5%, -2%);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+#vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(115% 95% at 50% 42%, transparent 45%, rgba(0, 0, 0, .38) 82%, rgba(0, 0, 0, .66) 100%);
+}
+
+/* ---------------- Particle canvas ---------------- */
+
+#fx-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ---------------- Impact flash ---------------- */
+
+#fx-flash {
+    position: fixed;
+    inset: 0;
+    z-index: 950;
+    opacity: 0;
+    pointer-events: none;
+    background: #fff;
+    mix-blend-mode: screen;
+}
+
+/* ---------------- Screen shake ---------------- */
+/* JS sets --shake-amp and toggles .is-shaking on <html>. */
+
+html.is-shaking #app,
+html.is-shaking #ambience {
+    animation: shake .42s var(--ease-out) both;
+}
+
+@keyframes shake {
+    0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    12% {
+        transform: translate3d(calc(var(--shake-amp) * -1), calc(var(--shake-amp) * .6), 0) rotate(-.4deg);
+    }
+
+    26% {
+        transform: translate3d(calc(var(--shake-amp) * .85), calc(var(--shake-amp) * -.7), 0) rotate(.35deg);
+    }
+
+    41% {
+        transform: translate3d(calc(var(--shake-amp) * -.6), calc(var(--shake-amp) * -.35), 0) rotate(-.25deg);
+    }
+
+    58% {
+        transform: translate3d(calc(var(--shake-amp) * .42), calc(var(--shake-amp) * .3), 0) rotate(.18deg);
+    }
+
+    75% {
+        transform: translate3d(calc(var(--shake-amp) * -.2), calc(var(--shake-amp) * .12), 0) rotate(-.08deg);
+    }
+
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+}
+
+/* ---------------- Neon text ---------------- */
+
+.neon {
+    color: var(--amber-hot);
+    text-shadow:
+        0 0 4px rgba(255, 215, 154, .9),
+        0 0 12px rgba(255, 180, 77, .75),
+        0 0 30px rgba(255, 150, 40, .5),
+        0 0 70px rgba(255, 120, 20, .3);
+}
+
+.neon--red {
+    color: #ffd2d8;
+    text-shadow:
+        0 0 4px rgba(255, 210, 216, .9),
+        0 0 12px rgba(255, 47, 78, .8),
+        0 0 32px rgba(255, 20, 55, .55),
+        0 0 70px rgba(220, 0, 40, .35);
+}
+
+@keyframes neonFlicker {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    3% {
+        opacity: .35;
+    }
+
+    5% {
+        opacity: 1;
+    }
+
+    31% {
+        opacity: 1;
+    }
+
+    32% {
+        opacity: .55;
+    }
+
+    33% {
+        opacity: 1;
+    }
+
+    77% {
+        opacity: 1;
+    }
+
+    78% {
+        opacity: .2;
+    }
+
+    79% {
+        opacity: .9;
+    }
+
+    80% {
+        opacity: .4;
+    }
+
+    81% {
+        opacity: 1;
+    }
+}
+
+@keyframes neonHum {
+
+    0%,
+    100% {
+        filter: brightness(1);
+    }
+
+    50% {
+        filter: brightness(1.14);
+    }
+}
+
+/* Shared entrance helpers */
+
+@keyframes riseIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes popIn {
+    from {
+        opacity: 0;
+        transform: scale(.86);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ---------------- Reduced motion ---------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+
+    #grain {
+        animation: none;
+    }
+
+    html.is-shaking #app,
+    html.is-shaking #ambience {
+        animation: none;
+    }
+}

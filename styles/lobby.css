@@ -1,0 +1,335 @@
+/* ============================================================
+   lobby.css — the front door: marquee sign + frosted panel
+   ============================================================ */
+
+#screen-lobby {
+    overflow: hidden;
+}
+
+.lobby-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    padding: var(--sp-6) var(--sp-4) var(--sp-7);
+}
+
+.lobby-inner {
+    width: 100%;
+    max-width: 540px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-5);
+}
+
+/* ---------------- Marquee ---------------- */
+
+.marquee {
+    position: relative;
+    width: 100%;
+    padding: var(--sp-5) var(--sp-4) var(--sp-4);
+    text-align: center;
+    animation: riseIn .7s var(--ease-out) both;
+}
+
+.marquee-bulbs {
+    display: block;
+    width: 78%;
+    height: 12px;
+    margin: 0 auto var(--sp-3);
+    overflow: visible;
+}
+
+.marquee-bulbs circle {
+    fill: var(--amber-hot);
+    filter: drop-shadow(0 0 4px rgba(255, 180, 77, .95));
+    animation: bulbPulse 2.6s var(--ease-in-out) infinite;
+}
+
+@keyframes bulbPulse {
+
+    0%,
+    100% {
+        opacity: .35;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+.neon-sign {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: .82;
+    letter-spacing: .04em;
+    animation: neonHum 4.5s var(--ease-in-out) infinite;
+}
+
+.neon-sign__line1 {
+    position: relative;
+    font-size: clamp(42px, 11vw, 74px);
+    color: var(--amber-hot);
+    text-shadow:
+        0 0 4px rgba(255, 215, 154, .9),
+        0 0 12px rgba(255, 180, 77, .8),
+        0 0 30px rgba(255, 150, 40, .5),
+        0 0 72px rgba(255, 120, 20, .32);
+}
+
+.neon-sign__line2 {
+    position: relative;
+    margin-top: 2px;
+    font-size: clamp(70px, 20vw, 138px);
+    color: #ffd6dc;
+    text-shadow:
+        0 0 5px rgba(255, 214, 220, .95),
+        0 0 14px rgba(255, 47, 78, .85),
+        0 0 38px rgba(255, 20, 55, .6),
+        0 0 86px rgba(220, 0, 40, .38);
+    animation: neonFlicker 7s linear infinite;
+}
+
+.marquee-sub {
+    margin-top: var(--sp-3);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .32em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+/* ---------------- Panel ---------------- */
+
+.lobby-panel {
+    width: 100%;
+    padding: var(--sp-5);
+    animation: riseIn .7s var(--ease-out) .1s both;
+}
+
+.lobby-choice {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+}
+
+/* ---------------- Sub-panels (host / join) ---------------- */
+
+.subpanel {
+    margin-top: var(--sp-2);
+    animation: riseIn .35s var(--ease-out) both;
+}
+
+.subpanel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-4);
+    padding-bottom: var(--sp-3);
+    border-bottom: 1px solid var(--line);
+}
+
+.subpanel__head h2 {
+    font-family: var(--font-display);
+    font-size: 31px;
+    font-weight: 400;
+    letter-spacing: .05em;
+    color: var(--amber);
+}
+
+.subpanel__hint {
+    margin-bottom: var(--sp-2);
+    font-size: 13px;
+    color: var(--text-faint);
+}
+
+.subpanel__foot {
+    margin-top: var(--sp-3);
+    font-size: 13px;
+    text-align: center;
+    color: var(--text-faint);
+    min-height: 18px;
+}
+
+/* ---------------- Room code ---------------- */
+
+.roomcode {
+    display: flex;
+    align-items: stretch;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-4);
+}
+
+.roomcode__value {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 15px 10px;
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: .34em;
+    text-indent: .34em;
+    color: var(--amber-hot);
+    background: rgba(0, 0, 0, .45);
+    border: 1px solid var(--line-amber);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 0 26px rgba(255, 180, 77, .1), var(--glow-amber);
+}
+
+.roomcode__value.is-waiting {
+    color: var(--text-faint);
+    box-shadow: none;
+    border-color: var(--line);
+    animation: pulseDim 1.4s var(--ease-in-out) infinite;
+}
+
+@keyframes pulseDim {
+
+    0%,
+    100% {
+        opacity: .45;
+    }
+
+    50% {
+        opacity: .9;
+    }
+}
+
+/* ---------------- Option row ---------------- */
+
+.option-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+}
+
+.option-row__label {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.option-row__hint {
+    display: block;
+    font-size: 12.5px;
+    color: var(--text-faint);
+}
+
+/* ---------------- Seat list ---------------- */
+
+.seat-list {
+    margin: var(--sp-4) 0;
+}
+
+.seat-list__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.tally {
+    font-family: var(--font-mono);
+    letter-spacing: .05em;
+    color: var(--amber);
+}
+
+.seat-list__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+}
+
+.seat-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: 7px 12px 7px 7px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--seat-color, var(--amber));
+    border-radius: 0;
+    animation: riseIn .3s var(--ease-out) both;
+}
+
+.seat-row .seat__avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+}
+
+.seat-row__name {
+    flex: 1;
+    font-size: 15.5px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.seat-row__tag {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    opacity: .85;
+}
+
+.seat-row--empty {
+    border-left-color: transparent;
+    border-style: dashed;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 14px;
+    justify-content: center;
+    animation: none;
+}
+
+/* ---------------- Status line ---------------- */
+
+.status-line {
+    margin-top: var(--sp-3);
+    padding: 10px 12px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--text-dim);
+    background: rgba(0, 0, 0, .3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+}
+
+.status-line[data-tone="ok"] {
+    color: var(--green);
+    border-color: rgba(75, 224, 138, .3);
+}
+
+.status-line[data-tone="busy"] {
+    color: var(--amber);
+    border-color: var(--line-amber);
+}
+
+.status-line[data-tone="bad"] {
+    color: var(--red-hot);
+    border-color: rgba(255, 47, 78, .3);
+}
+
+#showRulesBtn {
+    margin-top: var(--sp-4);
+}

@@ -1,0 +1,473 @@
+/* ============================================================
+   base.css — reset, typography, controls, form fields, scrollbars
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 16.5px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--ink-900);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+p {
+    margin: 0;
+}
+
+ul {
+    margin: var(--sp-2) 0 0;
+    padding-left: 1.1em;
+}
+
+li {
+    margin-bottom: var(--sp-1);
+}
+
+strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1;
+    padding: 3px 6px;
+    background: rgba(0, 0, 0, .35);
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: inherit;
+    opacity: .65;
+}
+
+/* ---------------- Icons ----------------
+   Engraved line marks. Mitred joins and butt caps, not rounded — these should
+   look struck into brass, not drawn in a design tool. */
+
+.ico {
+    width: 1.15em;
+    height: 1.15em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: butt;
+    stroke-linejoin: miter;
+    vector-effect: non-scaling-stroke;
+}
+
+.ico--fill {
+    fill: currentColor;
+    stroke: none;
+}
+
+#svg-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.txt-red {
+    color: var(--red-hot);
+}
+
+.txt-green {
+    color: var(--green);
+}
+
+.suit {
+    font-family: var(--font-suit);
+    color: var(--text);
+}
+
+.suit--red {
+    color: var(--suit-red);
+    filter: brightness(1.4);
+}
+
+/* ---------------- App shell ---------------- */
+
+#app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+}
+
+.screen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    /* keeps the parked (translated-off) log panel from widening the document */
+    overflow: hidden;
+}
+
+.screen.is-active {
+    display: flex;
+}
+
+/* ---------------- Buttons ---------------- */
+
+.btn {
+    --btn-bg: var(--ink-700);
+    --btn-fg: var(--text);
+    --btn-line: var(--line-strong);
+    --btn-glow: none;
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: 13px 24px;
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--btn-fg);
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-line);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: var(--sh-1), var(--btn-glow);
+    transition:
+        transform var(--t-fast) var(--ease-out),
+        filter var(--t-fast) linear,
+        box-shadow var(--t-med) var(--ease-out),
+        background-color var(--t-med) var(--ease-out),
+        border-color var(--t-med) var(--ease-out),
+        opacity var(--t-med) linear;
+}
+
+.btn::after {
+    /* a struck hairline just inside the edge — engraved plate, not glass */
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border: 1px solid rgba(255, 255, 255, .1);
+    pointer-events: none;
+}
+
+.btn:hover:not(:disabled) {
+    filter: brightness(1.14);
+}
+
+/* presses down into its own shadow rather than floating */
+.btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: none;
+    filter: brightness(.94);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 3px;
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: .38;
+    filter: grayscale(.6);
+    box-shadow: none;
+}
+
+.btn--primary {
+    --btn-bg: #c8912f;
+    --btn-fg: #14100a;
+    --btn-line: #e8bb6a;
+    --btn-glow: none;
+}
+
+.btn--danger {
+    --btn-bg: #9d1226;
+    --btn-fg: #ffe9ec;
+    --btn-line: #d8455c;
+    --btn-glow: none;
+}
+
+.btn--ghost {
+    --btn-bg: rgba(255, 255, 255, .04);
+    --btn-fg: var(--text);
+    --btn-line: var(--line-strong);
+}
+
+.btn--ghost:hover:not(:disabled) {
+    --btn-bg: rgba(255, 255, 255, .09);
+    --btn-line: var(--line-amber);
+}
+
+.btn--quiet {
+    --btn-bg: transparent;
+    --btn-fg: var(--text-dim);
+    --btn-line: transparent;
+    box-shadow: none;
+}
+
+.btn--quiet::after {
+    display: none;
+}
+
+.btn--quiet:hover:not(:disabled) {
+    --btn-fg: var(--amber);
+    --btn-bg: rgba(255, 180, 77, .07);
+}
+
+.btn--lg {
+    padding: 18px 30px;
+    font-size: 16px;
+}
+
+.btn--sm {
+    padding: 9px 15px;
+    font-size: 12.5px;
+}
+
+.btn--block {
+    width: 100%;
+}
+
+/* Icon button (HUD) */
+.icon-btn {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+}
+
+.icon-btn:hover {
+    color: var(--amber);
+    border-color: var(--line-amber);
+    background: rgba(255, 180, 77, .08);
+}
+
+.icon-btn:active {
+    transform: translateY(1px);
+}
+
+.icon-btn.is-off {
+    color: var(--text-faint);
+    opacity: .6;
+}
+
+.icon-btn--sm {
+    width: 32px;
+    height: 32px;
+}
+
+.icon-btn--sm .ico {
+    width: 15px;
+    height: 15px;
+}
+
+.icon-btn .ico {
+    width: 20px;
+    height: 20px;
+}
+
+/* the "?" on the rules button — set in the signage face, not an icon */
+.icon-btn--glyph {
+    font-family: var(--font-display);
+    font-size: 24px;
+    padding-top: 2px;
+}
+
+/* ---------------- Fields ---------------- */
+
+.field {
+    display: block;
+    text-align: left;
+    margin-bottom: var(--sp-4);
+}
+
+.field__label {
+    display: block;
+    margin-bottom: var(--sp-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.field__hint {
+    display: block;
+    min-height: 15px;
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--red-hot);
+    opacity: 0;
+    transition: opacity var(--t-fast);
+}
+
+.field__hint.is-shown {
+    opacity: 1;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 15px 17px;
+    font-family: var(--font-ui);
+    font-size: 16.5px;
+    font-weight: 500;
+    color: var(--text);
+    background: rgba(0, 0, 0, .38);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, .5);
+    transition: border-color var(--t-med), box-shadow var(--t-med), background var(--t-med);
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-faint);
+    font-weight: 400;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--amber);
+    background: rgba(0, 0, 0, .5);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 180, 77, .45);
+}
+
+.input--code {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    letter-spacing: .38em;
+    text-align: center;
+    text-transform: uppercase;
+    text-indent: .38em;
+    color: var(--amber-hot);
+}
+
+/* ---------------- Segmented control ---------------- */
+
+.segmented {
+    display: inline-flex;
+    padding: 3px;
+    background: rgba(0, 0, 0, .4);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+}
+
+.segmented button {
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: var(--text-faint);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    cursor: pointer;
+    transition: color var(--t-fast), background var(--t-fast);
+}
+
+.segmented button:hover {
+    color: var(--text);
+}
+
+.segmented button.is-active {
+    color: #14100a;
+    background: var(--amber);
+}
+
+/* ---------------- Panels ---------------- */
+
+/*
+ * A painted panel: solid, matte, with a hairline rule set in from the edge —
+ * the way a lettered bar sign or an elevator plate is framed. No glass, no blur.
+ */
+.panel {
+    position: relative;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, .028), transparent 40%),
+        var(--ink-850);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-md);
+    box-shadow: var(--sh-4), inset 0 1px 0 rgba(255, 255, 255, .06);
+    /* the inset rule is an outline, not a pseudo-element, so it stays put
+       even when the panel's contents scroll */
+    outline: 1px solid var(--frame-line);
+    outline-offset: calc(var(--frame-inset) * -1);
+}
+
+/* ---------------- Scrollbars ---------------- */
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 180, 77, .3) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 180, 77, .22);
+    border-radius: var(--r-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 180, 77, .4);
+}
+
+/* ---------------- Utility ---------------- */
+
+[hidden] {
+    display: none !important;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}

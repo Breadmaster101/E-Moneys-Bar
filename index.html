@@ -3,2851 +3,449 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#07060a">
+    <meta name="description" content="E-Money's Bar — a high-stakes bluffing game of cards and Russian roulette.">
     <title>E-Money's Bar</title>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700&display=swap"
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap"
         rel="stylesheet">
+
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/effects.css">
+    <link rel="stylesheet" href="styles/lobby.css">
+    <link rel="stylesheet" href="styles/board.css">
+    <link rel="stylesheet" href="styles/cards.css">
+    <link rel="stylesheet" href="styles/players.css">
+    <link rel="stylesheet" href="styles/modals.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    <style>
-        :root {
-            --primary-bg: #1A222C;
-            --secondary-bg: #273440;
-            --tertiary-bg: #11171E;
-            --primary-text: #E0E6EB;
-            --secondary-text: #A0AEC0;
-
-            --accent-gold: #CFAF7B;
-            --accent-gold-darker: #B08F5F;
-            --accent-red: #E53E3E;
-            --accent-red-darker: #C53030;
-            --accent-green: #48BB78;
-            --accent-green-darker: #38A169;
-            --accent-highlight: #F6E05E;
-
-            --table-green: #2A4B3A;
-            --table-green-light: #3A6B4A;
-
-            --font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            --font-family-serif: 'Merriweather', serif;
-            --border-radius: 6px;
-            --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
-            --box-shadow-light: 0 3px 8px rgba(0, 0, 0, 0.25);
-
-            --input-bg: #D1D5DB;
-            --input-text: #1A222C;
-            --input-border: #6B7280;
-
-            --card-bg: #FEFDFB;
-            --card-border: #D1C7B7;
-            --card-selected-glow: 0 0 15px 4px var(--accent-gold);
-
-            --suit-red: var(--accent-red);
-            --suit-black: #2D3748;
-
-            --card-back-bg: #4A3B30;
-            --card-back-border: #30261F;
-            --card-back-motif: var(--accent-gold);
-        }
-
-        body {
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 0;
-            background-color: var(--tertiary-bg);
-            color: var(--primary-text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            background-image:
-                radial-gradient(circle at top left, rgba(255, 255, 255, 0.03), transparent 40%),
-                radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.03), transparent 40%);
-        }
-
-        #app-container {
-            width: 100vw;
-            height: 100vh;
-            max-width: none;
-            max-height: none;
-            border-radius: 0;
-            display: flex;
-            flex-direction: column;
-            background-color: transparent;
-            box-shadow: none;
-            overflow: hidden;
-        }
-
-        button {
-            padding: 12px 24px;
-            font-size: 1em;
-            font-weight: 600;
-            background-color: var(--accent-gold);
-            color: var(--primary-bg);
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2), inset 0 -2px 0px rgba(0, 0, 0, 0.15);
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-family: var(--font-family);
-        }
-
-        button:hover {
-            background-color: var(--accent-gold-darker);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25), inset 0 -1px 0px rgba(0, 0, 0, 0.1);
-        }
-
-        button:active {
-            transform: translateY(0px);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 -1px 0px rgba(0, 0, 0, 0.1);
-        }
-
-        button:disabled {
-            background-color: #546e7a;
-            color: #90a4ae;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: inset 0 -2px 0px rgba(0, 0, 0, 0.1);
-        }
-
-        textarea,
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            margin: 0 0 15px 0;
-            padding: 12px;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--input-border);
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            font-family: var(--font-family);
-        }
-
-        textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-
-        input:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent-gold);
-            box-shadow: 0 0 0 3px rgba(207, 175, 123, 0.4);
-        }
-
-        .modal {
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(17, 23, 30, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(6px);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-        }
-
-        .modal.visible {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-content {
-            background-color: var(--secondary-bg);
-            padding: 35px 40px;
-            border: 2px solid var(--accent-gold-darker);
-            width: 90%;
-            max-width: 600px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow), 0 0 0 6px var(--primary-bg);
-            text-align: center;
-            transform: scale(0.95);
-            transition: transform 0.3s ease;
-            color: var(--primary-text);
-        }
-
-        .modal.visible .modal-content {
-            transform: scale(1);
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            margin-bottom: 25px;
-            color: var(--accent-highlight);
-            font-size: 2.2em;
-            font-weight: 700;
-            font-family: var(--font-family-serif);
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-
-        .modal-content button {
-            margin: 15px 8px 0;
-        }
-
-        #connection-setup {
-            padding: 40px;
-            text-align: center;
-            overflow-y: auto;
-            max-height: 90vh;
-            width: 90%;
-            max-width: 500px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--primary-bg);
-            border-radius: 12px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--tertiary-bg);
-            margin: auto;
-        }
-
-        #server-status-banner {
-            position: fixed;
-            bottom: 12px;
-            right: 12px;
-            color: var(--secondary-text);
-            background-color: rgba(17, 23, 30, 0.9);
-            border: 1px solid var(--tertiary-bg);
-            padding: 6px 12px;
-            border-radius: var(--border-radius);
-            font-size: 0.8em;
-            display: none;
-            transition: all 0.3s ease;
-            z-index: 2000;
-            box-shadow: var(--box-shadow-light);
-            pointer-events: none;
-        }
-
-        #connection-setup h2 {
-            color: var(--primary-text);
-            margin-bottom: 20px;
-            font-size: 2.4em;
-            font-weight: 700;
-            font-family: var(--font-family-serif);
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-            margin-top: 0;
-        }
-
-        #connection-setup>div:not(#server-status-banner):not(.setup-section) {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        #createRoomBtn,
-        #joinRoomBtn {
-            flex: 1;
-        }
-
-        #showRulesBtn {
-            width: 100%;
-        }
-
-        .setup-section {
-            background-color: var(--secondary-bg);
-            padding: 25px;
-            margin-top: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.2), var(--box-shadow-light);
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid var(--tertiary-bg);
-        }
-
-        .setup-section h3 {
-            color: var(--accent-gold);
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-            border-bottom: 2px solid var(--accent-gold-darker);
-            padding-bottom: 8px;
-            font-family: var(--font-family-serif);
-        }
-
-        #host-controls p,
-        #client-controls p {
-            margin: 12px 0;
-            font-size: 1.1em;
-            color: var(--secondary-text);
-        }
-
-        #host-controls p strong,
-        #client-controls p strong {
-            color: var(--primary-text);
-        }
-
-        #connected-players-list {
-            margin-top: 15px;
-            font-weight: normal;
-            text-align: left;
-            padding-left: 10px;
-        }
-
-        #connected-players-list span {
-            display: block;
-            margin-bottom: 6px;
-            padding: 8px 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            border-left: 3px solid var(--accent-gold);
-        }
-
-        #startGameBtn {
-            background-color: var(--accent-green);
-            color: white;
-            margin-top: 25px;
-            padding: 15px 30px;
-            font-size: 1.2em;
-        }
-
-        #startGameBtn:hover {
-            background-color: var(--accent-green-darker);
-        }
-
-        .room-code-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin: 15px auto;
-            max-width: 90%;
-        }
-
-        #roomCodeDisplay {
-            background-color: var(--primary-bg);
-            padding: 15px 20px;
-            border-radius: var(--border-radius);
-            border: 2px solid var(--accent-gold);
-            word-break: break-all;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: var(--accent-highlight);
-            text-align: center;
-        }
-
-        #client-controls #roomCodeInput {
-            max-width: 150px;
-            text-align: center;
-        }
-
-        .copy-btn-beside {
-            padding: 10px 15px;
-            font-size: 1em;
-            background-color: var(--secondary-text);
-            color: var(--primary-bg);
-            border-radius: var(--border-radius);
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            min-width: auto;
-            width: auto;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            font-weight: 600;
-        }
-
-        .copy-btn-beside:hover {
-            background-color: var(--accent-gold);
-        }
-
-        .copy-btn-beside:disabled {
-            background-color: var(--accent-green-darker);
-            color: white;
-            cursor: default;
-        }
-
-        #how-to-play-btn {
-            margin-top: 20px;
-            background-color: var(--secondary-text);
-            color: var(--primary-bg);
-            padding: 10px 20px;
-            font-size: 0.9em;
-        }
-
-        #how-to-play-btn:hover {
-            background-color: #95a5a6;
-        }
-
-        #client-status {
-            margin-top: 20px;
-            font-weight: bold;
-            font-size: 1.1em;
-            padding: 10px;
-            border-radius: var(--border-radius);
-            background-color: rgba(0, 0, 0, 0.1);
-        }
-
-        #connectToHostBtn {
-            margin-top: 15px;
-        }
-
-
-        #game-board {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            background-color: var(--table-green);
-            background-image:
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.0) 70%),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            position: relative;
-            overflow: hidden;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        #player-areas-container {
-            position: relative;
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
-        }
-
-        .player-area {
-            position: absolute;
-            background-color: rgba(26, 34, 44, 0.85);
-            padding: 10px 15px;
-            border-radius: var(--border-radius);
-            text-align: center;
-            min-width: 170px;
-            max-width: 200px;
-            box-shadow: var(--box-shadow), 0 0 0 2px rgba(0, 0, 0, 0.2);
-            border: 2px solid var(--tertiary-bg);
-            transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease, opacity 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transform-origin: center center;
-            box-sizing: border-box;
-        }
-
-        .player-area.current-player {
-            border-color: var(--accent-highlight);
-            z-index: 10;
-            animation: pulsePlayer 1.8s infinite ease-in-out;
-        }
-
-        @keyframes pulsePlayer {
-            0% {
-                box-shadow: 0 0 25px 0px var(--accent-highlight), 0 0 35px 6px rgba(246, 224, 94, 0.55), 0 0 0 2px rgba(0, 0, 0, 0.2);
-                transform: translateX(var(--base-translate-x, 0%)) translateY(var(--base-translate-y, 0%)) rotate(var(--base-rotate, 0deg)) scale(1.03);
-            }
-
-            50% {
-                box-shadow: 0 0 30px 4px var(--accent-highlight), 0 0 45px 10px rgba(246, 224, 94, 0.65), 0 0 0 2px rgba(0, 0, 0, 0.2);
-                transform: translateX(var(--base-translate-x, 0%)) translateY(var(--base-translate-y, 0%)) rotate(var(--base-rotate, 0deg)) scale(1.05);
-            }
-
-            100% {
-                box-shadow: 0 0 25px 0px var(--accent-highlight), 0 0 35px 6px rgba(246, 224, 94, 0.55), 0 0 0 2px rgba(0, 0, 0, 0.2);
-                transform: translateX(var(--base-translate-x, 0%)) translateY(var(--base-translate-y, 0%)) rotate(var(--base-rotate, 0deg)) scale(1.03);
-            }
-        }
-
-        .player-area.eliminated {
-            opacity: 0.5;
-            filter: grayscale(100%);
-            border-color: var(--secondary-text) !important;
-            box-shadow: none !important;
-            animation: none !important;
-            transform: scale(0.95) translateX(var(--base-translate-x, 0%)) translateY(var(--base-translate-y, 0%)) rotate(var(--base-rotate, 0deg));
-        }
-
-        .player-name {
-            font-weight: bold;
-            font-size: 1.1em;
-            margin-bottom: 4px;
-            color: var(--primary-text);
-            line-height: 1.2;
-            font-family: var(--font-family-serif);
-        }
-
-        .player-avatar {
-            font-size: 2.1em;
-            margin-bottom: 5px;
-            line-height: 1;
-            color: var(--accent-gold);
-        }
-
-        .player-card-visuals {
-            position: relative;
-            height: 40px;
-            width: 80px;
-            margin: 2px auto 3px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .player-area-mini-card {
-            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4));
-        }
-
-        .player-area-mini-card svg {
-            width: 22px !important;
-            height: 33px !important;
-        }
-
-        .player-area-mini-card svg rect[stroke="var(--card-back-border)"] {
-            stroke-width: 0.5px;
-        }
-
-        .player-area-mini-card svg rect[x="3.5"] {
-            display: none;
-        }
-
-        .player-area-mini-card svg text {
-            font-size: 16px !important;
-        }
-
-        .player-revolver-visuals {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-top: 4px;
-            gap: 3px;
-        }
-
-        .revolver-chamber {
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            border: 1px solid var(--accent-gold-darker);
-            transition: background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
-        }
-
-        .revolver-chamber.available {
-            background-color: var(--accent-gold);
-        }
-
-        .revolver-chamber.fired {
-            background-color: var(--tertiary-bg);
-            opacity: 0.6;
-        }
-
-        .has-tooltip {
-            cursor: default;
-        }
-
-        .has-tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-5px);
-            background-color: var(--tertiary-bg);
-            color: var(--primary-text);
-            padding: 4px 7px;
-            border-radius: 4px;
-            font-size: 0.7em;
-            font-family: var(--font-family);
-            white-space: nowrap;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease 0.1s, visibility 0s linear 0.3s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            pointer-events: none;
-        }
-
-        .has-tooltip:hover::after {
-            opacity: 1;
-            visibility: visible;
-            transition: opacity 0.2s ease 0.1s;
-        }
-
-        #local-player-stats-area {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(26, 34, 44, 0.75);
-            padding: 8px 12px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow-light);
-            z-index: 30;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 5px;
-        }
-
-        #local-player-stats-area .stat-label {
-            font-size: 0.8em;
-            color: var(--secondary-text);
-            margin-bottom: 2px;
-        }
-
-        #local-player-stats-area .player-revolver-visuals {
-            margin-top: 0;
-        }
-
-        #center-table {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            background-color: rgba(17, 23, 30, 0.6);
-            border: 2px solid rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            min-width: 320px;
-            box-shadow: var(--box-shadow), inset 0 0 15px rgba(0, 0, 0, 0.3);
-        }
-
-        #center-pile-visual {
-            width: 75px;
-            height: 105px;
-            margin-bottom: 12px;
-            position: relative;
-        }
-
-        #center-pile-visual .card-stack {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #center-pile-visual .card-back-dummy {
-            position: absolute;
-            border-radius: 6px;
-            width: 60px;
-            height: 90px;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
-        }
-
-        #table-type-display-area {
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        #table-type-display-area h4 {
-            margin: 0 0 8px 0;
-            font-size: 1em;
-            color: var(--secondary-text);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        #table-type-card {
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 60px;
-            height: 90px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 6px;
-            font-size: 48px;
-            line-height: 1;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15), inset 0 0 5px rgba(0, 0, 0, 0.1);
-            color: var(--primary-text);
-        }
-
-        #played-cards-pile-info {
-            font-size: 1em;
-            font-weight: bold;
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            background-color: rgba(0, 0, 0, 0.25);
-            border-radius: var(--border-radius);
-            min-height: 22px;
-            text-align: center;
-            color: var(--primary-text);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
-        }
-
-        #game-log {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 280px;
-            max-width: 30%;
-            max-height: 180px;
-            z-index: 30;
-            background-color: rgba(210, 199, 183, 0.9);
-            color: #3A322E;
-            border-radius: var(--border-radius);
-            padding: 10px 15px;
-            border: 2px solid #A1887F;
-            box-shadow: var(--box-shadow-light);
-            font-family: var(--font-family-serif);
-        }
-
-        #game-log h4 {
-            margin: 0 0 8px 0;
-            text-align: center;
-            font-size: 1.05em;
-            color: #5D4037;
-            border-bottom: 1px solid #A1887F;
-            padding-bottom: 6px;
-            font-weight: 700;
-        }
-
-        #log-messages {
-            height: 110px;
-            overflow-y: auto;
-            font-size: 0.85em;
-            padding: 8px;
-            border-radius: 4px;
-            background-color: rgba(0, 0, 0, 0.05);
-            color: #4E342E;
-        }
-
-        #log-messages p {
-            margin: 4px 0;
-            line-height: 1.4;
-        }
-
-        #log-messages p.error {
-            color: var(--accent-red-darker);
-            font-weight: bold;
-        }
-
-        #log-messages p.system {
-            color: #00695C;
-            font-style: italic;
-        }
-
-        #log-messages p.success {
-            color: var(--accent-green-darker);
-            font-weight: bold;
-        }
-
-        #log-messages::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #log-messages::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 4px;
-        }
-
-        #log-messages::-webkit-scrollbar-thumb {
-            background: #8D6E63;
-            border-radius: 4px;
-        }
-
-        #log-messages::-webkit-scrollbar-thumb:hover {
-            background: #795548;
-        }
-
-        #player-hand-area {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-            padding: 10px;
-            background-color: rgba(17, 23, 30, 0.5);
-            border-radius: var(--border-radius);
-            z-index: 20;
-            box-shadow: var(--box-shadow), 0 0 0 2px rgba(0, 0, 0, 0.15);
-            transition: box-shadow 0.3s ease, border-color 0.3s ease;
-            border-top: 2px solid rgba(255, 255, 255, 0.05);
-        }
-
-        #player-hand-area.current-player-hand {
-            border-top-color: var(--accent-highlight);
-            box-shadow:
-                0 0 20px 5px var(--accent-highlight),
-                inset 0 -2px 0 0 var(--accent-highlight),
-                inset -2px 0 0 0 var(--accent-highlight),
-                inset 2px 0 0 0 var(--accent-highlight),
-                0 0 0 2px rgba(0, 0, 0, 0.15);
-        }
-
-        #player-hand-area.current-player-hand .card-container {
-            cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
-        }
-
-        #player-hand-area.current-player-hand .card-container:not(.selected-for-play) {
-            opacity: 0.85;
-            filter: saturate(0.85);
-        }
-
-        #player-hand-area.current-player-hand .card-container:not(.selected-for-play):hover {
-            opacity: 1;
-            filter: saturate(1);
-        }
-
-        #player-hand-area.current-player-hand .card-container.selected-for-play {
-            opacity: 1;
-            transform: translateY(-18px) scale(1.12);
-            filter: saturate(1);
-            z-index: 10;
-        }
-
-        #player-hand-area.current-player-hand .card-container.selected-for-play svg {
-            box-shadow: var(--card-selected-glow);
-        }
-
-        .card-container {
-            display: inline-block;
-            perspective: 1000px;
-            transition: opacity 0.2s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .card-container svg {
-            display: block;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 6px;
-        }
-
-        #player-hand-area>.card-container:not(.selected-for-play):hover svg {
-            transform: translateY(-18px) scale(1.12) rotateX(8deg);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-        }
-
-        #actions-area {
-            position: absolute;
-            bottom: 25px;
-            right: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 25;
-        }
-
-        #actions-area button {
-            width: 170px;
-            padding: 14px 18px;
-            font-size: 1em;
-            letter-spacing: 0.6px;
-        }
-
-        #playCardsBtn {
-            background-color: var(--accent-green);
-            color: white;
-        }
-
-        #playCardsBtn:hover {
-            background-color: var(--accent-green-darker);
-        }
-
-        #callLiarBtn {
-            background-color: var(--accent-red);
-            color: white;
-        }
-
-        #callLiarBtn:hover {
-            background-color: var(--accent-red-darker);
-        }
-
-
-        #challenge-roulette-overlay .modal-content {
-            max-width: 700px;
-            padding: 40px;
-        }
-
-        #challenge-roulette-overlay #revealed-cards-display {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin: 20px 0;
-            padding: 12px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(0, 0, 0, 0.1);
-        }
-
-        #challenge-roulette-overlay #roulette-result-text {
-            font-weight: bold;
-            font-size: 1.4em;
-            margin: 20px 0;
-            letter-spacing: 0.5px;
-        }
-
-        #challenge-roulette-overlay #roulette-animation {
-            font-size: 2.2em;
-            margin: 15px;
-            min-height: 50px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        #roulette-animation.spinning span {
-            display: inline-block;
-            animation: spin 0.5s linear infinite, symbolPulse 0.25s alternate infinite ease-in-out;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg) scale(1);
-            }
-
-            100% {
-                transform: rotate(360deg) scale(1);
-            }
-        }
-
-        @keyframes symbolPulse {
-            0% {
-                transform: scale(0.9);
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: scale(1.1);
-                opacity: 1;
-            }
-        }
-
-        #game-over-overlay .modal-content {
-            max-width: 520px;
-        }
-
-        #gameOverTitle {
-            color: var(--accent-highlight);
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-        }
-
-        #gameOverMessageP {
-            font-size: 1.25em;
-            margin-bottom: 20px;
-            line-height: 1.5;
-        }
-
-        #rematch-status-container {
-            margin-top: 15px;
-            text-align: left;
-            font-size: 0.9em;
-        }
-
-        #rematch-status-container h4 {
-            margin-bottom: 8px;
-            color: var(--accent-gold);
-            font-size: 1.1em;
-        }
-
-        #rematch-status-list span {
-            display: block;
-            margin-bottom: 4px;
-            padding: 3px 6px;
-            background-color: rgba(255, 255, 255, 0.03);
-            border-radius: 3px;
-        }
-
-        #rematch-status-list .ready {
-            color: var(--accent-green);
-            font-weight: bold;
-        }
-
-        #rematch-status-list .not-ready {
-            color: var(--secondary-text);
-        }
-
-        #rules-modal .modal-content {
-            text-align: left;
-            max-width: 700px;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #rules-scroll-content {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-            margin-bottom: 15px;
-        }
-
-        #rules-modal ul {
-            padding-left: 20px;
-            list-style: disc;
-            margin: 15px 0 25px 0;
-            line-height: 1.6;
-            color: var(--secondary-text);
-        }
-
-        #rules-modal ul strong {
-            color: var(--accent-gold);
-        }
-
-        #playAgainBtn {
-            background-color: var(--accent-gold);
-            color: var(--primary-bg);
-        }
-
-        #playAgainBtn:hover {
-            background-color: var(--accent-gold-darker);
-        }
-
-        #exitGameBtn {
-            background-color: var(--secondary-text);
-            color: var(--primary-bg);
-        }
-
-        #exitGameBtn:hover {
-            background-color: #95a5a6;
-        }
-
-        @media (max-width: 1200px) {
-            .player-area {
-                min-width: 160px;
-                padding: 10px 15px;
-            }
-
-            #game-log {
-                width: 240px;
-                max-height: 160px;
-            }
-
-            #local-player-stats-area {
-                top: 15px;
-                left: 15px;
-                padding: 6px 10px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                font-size: 14px;
-            }
-
-            .player-area {
-                padding: 8px 10px;
-                min-width: 110px !important;
-                width: auto !important;
-            }
-
-            .player-area .player-name {
-                font-size: 0.8em;
-            }
-
-            .player-area .player-avatar {
-                font-size: 1.5em;
-                margin-bottom: 4px;
-            }
-
-            #center-table {
-                min-width: 80%;
-                padding: 12px;
-            }
-
-            #center-pile-visual {
-                width: 55px;
-                height: 80px;
-                margin-bottom: 6px;
-            }
-
-            #center-pile-visual .card-back-dummy {
-                width: 50px;
-                height: 75px;
-            }
-
-            #table-type-display-area {
-                margin-bottom: 8px;
-            }
-
-            #table-type-card {
-                font-size: 32px;
-                width: 50px;
-                height: 75px;
-            }
-
-            #played-cards-pile-info {
-                font-size: 0.85em;
-                padding: 8px 10px;
-            }
-
-            #game-log {
-                bottom: auto;
-                top: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 90%;
-                max-width: 300px;
-                max-height: 70px;
-                padding: 8px;
-                font-size: 0.9em;
-            }
-
-            #log-messages {
-                height: 35px;
-                font-size: 0.78em;
-            }
-
-            #player-hand-area {
-                bottom: 85px;
-                max-width: 95%;
-                gap: 4px;
-                padding: 8px;
-            }
-
-            .card-container svg {
-                width: 45px;
-                height: 68px;
-            }
-
-            #actions-area {
-                flex-direction: row;
-                bottom: 15px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 95%;
-                justify-content: space-around;
-                gap: 8px;
-            }
-
-            #actions-area button {
-                width: auto;
-                flex-grow: 1;
-                padding: 12px 10px;
-                font-size: 0.9em;
-            }
-
-            .player-card-visuals {
-                height: 35px;
-                width: 60px;
-            }
-
-            .player-area-mini-card svg {
-                width: 20px !important;
-                height: 30px !important;
-            }
-
-            .revolver-chamber {
-                width: 8px !important;
-                height: 8px !important;
-            }
-
-            #local-player-stats-area {
-                top: 10px;
-                left: 10px;
-                padding: 5px 8px;
-                gap: 3px;
-            }
-
-            #local-player-stats-area .stat-label {
-                font-size: 0.7em;
-            }
-
-            #game-log {
-                top: 65px;
-                max-height: 60px;
-            }
-
-            #log-messages {
-                height: 25px;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div id="app-container">
-        <div id="connection-setup">
-            <div id="server-status-banner">
-                Connecting to server... (Please allow up to 1 minute for the server to wake up).
-            </div>
+    <!-- ============ Shared SVG defs (gradients / patterns used by every card) ============ -->
+    <svg id="svg-defs" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="grad-card-face" x1="0" y1="0" x2="0.35" y2="1">
+                <stop offset="0%" stop-color="#fffdf6" />
+                <stop offset="55%" stop-color="#f5eede" />
+                <stop offset="100%" stop-color="#e6dbc4" />
+            </linearGradient>
+            <linearGradient id="grad-card-back" x1="0" y1="0" x2="0.4" y2="1">
+                <stop offset="0%" stop-color="#4a1220" />
+                <stop offset="60%" stop-color="#320b16" />
+                <stop offset="100%" stop-color="#1d060d" />
+            </linearGradient>
+            <linearGradient id="grad-card-gloss" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5" />
+                <stop offset="45%" stop-color="#ffffff" stop-opacity="0.06" />
+                <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+            </linearGradient>
+            <pattern id="pat-card-back" width="12" height="12" patternUnits="userSpaceOnUse"
+                patternTransform="rotate(45)">
+                <path d="M6 0 L12 6 L6 12 L0 6 Z" fill="none" stroke="#d99a44" stroke-width="0.7"
+                    stroke-opacity="0.55" />
+                <circle cx="6" cy="6" r="1.1" fill="#d99a44" fill-opacity="0.35" />
+            </pattern>
+            <radialGradient id="grad-cyl-metal" cx="0.34" cy="0.28" r="0.85">
+                <stop offset="0%" stop-color="#8f8a84" />
+                <stop offset="35%" stop-color="#565159" />
+                <stop offset="70%" stop-color="#2b2830" />
+                <stop offset="100%" stop-color="#141218" />
+            </radialGradient>
+            <radialGradient id="grad-chamber-live" cx="0.35" cy="0.3" r="0.8">
+                <stop offset="0%" stop-color="#ffdf9e" />
+                <stop offset="45%" stop-color="#d9a049" />
+                <stop offset="100%" stop-color="#7a5417" />
+            </radialGradient>
+            <radialGradient id="grad-chamber-spent" cx="0.35" cy="0.3" r="0.8">
+                <stop offset="0%" stop-color="#211e26" />
+                <stop offset="100%" stop-color="#050409" />
+            </radialGradient>
+        </defs>
 
-            <h2>E-Money's Bar</h2>
-            <input type="text" id="playerNameInput" placeholder="Enter Your Name (Min 3 chars)" value="">
-            <div>
-                <button id="createRoomBtn">Create Room</button>
-                <button id="joinRoomBtn">Join Room</button>
-            </div>
+        <!-- Engraved line icons. Referenced with <use href="#i-name"> via .ico -->
+        <symbol id="i-deal" viewBox="0 0 24 24">
+            <g transform="rotate(-15 12 13)">
+                <rect x="3.5" y="5.5" width="10" height="14" />
+            </g>
+            <g transform="rotate(11 12 13)">
+                <rect x="10.5" y="5.5" width="10" height="14" />
+            </g>
+        </symbol>
+        <symbol id="i-enter" viewBox="0 0 24 24">
+            <path d="M14 3.5H5v17h9" />
+            <path d="M9.5 12h10.5M16.5 8 20.5 12 16.5 16" />
+        </symbol>
+        <symbol id="i-exit" viewBox="0 0 24 24">
+            <path d="M10 3.5H4v17h6" />
+            <path d="M13 12h7.5M17 8 21 12 17 16" />
+        </symbol>
+        <symbol id="i-sound-on" viewBox="0 0 24 24">
+            <path d="M3.5 9h3.5L11.5 5v14L7 15H3.5z" />
+            <path d="M15 9.2a4 4 0 0 1 0 5.6" />
+            <path d="M17.8 6.6a8 8 0 0 1 0 10.8" />
+        </symbol>
+        <symbol id="i-sound-off" viewBox="0 0 24 24">
+            <path d="M3.5 9h3.5L11.5 5v14L7 15H3.5z" />
+            <path d="M15.5 9.5 21 15M21 9.5 15.5 15" />
+        </symbol>
+        <symbol id="i-log" viewBox="0 0 24 24">
+            <path d="M4 6.5h16M4 12h16M4 17.5h10" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+            <path d="M5.5 5.5 18.5 18.5M18.5 5.5 5.5 18.5" />
+        </symbol>
+        <symbol id="i-star" viewBox="0 0 24 24">
+            <path d="M12 2.6 14.6 9h6.8l-5.5 4.4 2.1 6.6L12 16l-6 4 2.1-6.6L2.6 9h6.8z" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+            <path d="M4.5 12.5 9.5 17.5 19.5 6.5" />
+        </symbol>
+        <symbol id="i-ornament" viewBox="0 0 140 32">
+            <path d="M2 16h44M94 16h44" />
+            <path d="M70 3 79 16 70 29 61 16z" />
+            <path d="M70 8.5 74.5 16 70 23.5 65.5 16z" />
+            <path d="M52 16 58 10.5V21.5zM88 16 82 10.5V21.5z" />
+        </symbol>
+    </svg>
 
-            <button id="showRulesBtn" class="inverted-btn">How to Play</button>
+    <!-- ============ Ambient / FX layers ============ -->
+    <div id="ambience" aria-hidden="true">
+        <div class="amb-glow amb-glow--key"></div>
+        <div class="amb-glow amb-glow--red"></div>
+        <div class="amb-glow amb-glow--cyan"></div>
+        <div id="grain"></div>
+        <div id="vignette"></div>
+    </div>
+    <canvas id="fx-canvas" aria-hidden="true"></canvas>
+    <div id="fx-flash" aria-hidden="true"></div>
 
-            <div id="host-controls" class="setup-section" style="display:none;">
-                <h3>Host Controls</h3>
-                <p>Your Room Code is (share with players):</p>
-                <div class="room-code-container">
-                    <span id="roomCodeDisplay">Waiting for Room Code...</span>
-                    <button id="copyRoomCodeBtn" class="copy-btn-beside" title="Copy Room Code">COPY</button>
+    <!-- ============ App ============ -->
+    <div id="app">
+
+        <!-- ---------- LOBBY ---------- -->
+        <section id="screen-lobby" class="screen is-active">
+            <div class="lobby-scroll">
+                <div class="lobby-inner">
+
+                    <div class="marquee">
+                        <svg class="marquee-bulbs" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
+                        </svg>
+                        <h1 class="neon-sign">
+                            <span class="neon-sign__line1" data-text="E-MONEY'S">E-MONEY'S</span>
+                            <span class="neon-sign__line2" data-text="BAR">BAR</span>
+                        </h1>
+                        <p class="marquee-sub">Bluff. Challenge. Pull the trigger.</p>
+                    </div>
+
+                    <div class="panel lobby-panel">
+                        <label class="field">
+                            <span class="field__label">Your name</span>
+                            <input type="text" id="playerNameInput" maxlength="14" autocomplete="off"
+                                spellcheck="false" placeholder="Min. 3 characters">
+                            <span class="field__hint" id="nameHint"></span>
+                        </label>
+
+                        <div class="lobby-choice" id="lobbyChoice">
+                            <button id="createRoomBtn" class="btn btn--primary btn--lg">
+                                <svg class="ico" aria-hidden="true"><use href="#i-deal" /></svg> Host a table
+                            </button>
+                            <button id="joinRoomBtn" class="btn btn--ghost btn--lg">
+                                <svg class="ico" aria-hidden="true"><use href="#i-enter" /></svg> Join a table
+                            </button>
+                        </div>
+
+                        <!-- Host panel -->
+                        <div id="host-controls" class="subpanel" hidden>
+                            <div class="subpanel__head">
+                                <h2>Your table</h2>
+                                <button class="btn btn--quiet btn--sm" data-back-to-choice>Back</button>
+                            </div>
+
+                            <p class="subpanel__hint">Share this code with your friends.</p>
+                            <div class="roomcode">
+                                <span id="roomCodeDisplay" class="roomcode__value">•••••</span>
+                                <button id="copyRoomCodeBtn" class="btn btn--ghost btn--sm" title="Copy room code">Copy</button>
+                            </div>
+
+                            <div class="option-row">
+                                <div>
+                                    <span class="option-row__label">Turn timer</span>
+                                    <span class="option-row__hint">Auto-plays for idle players</span>
+                                </div>
+                                <div class="segmented" id="turnTimerSeg" role="group" aria-label="Turn timer">
+                                    <button type="button" data-sec="0">Off</button>
+                                    <button type="button" data-sec="20">20s</button>
+                                    <button type="button" data-sec="30" class="is-active">30s</button>
+                                    <button type="button" data-sec="45">45s</button>
+                                </div>
+                            </div>
+
+                            <div class="seat-list">
+                                <div class="seat-list__head">
+                                    <span>At the table</span>
+                                    <span id="connected-players-count" class="tally">1 / 4</span>
+                                </div>
+                                <div id="connected-players-list" class="seat-list__body"></div>
+                            </div>
+
+                            <button id="startGameBtn" class="btn btn--danger btn--lg btn--block" disabled>
+                                Start game
+                            </button>
+                            <p class="subpanel__foot" id="startHint">Waiting for at least one more player…</p>
+                        </div>
+
+                        <!-- Join panel -->
+                        <div id="client-controls" class="subpanel" hidden>
+                            <div class="subpanel__head">
+                                <h2>Join a table</h2>
+                                <button class="btn btn--quiet btn--sm" data-back-to-choice>Back</button>
+                            </div>
+                            <label class="field">
+                                <span class="field__label">Room code</span>
+                                <input type="text" id="roomCodeInput" class="input--code" maxlength="5"
+                                    autocomplete="off" spellcheck="false" placeholder="ABC12">
+                            </label>
+                            <button id="connectToHostBtn" class="btn btn--primary btn--lg btn--block">Connect</button>
+                            <p id="client-status" class="status-line">Enter the host's room code to join.</p>
+
+                            <div class="seat-list" id="client-seat-list" hidden>
+                                <div class="seat-list__head">
+                                    <span>At the table</span>
+                                    <span id="client-players-count" class="tally">0 / 4</span>
+                                </div>
+                                <div id="client-players-list" class="seat-list__body"></div>
+                            </div>
+                        </div>
+
+                        <button id="showRulesBtn" class="btn btn--quiet btn--block">How to play</button>
+                    </div>
+
                 </div>
-                <p><strong>Connected Players:</strong> <span id="connected-players-count">0 / 3</span></p>
-                <div id="connected-players-list"></div>
-                <button id="startGameBtn" disabled>Start Game (2-4 Players)</button>
+            </div>
+        </section>
+
+        <!-- ---------- GAME BOARD ---------- -->
+        <section id="screen-game" class="screen">
+            <header id="hud">
+                <div class="hud__side hud__side--left">
+                    <button id="leaveGameBtn" class="icon-btn" title="Leave game" aria-label="Leave game">
+                        <svg class="ico" aria-hidden="true"><use href="#i-exit" /></svg>
+                    </button>
+                    <span id="hudRoomCode" class="hud-chip hud-chip--mono"></span>
+                </div>
+
+                <div class="hud__center">
+                    <div id="turn-pill" class="turn-pill">
+                        <!-- square perimeter, drawn from top-centre clockwise, so the
+                             countdown matches the profile of the monogram tile it frames -->
+                        <svg class="turn-pill__ring" viewBox="0 0 40 40" aria-hidden="true">
+                            <path class="turn-pill__ring-bg" d="M20 3 H37 V37 H3 V3 H20" />
+                            <path id="turnTimerArc" class="turn-pill__ring-arc" d="M20 3 H37 V37 H3 V3 H20" />
+                        </svg>
+                        <span id="turn-pill-avatar" class="turn-pill__avatar"></span>
+                        <span id="turn-pill-text" class="turn-pill__text">Waiting…</span>
+                    </div>
+                </div>
+
+                <div class="hud__side hud__side--right">
+                    <button id="soundToggleBtn" class="icon-btn" title="Sound on/off" aria-label="Toggle sound">
+                        <svg class="ico" aria-hidden="true"><use id="soundIconUse" href="#i-sound-on" /></svg>
+                    </button>
+                    <button id="rulesBtnGame" class="icon-btn icon-btn--glyph" title="How to play"
+                        aria-label="How to play">?</button>
+                    <button id="logToggleBtn" class="icon-btn" title="Game log" aria-label="Toggle game log">
+                        <svg class="ico" aria-hidden="true"><use href="#i-log" /></svg>
+                    </button>
+                </div>
+            </header>
+
+            <div id="table-area">
+                <div id="seats"></div>
+
+                <div id="table">
+                    <div class="table__felt"></div>
+                    <div class="table__rim"></div>
+
+                    <div class="table__content">
+                        <div id="suit-medallion" class="suit-medallion" title="Table suit">
+                            <span class="suit-medallion__label">Table suit</span>
+                            <span id="suit-medallion-glyph" class="suit-medallion__glyph">?</span>
+                            <span id="suit-medallion-name" class="suit-medallion__name">—</span>
+                        </div>
+
+                        <div id="pile" class="pile" aria-hidden="true"></div>
+
+                        <div id="last-play" class="last-play">Awaiting the first play…</div>
+                    </div>
+                </div>
             </div>
 
-            <div id="client-controls" class="setup-section" style="display:none;">
-                <h3>Join Room</h3>
-                <input type="text" id="roomCodeInput" placeholder="Enter Host's Room Code">
-                <button id="connectToHostBtn">Connect to Host</button>
-                <p id="client-status">Enter your name above, then the Room Code from the host and click "Connect to
-                    Host".</p>
-            </div>
+            <footer id="dock">
+                <div id="self-plate" class="self-plate" hidden></div>
+                <div id="hand-wrap">
+                    <div id="hand" class="hand"></div>
+                </div>
+                <div id="actions">
+                    <button id="playCardsBtn" class="btn btn--primary btn--action" disabled>
+                        <span class="btn__label">Play</span>
+                        <kbd>P</kbd>
+                    </button>
+                    <div id="select-counter" class="select-counter"><b>0</b> / 3 selected</div>
+                    <button id="callLiarBtn" class="btn btn--liar btn--action" disabled>
+                        <span class="btn__label">Liar!</span>
+                        <kbd>L</kbd>
+                    </button>
+                </div>
+            </footer>
+
+            <aside id="log-panel">
+                <div class="log-panel__head">
+                    <h3>Game log</h3>
+                    <button id="logCloseBtn" class="icon-btn icon-btn--sm" aria-label="Close log">
+                        <svg class="ico" aria-hidden="true"><use href="#i-close" /></svg>
+                    </button>
+                </div>
+                <div id="log-messages" class="log-panel__body"></div>
+            </aside>
+        </section>
+    </div>
+
+    <!-- ---------- Big turn announcement ---------- -->
+    <div id="turn-announce" class="turn-announce" aria-hidden="true">
+        <span class="turn-announce__text">Your turn</span>
+    </div>
+
+    <!-- ---------- Modals ---------- -->
+    <div id="modal-roulette" class="modal modal--roulette">
+        <div class="modal__backdrop"></div>
+        <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="rouletteTitle">
+            <h2 id="rouletteTitle" class="modal__title">Challenge</h2>
+            <p id="rouletteDetails" class="modal__sub"></p>
+
+            <div id="revealed-cards" class="revealed-cards"></div>
+
+            <p id="rouletteConsequence" class="roulette-consequence"></p>
+
+            <div id="revolver-stage" class="revolver-stage"></div>
+
+            <p id="rouletteResult" class="roulette-result"></p>
+            <button id="continueGameBtn" class="btn btn--primary btn--block" disabled>Continue</button>
         </div>
+    </div>
 
-        <div id="game-board" style="display:none;">
-            <div id="local-player-stats-area" style="display:none;">
-                <span class="stat-label">My Revolver:</span>
-                <div id="local-revolver-visuals" class="player-revolver-visuals has-tooltip"></div>
-            </div>
-            <div id="player-areas-container"></div>
-            <div id="center-table">
-                <div id="center-pile-visual">
-                    <div class="card-stack"></div>
-                </div>
-                <div id="table-type-display-area">
-                    <h4>Table Suit:</h4>
-                    <div id="table-type-card"></div>
-                </div>
-                <div id="played-cards-pile-info">Played this turn: 0 cards</div>
-            </div>
-            <div id="game-log">
-                <h4>Game Log</h4>
-                <div id="log-messages"></div>
-            </div>
-            <div id="player-hand-area"></div>
-            <div id="actions-area">
-                <button id="playCardsBtn" disabled>Play Cards</button>
-                <button id="callLiarBtn" disabled>"LIAR!"</button>
-            </div>
-        </div>
+    <div id="modal-gameover" class="modal modal--gameover">
+        <div class="modal__backdrop"></div>
+        <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+            <svg id="gameOverOrnament" class="gameover-ornament" viewBox="0 0 140 32" aria-hidden="true">
+                <use href="#i-ornament" />
+            </svg>
+            <h2 id="gameOverTitle" class="modal__title">Game over</h2>
+            <p id="gameOverMessage" class="modal__sub"></p>
 
-        <div id="challenge-roulette-overlay" class="modal">
-            <div class="modal-content">
-                <h3 id="challenge-roulette-title">Challenge Result!</h3>
-                <p id="challenge-roulette-details"></p>
-                <div id="revealed-cards-display"></div>
-                <p id="challenge-roulette-consequence"></p>
-                <div id="roulette-animation"></div>
-                <p id="roulette-result-text"></p>
-                <button id="continueGameBtn">Continue</button>
+            <div id="rematch-status" class="rematch" hidden>
+                <span class="rematch__label">Rematch</span>
+                <div id="rematch-status-list" class="rematch__list"></div>
             </div>
-        </div>
 
-        <div id="game-over-overlay" class="modal">
-            <div class="modal-content">
-                <h3 id="gameOverTitle">Game Over!</h3>
-                <p id="gameOverMessageP"></p>
-                <div id="rematch-status-container" style="display:none;">
-                    <h4>Rematch Status:</h4>
-                    <div id="rematch-status-list"></div>
-                </div>
-                <div>
-                    <button id="playAgainBtn">Ready for Rematch</button>
-                    <button id="exitGameBtn">Exit to Setup</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="rules-modal" class="modal">
-            <div class="modal-content">
-                <h3>How to Play E-Money's Bar</h3>
-                <div id="rules-scroll-content">
-                    <p>A high-stakes bluffing game, inspired by Liar's Dice, but with standard playing cards and a
-                        twist
-                        of Russian Roulette.</p>
-
-                    <ul>
-                        <li><strong>Goal:</strong> Be the last player standing.</li>
-                        <li><strong>Setup:</strong> Each player starts with 5 cards and a fully loaded 6-shot
-                            revolver
-                            (1 lethal bullet, 5 blanks). A specific <strong>Table Suit (H, D, C, or S)</strong> is
-                            chosen for the round.</li>
-                        <li><strong>Playing Cards (The Bluff):</strong>
-                            <p>On your turn, you must play 1 to 3 cards face down onto the center pile, declaring
-                                them
-                                all to be the <strong>current Table Suit</strong>.</p>
-                            <p>You may play cards that are NOT the Table Suit (a **Lie**), but the player who
-                                challenges
-                                you determines the truth.</p>
-                        </li>
-                        <li><strong>Running Out of Cards (Roulette Trigger):</strong>
-                            <p>If you successfully play your last card, you immediately face the **Revolver
-                                Roulette**
-                                challenge. If you survive, the round ends, and you start the next round with a
-                                reloaded
-                                revolver and a full hand.</p>
-                        </li>
-                        <li><strong>Challenging ("LIAR!"):</strong>
-                            <p>Instead of playing cards, you may call "LIAR!" on the previous player's move.</p>
-                            <p>A player who has run out of cards is **not** eliminated. If it is their turn and a
-                                play
-                                has been made, they **must** call LIAR, as they cannot play cards.</p>
-                        </li>
-                        <li><strong>The Challenge Reveal & Roulette:</strong>
-                            <p>The played cards are revealed. If the previous player was lying (one or more played
-                                cards
-                                did not match the Table Suit), <strong>the lying player faces the revolver.</strong>
-                            </p>
-                            <p>If the previous player was truthful, <strong>the challenger faces the
-                                    revolver.</strong>
-                            </p>
-                            <p>The punished player spins the 6-chamber revolver. If they draw the lethal bullet,
-                                they
-                                are **ELIMINATED**. If they draw a blank, they survive, and the revolver is reloaded
-                                for
-                                the next round.</p>
-                        </li>
-                        <li><strong>Winning:</strong> The last player remaining wins the game. The player who faced
-                            the
-                            revolver (or survived card depletion) starts the next round.</li>
-                    </ul>
-                </div>
-                <button id="closeRulesBtn">Got It</button>
+            <div class="modal__actions">
+                <button id="playAgainBtn" class="btn btn--primary">Ready for rematch</button>
+                <button id="exitGameBtn" class="btn btn--ghost">Leave table</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const MAX_PLAYERS = 4;
-        const MIN_PLAYERS = 2;
-        const HAND_SIZE = 5;
-
-        const SUITS = ['H', 'D', 'C', 'S'];
-        const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-        const SUIT_SYMBOLS = { 'H': '♥', 'D': '♦', 'C': '♣', 'S': '♠' };
-        const SUIT_COLORS = { 'H': 'var(--suit-red)', 'D': 'var(--suit-red)', 'C': 'var(--suit-black)', 'S': 'var(--suit-black)' };
-
-        const REVOLVER_CHAMBERS = 6;
-        const REVOLVER_BULLETS = 1;
-
-        const $ = (s) => document.querySelector(s);
-        const appContainer = $('#app-container'); const connectionSetupDiv = $('#connection-setup'); const gameBoardDiv = $('#game-board');
-        const playerNameInput = $('#playerNameInput'); const createRoomBtn = $('#createRoomBtn'); const joinRoomBtn = $('#joinRoomBtn');
-        const hostControlsDiv = $('#host-controls'); const roomCodeDisplay = $('#roomCodeDisplay'); const copyRoomCodeBtn = $('#copyRoomCodeBtn');
-        const connectedPlayersCountSpan = $('#connected-players-count'); const connectedPlayersListDiv = $('#connected-players-list'); const startGameBtn = $('#startGameBtn');
-        const clientControlsDiv = $('#client-controls'); const roomCodeInput = $('#roomCodeInput'); const connectToHostBtn = $('#connectToHostBtn');
-        const clientStatusP = $('#client-status');
-        const playerAreasContainer = $('#player-areas-container');
-        const centerPileVisualStack = $('#center-pile-visual .card-stack');
-        const tableTypeCardDiv = $('#table-type-card');
-        const playedCardsPileInfo = $('#played-cards-pile-info');
-        const logMessagesDiv = $('#log-messages');
-        const localPlayerStatsArea = $('#local-player-stats-area');
-        const localRevolverVisuals = $('#local-revolver-visuals');
-        const playerHandArea = $('#player-hand-area');
-        const playCardsBtn = $('#playCardsBtn');
-        const callLiarBtn = $('#callLiarBtn');
-        const challengeRouletteOverlay = $('#challenge-roulette-overlay');
-        const challengeRouletteTitle = $('#challenge-roulette-title');
-        const challengeRouletteDetailsP = $('#challenge-roulette-details');
-        const revealedCardsDisplay = $('#revealed-cards-display');
-        const challengeRouletteConsequenceP = $('#challenge-roulette-consequence');
-        const rouletteAnimationDiv = $('#roulette-animation');
-        const rouletteResultTextP = $('#roulette-result-text');
-        const continueGameBtn = $('#continueGameBtn');
-        const gameOverOverlay = $('#game-over-overlay');
-        const gameOverTitle = $('#gameOverTitle'); const gameOverMessageP = $('#gameOverMessageP');
-        const rematchStatusContainer = $('#rematch-status-container');
-        const rematchStatusListDiv = $('#rematch-status-list');
-        const playAgainBtn = $('#playAgainBtn'); const exitGameBtn = $('#exitGameBtn');
-        const rulesModal = $('#rules-modal');
-        const showRulesBtn = $('#showRulesBtn');
-        const closeRulesBtn = $('#closeRulesBtn');
-        const serverStatusBanner = $('#server-status-banner');
-
-        // Socket.IO Variables
-        let socket = null;
-        let currentRoomCode = null;
-
-        let localPlayer = { id: null, name: "", isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
-        let gameState = {
-            players: [],
-            liarsDeck: [],
-            tableDeck: [],
-            centerPile: [],
-            currentPlayerId: null,
-            currentTableSuit: null,
-            lastPlayedTurn: null,
-            gamePhase: 'lobby',
-            config: { handSize: HAND_SIZE },
-            centerPileCardCount: 0,
-            rematchReadyStatus: {},
-            lastChallengeRouletteTargetId: null
-        };
-
-        let hostConnections = {}; // Track connected client socket IDs natively
-
-        let selectedCardsForPlayUI = [];
-        let lastLoggedGameStateForClient = {};
-        let rouletteSymbolInterval = null;
-
-        function generateShortCode(length = 5) {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let code = '';
-            for (let i = 0; i < length; i++) {
-                code += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return code;
-        }
-
-        function copyToClipboard(text, buttonElement) {
-            if (!text || text.trim() === "" || text.startsWith("Waiting") || text.startsWith("Connecting") || text.startsWith("Error")) {
-                alert("No valid content to copy yet.");
-                return;
-            }
-            navigator.clipboard.writeText(text).then(() => {
-                if (buttonElement) {
-                    const originalText = buttonElement.textContent;
-                    const originalTitle = buttonElement.title;
-                    buttonElement.textContent = 'Copied!';
-                    buttonElement.title = 'Copied!';
-                    buttonElement.disabled = true;
-                    setTimeout(() => {
-                        buttonElement.textContent = originalText;
-                        buttonElement.title = originalTitle;
-                        buttonElement.disabled = false;
-                    }, 1500);
-                }
-                logDebug('Content copied to clipboard.');
-            }).catch(err => {
-                logDebug('Could not copy text: ', err);
-                alert('Failed to copy text.');
-            });
-        }
-
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func.apply(this, args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait, 250);
-            };
-        }
-
-        function toggleModal(modalElement, show) { if (show) { modalElement.style.display = 'flex'; setTimeout(() => modalElement.classList.add('visible'), 10); } else { modalElement.classList.remove('visible'); setTimeout(() => modalElement.style.display = 'none', 300); } }
-        function logDebug(message) { console.log(message); }
-
-        function addLogMessage(message, type = "info") {
-            const p = document.createElement('p');
-            p.textContent = message;
-            if (type === "error") p.classList.add('error');
-            else if (type === "system") p.classList.add('system');
-            else if (type === "success") p.classList.add('success');
-
-            if (logMessagesDiv) {
-                logMessagesDiv.appendChild(p);
-                logMessagesDiv.scrollTop = logMessagesDiv.scrollHeight;
-            } else console.warn("Log div not ready:", message);
-        }
-
-        function createCardElement(rank, suit, faceUp = true, isSmall = false) {
-            const cc = document.createElement('div'); cc.className = 'card-container'; const cardId = `${rank}${suit}`;
-            const w = isSmall ? (window.innerWidth <= 768 ? 45 : 50) : 60;
-            const h = isSmall ? (window.innerWidth <= 768 ? 68 : 75) : 90;
-            let svg;
-            if (!faceUp) {
-                svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card back" preserveAspectRatio="xMidYMid meet">
-                <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-back-bg)" stroke="var(--card-back-border)" stroke-width="1"/>
-                <rect x="3.5" y="3.5" width="53" height="83" rx="2.5" ry="2.5" fill="none" stroke="var(--card-back-motif)" stroke-width="1.5" opacity="0.7"/>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="var(--card-back-motif)" font-size="40" font-family="'Merriweather', serif" font-weight="bold" opacity="0.85">L</text>
-            </svg>`;
-            }
-            else {
-                const rankDisplay = rank === '10' ? '10' : rank.charAt(0); const suitSymbol = SUIT_SYMBOLS[suit] || suit; const color = SUIT_COLORS[suit] || 'var(--primary-text)';
-                svg = `<svg width="${w}" height="${h}" viewBox="0 0 60 90" class="card" preserveAspectRatio="xMidYMid meet">
-                <defs><filter id="cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')}" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceAlpha" stdDeviation="0.5"/><feOffset dx="0.5" dy="0.5" result="offsetblur"/><feFlood flood-color="rgba(0,0,0,0.15)"/><feComposite in2="offsetblur" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-                <rect x="0.5" y="0.5" width="59" height="89" rx="5.5" ry="5.5" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1" filter="url(#cardDropShadowInternal_${cardId.replace(/[^a-zA-Z0-9]/g, '')})"/>
-                <text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text>
-                <text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text>
-                <text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="36" fill="${color}">${suitSymbol}</text>
-                <g transform="rotate(180 30 45)"><text x="7" y="17" font-family="var(--font-family)" font-size="${rank === '10' ? '12' : '14'}" font-weight="700" fill="${color}">${rankDisplay}</text><text x="7" y="31" font-family="'Segoe UI Symbol', Arial, sans-serif" font-size="11" fill="${color}">${suitSymbol}</text></g>
-            </svg>`;
-            }
-            cc.innerHTML = svg; cc.dataset.cardId = cardId; cc.dataset.rank = rank; cc.dataset.suit = suit; return cc;
-        }
-
-        function renderPlayerHand() {
-            playerHandArea.innerHTML = '';
-            localPlayer.hand.sort((a, b) => {
-                const sO = { 'H': 0, 'D': 1, 'C': 2, 'S': 3 };
-                if (sO[a.suit] !== sO[b.suit]) return sO[a.suit] - sO[b.suit];
-                const rV = r => RANKS.indexOf(r);
-                return rV(a.rank) - rV(b.rank);
-            }).forEach(card => {
-                const cardEl = createCardElement(card.rank, card.suit, true);
-                cardEl.addEventListener('click', handleHandCardClickForPlay);
-
-                if (selectedCardsForPlayUI.some(c => c.id === card.id)) {
-                    cardEl.classList.add('selected-for-play');
-                }
-                playerHandArea.appendChild(cardEl);
-            });
-        }
-
-        function handleHandCardClickForPlay(event) {
-            const amICurr = gameState.currentPlayerId === localPlayer.id;
-            if (!amICurr || gameState.gamePhase !== 'playing') return;
-
-            const cE = event.currentTarget;
-            const cId = cE.dataset.cardId;
-            const idx = selectedCardsForPlayUI.findIndex(c => c.id === cId);
-
-            if (idx > -1) {
-                selectedCardsForPlayUI.splice(idx, 1);
-                cE.classList.remove('selected-for-play');
-            } else {
-                if (selectedCardsForPlayUI.length < 3) {
-                    const cardInH = localPlayer.hand.find(c => c.id === cId);
-                    if (cardInH) {
-                        selectedCardsForPlayUI.push(cardInH);
-                        cE.classList.add('selected-for-play');
-                    }
-                } else {
-                    alert("Warning: You can only select a maximum of 3 cards.");
-                    addLogMessage("Warning: You can only select a maximum of 3 cards.", "error");
-                }
-            }
-            updateActionButtons();
-        }
-
-        function renderPlayerAreas() {
-            playerAreasContainer.innerHTML = '';
-            const orderedPlayers = [...gameState.players];
-            if (orderedPlayers.length === 0) return;
-
-            const localPIndexInOrdered = orderedPlayers.findIndex(p => p.id === localPlayer.id);
-            let viewPlayers = [...orderedPlayers];
-            if (localPIndexInOrdered !== -1) {
-                viewPlayers = [...orderedPlayers.slice(localPIndexInOrdered), ...orderedPlayers.slice(0, localPIndexInOrdered)];
-            } else if (gameState.gamePhase !== 'lobby') {
-                logDebug("CRITICAL: Local player not found for layout."); return;
-            }
-
-            const opponents = viewPlayers.filter(p => p.id !== localPlayer.id);
-            const numOpponents = opponents.length;
-
-            if (numOpponents === 0 && gameState.players.length <= 1) return;
-
-            const gameBoardPadding = parseFloat(getComputedStyle(gameBoardDiv).paddingTop) || 20;
-            let playerAreaWidthEstimate = 200;
-            let playerAreaHeightEstimate = 140;
-
-            const tempPlayerAreaForEstimates = document.createElement('div');
-            tempPlayerAreaForEstimates.className = 'player-area';
-            tempPlayerAreaForEstimates.style.visibility = 'hidden';
-            tempPlayerAreaForEstimates.style.position = 'absolute';
-            playerAreasContainer.appendChild(tempPlayerAreaForEstimates);
-            playerAreaWidthEstimate = tempPlayerAreaForEstimates.offsetWidth || 200;
-            playerAreaHeightEstimate = tempPlayerAreaForEstimates.offsetHeight || 140;
-            playerAreasContainer.removeChild(tempPlayerAreaForEstimates);
-
-
-            const centerTableEl = $('#center-table');
-            if (!gameBoardDiv || !centerTableEl) {
-                logDebug("Board or center table not found for dynamic positioning - using fallback.");
-                const fallbackPositions = window.innerWidth <= 768 ?
-                    [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '30%', left: '10%', translateX: '0%', translateY: '-50%' }, { top: '30%', right: '10%', translateX: '0%', translateY: '-50%' }] :
-                    [{ top: '4%', left: '50%', translateX: '-50%', translateY: '-50%' }, { top: '50%', left: '15%', translateX: '0%', translateY: '-50%' }, { top: '50%', right: '15%', translateX: '0%', translateY: '-50%' }];
-
-                opponents.forEach((opponent, idx) => {
-                    const pa = document.createElement('div');
-                    pa.className = 'player-area';
-                    pa.dataset.playerId = opponent.id;
-                    let layoutData = fallbackPositions[idx % fallbackPositions.length] || { top: `${10 + idx * 15}%`, left: '10%' };
-                    Object.assign(pa.style, layoutData);
-                    pa.innerHTML = `<div class="player-avatar">${opponent.isHost ? '👑' : '👤'}</div><div class="player-name">${opponent.name}</div><span>Cards: ${opponent.cardCount}, Revolver: ${opponent.revolverChambersLeft}/${REVOLVER_CHAMBERS}</span>`;
-                    playerAreasContainer.appendChild(pa);
-                });
-                return;
-            }
-
-            const gbRect = gameBoardDiv.getBoundingClientRect();
-            const ctRect = centerTableEl.getBoundingClientRect();
-
-            const containerContentTopYAbsolute = gbRect.top + gameBoardPadding;
-            const containerContentLeftXAbsolute = gbRect.left + gameBoardPadding;
-
-            const zoneTopAbsoluteY = containerContentTopYAbsolute;
-            const zoneBottomAbsoluteY = ctRect.top;
-            const verticalZoneHeight = zoneBottomAbsoluteY - zoneTopAbsoluteY;
-
-            let topPlayerCenterCssTopVal;
-            const MIN_TOP_EDGE_GAP = 15;
-
-            const idealCenterInZoneRelative = verticalZoneHeight / 2;
-            const minCenterRequired = MIN_TOP_EDGE_GAP + (playerAreaHeightEstimate / 2);
-
-            if (verticalZoneHeight < (playerAreaHeightEstimate + 2 * MIN_TOP_EDGE_GAP)) {
-                topPlayerCenterCssTopVal = minCenterRequired;
-            } else {
-                topPlayerCenterCssTopVal = idealCenterInZoneRelative;
-                topPlayerCenterCssTopVal = Math.max(minCenterRequired, topPlayerCenterCssTopVal);
-            }
-
-            const actualTopGap = topPlayerCenterCssTopVal - (playerAreaHeightEstimate / 2);
-            const MIN_SIDE_GAP = 20;
-            let sidePlayerHorizontalGap = Math.max(MIN_SIDE_GAP, actualTopGap);
-
-            const ctLeftRel = ctRect.left - containerContentLeftXAbsolute;
-            const ctRightRel = ctRect.right - containerContentLeftXAbsolute;
-
-            const layoutSlots = [];
-
-            if (numOpponents === 1) {
-                layoutSlots.push({
-                    top: `${topPlayerCenterCssTopVal}px`, left: '50%',
-                    translateX: '-50%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-            } else if (numOpponents === 2) {
-                layoutSlots.push({
-                    top: `50%`,
-                    left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
-                    translateX: '0%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-                layoutSlots.push({
-                    top: `50%`,
-                    left: `${ctRightRel + sidePlayerHorizontalGap}px`,
-                    translateX: '0%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-            } else if (numOpponents === 3) {
-                layoutSlots.push({
-                    top: `50%`,
-                    left: `${ctLeftRel - sidePlayerHorizontalGap - playerAreaWidthEstimate}px`,
-                    translateX: '0%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-                layoutSlots.push({
-                    top: `${topPlayerCenterCssTopVal}px`, left: '50%',
-                    translateX: '-50%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-                layoutSlots.push({
-                    top: `50%`,
-                    left: `${ctRightRel + sidePlayerHorizontalGap}px`,
-                    translateX: '0%', translateY: '-50%',
-                    rotate: '0deg'
-                });
-            }
-
-            opponents.forEach((opponent, idx) => {
-                if (idx >= layoutSlots.length) {
-                    logDebug(`No dynamic layout slot for opponent index ${idx}.`);
-                    return;
-                }
-                const pa = document.createElement('div');
-                pa.className = 'player-area';
-                pa.dataset.playerId = opponent.id;
-
-                const layoutData = layoutSlots[idx];
-
-                pa.style.top = layoutData.top;
-                pa.style.left = layoutData.left;
-
-                const baseTX = layoutData.translateX || '0%';
-                const baseTY = layoutData.translateY || '0%';
-                const baseRot = layoutData.rotate || '0deg';
-
-                pa.style.setProperty('--base-translate-x', baseTX);
-                pa.style.setProperty('--base-translate-y', baseTY);
-                pa.style.setProperty('--base-rotate', baseRot);
-                pa.style.transform = `translateX(${baseTX}) translateY(${baseTY}) rotate(${baseRot})`;
-
-                if (opponent.id === gameState.currentPlayerId) {
-                    pa.classList.add('current-player');
-                }
-
-                if (opponent.eliminated) pa.classList.add('eliminated');
-
-                const av = opponent.isHost ? '👑' : '👤';
-                pa.innerHTML = `<div class="player-avatar">${av}</div><div class="player-name">${opponent.name}</div>`;
-
-                const cardVisualsContainer = document.createElement('div');
-                cardVisualsContainer.className = 'player-card-visuals has-tooltip';
-                const actualCardCount = opponent.eliminated ? 0 : (opponent.cardCount !== undefined ? opponent.cardCount : 0);
-                cardVisualsContainer.dataset.tooltip = `Cards: ${actualCardCount}`;
-                const miniCardStep = 8;
-
-                if (actualCardCount > 0) {
-                    const baseLeftOffset = (actualCardCount - 1) * -(miniCardStep / 2);
-                    for (let i = 0; i < actualCardCount; i++) {
-                        const cardElWrapper = createCardElement('X', 'X', false, true);
-                        cardElWrapper.classList.add('player-area-mini-card');
-                        cardElWrapper.style.position = 'absolute';
-                        cardElWrapper.style.left = `calc(50% + ${baseLeftOffset + i * miniCardStep}px)`;
-                        cardElWrapper.style.bottom = `${i * 1.5}px`;
-                        cardElWrapper.style.transform = 'translateX(-50%)';
-                        cardElWrapper.style.zIndex = i;
-                        cardVisualsContainer.appendChild(cardElWrapper);
-                    }
-                }
-                pa.appendChild(cardVisualsContainer);
-
-                const revolverVisualsContainer = document.createElement('div');
-                revolverVisualsContainer.className = 'player-revolver-visuals has-tooltip';
-                const chambersLeft = opponent.revolverChambersLeft !== undefined ? opponent.revolverChambersLeft : REVOLVER_CHAMBERS;
-                revolverVisualsContainer.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
-
-                for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
-                    const chamberEl = document.createElement('span');
-                    chamberEl.className = 'revolver-chamber';
-                    if (i < chambersLeft) {
-                        chamberEl.classList.add('available');
-                    } else {
-                        chamberEl.classList.add('fired');
-                    }
-                    revolverVisualsContainer.appendChild(chamberEl);
-                }
-                pa.appendChild(revolverVisualsContainer);
-
-                playerAreasContainer.appendChild(pa);
-            });
-
-            if (gameState.currentPlayerId === localPlayer.id && !localPlayer.eliminated) {
-                playerHandArea.classList.add('current-player-hand');
-            } else {
-                playerHandArea.classList.remove('current-player-hand');
-            }
-        }
-
-        function renderLocalPlayerStats() {
-            if (!localPlayerStatsArea || !localRevolverVisuals) return;
-            const showStats = (gameState.gamePhase === 'playing' ||
-                gameState.gamePhase === 'challenge_reveal' ||
-                gameState.gamePhase === 'roulette' ||
-                gameState.gamePhase === 'roulette_resolved') &&
-                !localPlayer.eliminated;
-
-            localPlayerStatsArea.style.display = showStats ? 'flex' : 'none';
-            if (!showStats) return;
-
-            localRevolverVisuals.innerHTML = '';
-            const chambersLeft = localPlayer.revolverChambersLeft !== undefined ? localPlayer.revolverChambersLeft : REVOLVER_CHAMBERS;
-            localRevolverVisuals.dataset.tooltip = `Revolver Rounds: ${chambersLeft}/${REVOLVER_CHAMBERS}`;
-
-            for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
-                const chamberEl = document.createElement('span');
-                chamberEl.className = 'revolver-chamber';
-                if (i < chambersLeft) {
-                    chamberEl.classList.add('available');
-                } else {
-                    chamberEl.classList.add('fired');
-                }
-                localRevolverVisuals.appendChild(chamberEl);
-            }
-        }
-
-        function updateTableDisplay() { if (gameState.currentTableSuit) { tableTypeCardDiv.innerHTML = SUIT_SYMBOLS[gameState.currentTableSuit] || gameState.currentTableSuit; tableTypeCardDiv.style.color = SUIT_COLORS[gameState.currentTableSuit] || 'var(--primary-text)'; } else { tableTypeCardDiv.innerHTML = '🎲'; tableTypeCardDiv.style.color = 'var(--secondary-text)'; } if (gameState.lastPlayedTurn) { const count = gameState.lastPlayedTurn.cardsPlayedCount !== undefined ? gameState.lastPlayedTurn.cardsPlayedCount : 0; playedCardsPileInfo.textContent = `Last play: ${gameState.lastPlayedTurn.playerName} played ${count} card(s) as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit] || gameState.lastPlayedTurn.declaredSuit}.`; } else if (gameState.gamePhase === 'playing') { playedCardsPileInfo.textContent = "Awaiting first play..."; } else { playedCardsPileInfo.textContent = "---"; } updateCenterPileVisual(); }
-
-        function updateCenterPileVisual() {
-            if (!centerPileVisualStack) return;
-            centerPileVisualStack.innerHTML = '';
-            const numCardsInPile = gameState.centerPileCardCount !== undefined ? gameState.centerPileCardCount : 0;
-            const maxVisualCards = 7;
-
-            if (numCardsInPile > 0) {
-                for (let i = 0; i < Math.min(numCardsInPile, maxVisualCards); i++) {
-                    const cardBackElement = createCardElement('X', 'X', false, true);
-                    const cardSvg = cardBackElement.querySelector('svg');
-                    if (cardSvg) {
-                        cardSvg.classList.add('card-back-dummy');
-                        cardSvg.style.position = 'absolute';
-                        const offsetX = (Math.random() - 0.5) * 4 + (i * 0.8);
-                        const offsetY = (Math.random() - 0.5) * 4 - (i * 0.8);
-                        cardSvg.style.transform = `translate(${offsetX}px, ${offsetY}px) rotate(${(Math.random() - 0.5) * 3}deg)`;
-                        cardSvg.style.zIndex = i;
-                        centerPileVisualStack.appendChild(cardSvg);
-                    }
-                }
-            }
-        }
-
-        function animatePlayedCards(playerId, numCardsPlayed) {
-            if (numCardsPlayed === 0 || !gameBoardDiv) return;
-
-            const sourceElement = (playerId === localPlayer.id) ? playerHandArea : playerAreasContainer.querySelector(`.player-area[data-player-id="${playerId}"]`);
-            const targetElement = centerPileVisualStack;
-
-            if (!sourceElement || !targetElement) {
-                logDebug(`Animation source/target not found for player ${playerId}`);
-                return;
-            }
-
-            const gameBoardRect = gameBoardDiv.getBoundingClientRect();
-            const cardToAnimateContainer = createCardElement('X', 'X', false, true);
-            const cardToAnimate = cardToAnimateContainer.querySelector('svg');
-            if (!cardToAnimate) return;
-
-            const cardWidth = parseFloat(cardToAnimate.getAttribute('width'));
-            const cardHeight = parseFloat(cardToAnimate.getAttribute('height'));
-
-            cardToAnimate.style.position = 'absolute';
-            cardToAnimate.style.zIndex = '100';
-
-            const sourceRect = sourceElement.getBoundingClientRect();
-            const initialX = (sourceRect.left + sourceRect.width / 2) - gameBoardRect.left - (cardWidth / 2);
-            const initialY = (sourceRect.top + sourceRect.height / 2) - gameBoardRect.top - (cardHeight / 2);
-
-            cardToAnimate.style.left = `${initialX}px`;
-            cardToAnimate.style.top = `${initialY}px`;
-            cardToAnimate.style.transform = 'scale(1.1) rotate(0deg)';
-            cardToAnimate.style.opacity = '1';
-
-            gameBoardDiv.appendChild(cardToAnimate);
-
-            const targetRect = targetElement.getBoundingClientRect();
-            const finalX = (targetRect.left + targetRect.width / 2) - gameBoardRect.left - (cardWidth / 2) + (Math.random() - 0.5) * 5;
-            const finalY = (targetRect.top + targetRect.height / 2) - gameBoardRect.top - (cardHeight / 2) + (Math.random() - 0.5) * 5;
-            const finalRotation = (Math.random() - 0.5) * 15;
-
-            requestAnimationFrame(() => {
-                cardToAnimate.style.transition = 'left 0.6s cubic-bezier(0.3, 0, 0.4, 1), top 0.6s cubic-bezier(0.3, 0, 0.4, 1), transform 0.6s cubic-bezier(0.3, 0, 0.4, 1), opacity 0.5s ease-in 0.25s';
-                requestAnimationFrame(() => {
-                    cardToAnimate.style.left = `${finalX}px`;
-                    cardToAnimate.style.top = `${finalY}px`;
-                    cardToAnimate.style.transform = `scale(0.8) rotate(${finalRotation}deg)`;
-                    cardToAnimate.style.opacity = '0';
-                });
-            });
-
-            cardToAnimate.addEventListener('transitionend', () => {
-                if (cardToAnimate.parentElement) {
-                    cardToAnimate.remove();
-                }
-            }, { once: true });
-        }
-
-        function updateActionButtons() {
-            const amICurrentPlayer = gameState.currentPlayerId === localPlayer.id;
-            const localPlayerData = gameState.players.find(p => p.id === localPlayer.id);
-            const amEliminated = localPlayerData ? localPlayerData.eliminated : true;
-
-            if (!amICurrentPlayer) {
-                selectedCardsForPlayUI = [];
-            }
-
-            playCardsBtn.disabled = !amICurrentPlayer || amEliminated || selectedCardsForPlayUI.length === 0;
-
-            if (selectedCardsForPlayUI.length > 0) {
-                playCardsBtn.textContent = `Play ${selectedCardsForPlayUI.length} Card(s)`;
-            } else {
-                playCardsBtn.textContent = "Play Cards";
-            }
-
-            callLiarBtn.disabled = !amICurrentPlayer || amEliminated || !gameState.lastPlayedTurn;
-
-            if (amICurrentPlayer && !amEliminated) {
-                playerHandArea.classList.add('current-player-hand');
-            } else {
-                playerHandArea.classList.remove('current-player-hand');
-            }
-        }
-        class LiarsDeckGameManager { static shuffleArray(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[array[i], array[j]] = [array[j], array[i]]; } } static createLiarsDeck() { const d = []; SUITS.forEach(s => { RANKS.forEach(r => { d.push({ rank: r, suit: s, id: `${r}${s}` }); }); }); this.shuffleArray(d); return d; } static createTableDeck() { const sS = [...SUITS]; this.shuffleArray(sS); return sS; } static createRevolverDeck() { const d = []; for (let i = 0; i < REVOLVER_CHAMBERS - REVOLVER_BULLETS; i++)d.push('blank'); for (let i = 0; i < REVOLVER_BULLETS; i++)d.push('lethal'); this.shuffleArray(d); return d; } static dealCardsFromLiarsDeck(pl, dk, hs) { pl.forEach(p => { if (!p.eliminated) { p.hand = []; for (let i = 0; i < hs; i++)if (dk.length > 0) p.hand.push(dk.pop()); } else p.hand = []; p.cardCount = p.hand.length; }); } static checkPlayedCardsTruth(pc, ts) { if (!pc || pc.length === 0) return true; for (const c of pc) if (c.suit !== ts) return false; return true; } }
-
-        // Socket.IO sendMessage adapter
-        function sendMessage(type, payload, targetClientId = null) {
-            const msgObject = { type, payload, senderId: localPlayer.id };
-            if (localPlayer.isHost) {
-                if (targetClientId) {
-                    if (hostConnections[targetClientId]) {
-                        socket.emit('host_private', { targetId: targetClientId, data: msgObject });
-                    } else logDebug(`Host: Connection to ${targetClientId} not found.`);
-                } else {
-                    socket.emit('host_broadcast', { roomCode: currentRoomCode, data: msgObject });
-                }
-            } else if (socket && socket.connected) {
-                socket.emit('client_send', { roomCode: currentRoomCode, data: msgObject });
-            } else {
-                logDebug("Client: Connection to host not open.");
-            }
-        }
-
-        function getConnectedAndActivePlayerIds() {
-            let connectedIds = [];
-            if (localPlayer.isHost) {
-                connectedIds = [localPlayer.id, ...Object.keys(hostConnections).filter(id => hostConnections[id])];
-            } else {
-                // Clients just read from gameState
-                connectedIds = gameState.players.map(p => p.id);
-            }
-            return connectedIds.filter(id => gameState.players.some(p => p.id === id));
-        }
-
-        function handleIncomingMessage(data) {
-            const msg = data;
-            logDebug(`Received: ${msg.type} from ${msg.senderId === localPlayer.id ? 'Self' : (gameState.players.find(p => p.id === msg.senderId)?.name || msg.senderId)}`);
-            const oldGameStateForLog = localPlayer.isHost ? null : JSON.parse(JSON.stringify(lastLoggedGameStateForClient));
-
-            if (localPlayer.isHost) {
-                switch (msg.type) {
-                    case 'PLAYER_ACTION_PLAY_CARDS': handleHostPlayerPlayCards(msg.senderId, msg.payload.cards); break;
-                    case 'PLAYER_ACTION_CALL_LIAR': handleHostPlayerCallLiar(msg.senderId); break;
-                    case 'CLIENT_DISCONNECTED': handleClientDisconnect(msg.senderId); break;
-                    case 'PLAYER_TOGGLE_REMATCH_READY':
-                        if (gameState.gamePhase === 'game_over') {
-                            const clientId = msg.senderId;
-                            const clientPlayer = gameState.players.find(p => p.id === clientId);
-                            const clientName = clientPlayer ? clientPlayer.name : clientId;
-
-                            const eligiblePlayers = getConnectedAndActivePlayerIds();
-                            if (!eligiblePlayers.includes(clientId)) {
-                                logDebug(`Host: Received rematch ready from ${clientName} but they are no longer eligible. Ignoring.`);
-                                if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
-                                    delete gameState.rematchReadyStatus[clientId];
-                                    broadcastGameState();
-                                }
-                                return;
-                            }
-
-                            gameState.rematchReadyStatus[clientId] = msg.payload.isReady;
-                            logDebug(`Host: Player ${clientName} readiness: ${msg.payload.isReady}`);
-                            updateRematchStatusDisplay();
-
-                            const allActuallyReady = eligiblePlayers.length > 0 &&
-                                eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                            if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                                addLogMessage("All players ready! Starting rematch...", "success");
-                                initializeNewGame();
-                            } else {
-                                broadcastGameState();
-                            }
-                        }
-                        break;
-                    case 'CLIENT_NAME_UPDATE':
-                        const pToUpdate = gameState.players.find(p => p.id === msg.senderId);
-                        if (pToUpdate) {
-                            pToUpdate.name = msg.payload.name;
-                            logDebug(`Host: Player ${msg.senderId} updated name to ${msg.payload.name}.`);
-                            updateConnectedPlayersDisplay();
-                            broadcastGameState();
-                        } else {
-                            logDebug(`Host: Received CLIENT_NAME_UPDATE for unknown peerId ${msg.senderId}`);
-                        }
-                        break;
-                }
-            } else {
-                switch (msg.type) {
-                    case 'GAME_STATE_UPDATE':
-                        const oldPhase = lastLoggedGameStateForClient?.gamePhase;
-                        const wasGameOver = oldPhase === 'game_over';
-
-                        Object.assign(gameState, msg.payload.gameState);
-                        localPlayer.hand = msg.payload.yourHand !== undefined ? msg.payload.yourHand : localPlayer.hand;
-                        const myPlayerDataFromState = gameState.players.find(p => p.id === localPlayer.id);
-                        if (myPlayerDataFromState) { Object.assign(localPlayer, myPlayerDataFromState); }
-
-                        if (gameState.gamePhase === 'playing' && oldGameStateForLog && Object.keys(oldGameStateForLog).length > 0) {
-                            if (gameState.currentTableSuit !== oldGameStateForLog.currentTableSuit && gameState.currentTableSuit) {
-                                addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
-                            }
-                            if (gameState.lastPlayedTurn && JSON.stringify(gameState.lastPlayedTurn) !== JSON.stringify(oldGameStateForLog.lastPlayedTurn)) {
-                                addLogMessage(`${gameState.lastPlayedTurn.playerName} plays ${gameState.lastPlayedTurn.cardsPlayedCount} as ${SUIT_SYMBOLS[gameState.lastPlayedTurn.declaredSuit]}.`, "system");
-                                animatePlayedCards(gameState.lastPlayedTurn.playerId, gameState.lastPlayedTurn.cardsPlayedCount);
-                            }
-                            if (gameState.currentPlayerId !== oldGameStateForLog.currentPlayerId && gameState.currentPlayerId) {
-                                const currPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-                                if (currPlayer) addLogMessage(`${currPlayer.name}'s turn.`, "system");
-                            }
-                        } else if (gameState.gamePhase === 'playing' && gameState.currentTableSuit && (!oldGameStateForLog || Object.keys(oldGameStateForLog).length === 0 || !oldGameStateForLog.currentTableSuit)) {
-                            addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
-                            const currPlayer = gameState.players.find(p => p.id === gameState.currentPlayerId);
-                            if (currPlayer) addLogMessage(`${currPlayer.name}'s turn.`, "system");
-                        }
-
-                        if (gameState.gamePhase === 'playing' && wasGameOver) {
-                            logDebug("Client: Rematch started! Transitioning UI.");
-                            if (gameOverOverlay.classList.contains('visible')) {
-                                toggleModal(gameOverOverlay, false);
-                            }
-                            if (challengeRouletteOverlay.classList.contains('visible')) {
-                                toggleModal(challengeRouletteOverlay, false);
-                            }
-                            showGameBoard();
-                        } else if ((gameState.gamePhase !== 'lobby') && connectionSetupDiv.style.display !== 'none') {
-                            showGameBoard();
-                        } else if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display !== 'none') {
-                            showConnectionSetup();
-                        }
-
-                        if (gameState.gamePhase !== 'lobby' && !(gameState.gamePhase === 'playing' && wasGameOver)) {
-                            updateFullUI();
-                        }
-
-                        if (gameState.gamePhase === 'game_over') {
-                            if (JSON.stringify(gameState.rematchReadyStatus) !== JSON.stringify(oldGameStateForLog?.rematchReadyStatus)) {
-                                updateRematchStatusDisplay();
-                                localPlayer.readyForRematch = gameState.rematchReadyStatus[localPlayer.id] === true;
-                                playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
-                                playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
-                            }
-                        }
-                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                        break;
-                    case 'CHALLENGE_ROULETTE_RESULTS':
-                        handleClientChallengeRouletteResults(msg.payload);
-
-                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                        break;
-                    case 'GAME_OVER': handleClientGameOver(msg.payload); lastLoggedGameStateForClient = {}; break;
-                    case 'PLAYER_JOINED_ACK':
-                        clientStatusP.textContent = `Joined room hosted by ${msg.payload.hostName}! Waiting for game...`;
-                        clientStatusP.style.color = "var(--accent-green)";
-                        gameState.players = msg.payload.players;
-                        const myInitialData = gameState.players.find(p => p.id === localPlayer.id);
-                        if (myInitialData) Object.assign(localPlayer, myInitialData);
-                        updatePlayerNameDisplay();
-                        lastLoggedGameStateForClient = JSON.parse(JSON.stringify(gameState));
-                        break;
-                    case 'HOST_DISCONNECTED':
-                        alert("Host disconnected. Returning to setup.");
-                        showConnectionSetup();
-                        lastLoggedGameStateForClient = {};
-                        break;
-                }
-            }
-        }
-
-        function initializeNewGame() {
-            if (!localPlayer.isHost) return;
-            logDebug("Host: Initializing new game (standard deck).");
-
-            const playerIdsFromPreviousGame = gameState.players.map(p => p.id);
-            const connectedAndEligibleIds = getConnectedAndActivePlayerIds()
-                .filter(id => playerIdsFromPreviousGame.includes(id));
-
-            let newGamePlayersList = [];
-            gameState.players.forEach(oldPlayer => {
-                if (connectedAndEligibleIds.includes(oldPlayer.id)) {
-                    newGamePlayersList.push({
-                        id: oldPlayer.id,
-                        name: oldPlayer.name,
-                        isHost: oldPlayer.isHost,
-                        eliminated: false,
-                        hand: [],
-                        revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
-                        revolverChambersLeft: REVOLVER_CHAMBERS,
-                        cardCount: 0
-                    });
-                }
-            });
-
-            if (!newGamePlayersList.some(p => p.id === localPlayer.id)) {
-                newGamePlayersList.unshift({
-                    id: localPlayer.id, name: localPlayer.name, isHost: true,
-                    eliminated: false, hand: [], revolverDeck: LiarsDeckGameManager.createRevolverDeck(),
-                    revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
-                });
-                newGamePlayersList = [...new Map(newGamePlayersList.map(item => [item.id, item])).values()];
-            }
-
-            // Randomize the seating order for a fairer game experience
-            LiarsDeckGameManager.shuffleArray(newGamePlayersList);
-            gameState.players = newGamePlayersList;
-
-            gameState.rematchReadyStatus = {};
-            gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck();
-            gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
-            gameState.centerPile = [];
-            gameState.centerPileCardCount = 0;
-            gameState.lastPlayedTurn = null;
-            gameState.currentPlayerId = null;
-            gameState.lastChallengeRouletteTargetId = null;
-
-            if (gameOverOverlay.classList.contains('visible')) {
-                toggleModal(gameOverOverlay, false);
-            }
-
-            startNewRound();
-        }
-
-        function startNewRound() {
-            if (!localPlayer.isHost) return;
-
-            logDebug("Host: Starting new round (suit based).");
-
-            if (gameState.tableDeck.length === 0) gameState.tableDeck = LiarsDeckGameManager.createTableDeck();
-            gameState.currentTableSuit = gameState.tableDeck.pop();
-            addLogMessage(`New Round! Table Suit is: ${SUIT_SYMBOLS[gameState.currentTableSuit]} (${gameState.currentTableSuit})`, "system");
-
-            const activePlayers = gameState.players.filter(p => !p.eliminated);
-            if (gameState.liarsDeck.length < activePlayers.length * HAND_SIZE) {
-                gameState.liarsDeck = LiarsDeckGameManager.createLiarsDeck();
-                addLogMessage("Liar's Deck (standard) reshuffled.", "system");
-            }
-
-            LiarsDeckGameManager.dealCardsFromLiarsDeck(gameState.players, gameState.liarsDeck, HAND_SIZE);
-            gameState.centerPile = [];
-            gameState.centerPileCardCount = 0;
-            gameState.lastPlayedTurn = null;
-
-
-            let starterPlayerId = null;
-
-            if (gameState.lastChallengeRouletteTargetId) {
-                const potentialStarter = gameState.players.find(p => p.id === gameState.lastChallengeRouletteTargetId);
-
-                if (potentialStarter && !potentialStarter.eliminated) {
-                    starterPlayerId = potentialStarter.id;
-                    addLogMessage(`${potentialStarter.name} starts the round (Last Challenge Consequence).`, "system");
-                }
-
-                gameState.lastChallengeRouletteTargetId = null;
-            }
-
-            if (!starterPlayerId) {
-                if (activePlayers.length === 0) { logDebug("CRITICAL Error: No uneliminated players."); return; }
-                const randomIndex = Math.floor(Math.random() * activePlayers.length);
-                starterPlayerId = activePlayers[randomIndex].id;
-                addLogMessage(`${activePlayers.find(p => p.id === starterPlayerId).name} starts the round (Random Pick).`, "system");
-            }
-
-            gameState.currentPlayerId = starterPlayerId;
-
-            gameState.gamePhase = 'playing';
-            const currentPlayerName = gameState.players.find(p => p.id === gameState.currentPlayerId)?.name || "Unknown";
-
-            if (starterPlayerId !== localPlayer.id) {
-                addLogMessage(`${currentPlayerName}'s turn.`, "system");
-            }
-            broadcastGameState();
-        }
-
-
-        function executeRoulette(targetPlayer) {
-            if (!localPlayer.isHost) return;
-
-            const target = gameState.players.find(p => p.id === targetPlayer.id);
-            if (!target || target.eliminated) { logDebug(`Roulette target ${targetPlayer.name} gone.`); return null; }
-
-            if (!target.revolverDeck || target.revolverDeck.length === 0) {
-                target.revolverDeck = LiarsDeckGameManager.createRevolverDeck();
-                target.revolverChambersLeft = REVOLVER_CHAMBERS;
-                addLogMessage(`${target.name}'s revolver reloaded.`, "system");
-            }
-
-            const fired = target.revolverDeck.pop();
-            target.revolverChambersLeft = target.revolverDeck.length;
-
-            let outcomeText;
-            if (fired === 'lethal') {
-                target.eliminated = true;
-                target.cardCount = 0;
-                outcomeText = `BANG! ${target.name} ELIMINATED!`;
-                addLogMessage(outcomeText, "error");
-            } else {
-                outcomeText = `CLICK! ${target.name} survives.`;
-                addLogMessage(outcomeText, "system");
-                if (target.revolverDeck.length === 0) {
-                    addLogMessage(`${target.name}'s revolver empty, reloaded.`, "system");
-                    target.revolverDeck = LiarsDeckGameManager.createRevolverDeck();
-                    target.revolverChambersLeft = REVOLVER_CHAMBERS;
-                }
-            }
-
-
-            gameState.lastChallengeRouletteTargetId = target.id;
-
-            gameState.players.forEach(p => p.cardCount = p.eliminated ? 0 : p.hand.length);
-
-            return {
-                rouletteTarget: { id: target.id, name: target.name },
-                rouletteOutcome: fired,
-                rouletteOutcomeText: outcomeText,
-                updatedPlayersData: gameState.players.map(p => ({ id: p.id, name: p.name, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount }))
-            };
-        }
-
-
-        function handleHostPlayerPlayCards(playerId, playedCardIds) {
-            if (!localPlayer.isHost || playerId !== gameState.currentPlayerId || gameState.gamePhase !== 'playing') return;
-            const player = gameState.players.find(p => p.id === playerId);
-            if (!player || player.eliminated || player.cardCount === 0) return;
-
-            if (!playedCardIds || playedCardIds.length === 0 || playedCardIds.length > 3) {
-                logDebug(`Host: Invalid play count for ${playerId}.`);
-                broadcastGameState(playerId);
-                return;
-            }
-
-            const actualPlayedCards = [];
-            const remainingHand = [...player.hand];
-            let validPlay = true;
-
-            playedCardIds.forEach(cardId => {
-                const cardIndex = remainingHand.findIndex(c => c.id === cardId);
-                if (cardIndex === -1) {
-                    logDebug(`Host: Player ${playerId} attempted to play card ${cardId} not in their hand.`);
-                    validPlay = false;
-                } else {
-                    actualPlayedCards.push(remainingHand.splice(cardIndex, 1)[0]);
-                }
-            });
-
-            if (!validPlay || actualPlayedCards.length !== playedCardIds.length) {
-                logDebug(`Host: Validation failed for player ${playerId}. Dropping message.`);
-                broadcastGameState(playerId);
-                return;
-            }
-
-
-            player.hand = remainingHand;
-            player.cardCount = player.hand.length;
-
-            gameState.lastPlayedTurn = { playerId, playerName: player.name, cardsPlayed: actualPlayedCards, cardsPlayedCount: actualPlayedCards.length, declaredSuit: gameState.currentTableSuit };
-            gameState.centerPile.push(...actualPlayedCards);
-            gameState.centerPileCardCount = gameState.centerPile.length;
-
-            addLogMessage(`${player.name} plays ${actualPlayedCards.length} as ${SUIT_SYMBOLS[gameState.currentTableSuit]}.`, "system");
-
-            if (gameBoardDiv.style.display !== 'none') {
-                animatePlayedCards(playerId, actualPlayedCards.length);
-            }
-
-
-            if (player.cardCount === 0) {
-                logDebug(`${player.name} ran out of cards! Triggering roulette.`);
-                gameState.gamePhase = 'roulette';
-
-                const rouletteResults = executeRoulette(player);
-                if (!rouletteResults) return;
-
-                const results = {
-                    isCardDepletion: true,
-                    rouletteTarget: rouletteResults.rouletteTarget,
-                    rouletteOutcome: rouletteResults.rouletteOutcome,
-                    rouletteOutcomeText: rouletteResults.rouletteOutcomeText,
-                    updatedPlayersData: rouletteResults.updatedPlayersData
-                };
-
-
-                sendMessage('CHALLENGE_ROULETTE_RESULTS', results);
-                handleClientChallengeRouletteResults(results);
-
-
-                gameState.gamePhase = 'roulette_resolved';
-                broadcastGameState();
-
-
-                setTimeout(() => {
-                    const uneliminated = gameState.players.filter(p => !p.eliminated);
-                    if (uneliminated.length <= 1) {
-                        gameState.gamePhase = 'game_over';
-                        const winner = uneliminated.length === 1 ? uneliminated[0] : null;
-                        const goData = {
-                            winner: winner ? { id: winner.id, name: winner.name } : null,
-                            reason: winner ? `${winner.name} wins the game!` : "It's a draw!"
-                        };
-                        sendMessage('GAME_OVER', goData);
-                        handleClientGameOver(goData);
-                    } else {
-                        startNewRound();
-                    }
-                }, 3500);
-
-                return;
-            }
-
-
-
-            let currentIdx = gameState.players.findIndex(p => p.id === playerId);
-            let attempts = 0; let nextFound = false;
-            if (gameState.players.length > 0) {
-                do { currentIdx = (currentIdx + 1) % gameState.players.length; attempts++; if (!gameState.players[currentIdx].eliminated) { nextFound = true; break; } } while (attempts < gameState.players.length * 2);
-            }
-            if (nextFound) gameState.currentPlayerId = gameState.players[currentIdx].id;
-            else logDebug("No next player found after play.");
-
-            broadcastGameState();
-        }
-
-        function handleHostPlayerCallLiar(challengerId) {
-            if (!localPlayer.isHost || challengerId !== gameState.currentPlayerId || !gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return;
-            const challenger = gameState.players.find(p => p.id === challengerId);
-            const accusedId = gameState.lastPlayedTurn.playerId;
-            const accused = gameState.players.find(p => p.id === accusedId);
-            if (!challenger || challenger.eliminated || !accused) { logDebug("Challenge error: invalid players."); return; }
-
-            addLogMessage(`${challenger.name} calls LIAR! on ${accused.name}.`, "system");
-
-            gameState.gamePhase = 'challenge_reveal';
-
-            const played = gameState.lastPlayedTurn.cardsPlayed;
-            const tableSuit = gameState.currentTableSuit;
-            const wasLie = !LiarsDeckGameManager.checkPlayedCardsTruth(played, tableSuit);
-
-            let rouletteTarget;
-            if (wasLie) {
-                addLogMessage(`${accused.name} was LYING! (Not all ${SUIT_SYMBOLS[tableSuit]})`, "error");
-                rouletteTarget = accused;
-            } else {
-                addLogMessage(`${accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[tableSuit]})`, "success");
-                rouletteTarget = challenger;
-            }
-
-            const rouletteResults = executeRoulette(rouletteTarget);
-            if (!rouletteResults) return;
-
-            const results = { challenger: { id: challenger.id, name: challenger.name }, accused: { id: accused.id, name: accused.name }, playedCards: played, tableSuit: tableSuit, claimWasLie: wasLie, isCardDepletion: false, rouletteTarget: rouletteResults.rouletteTarget, rouletteOutcome: rouletteResults.rouletteOutcome, rouletteOutcomeText: rouletteResults.rouletteOutcomeText, updatedPlayersData: rouletteResults.updatedPlayersData };
-
-
-            sendMessage('CHALLENGE_ROULETTE_RESULTS', results);
-            handleClientChallengeRouletteResults(results);
-
-
-            gameState.gamePhase = 'roulette_resolved';
-            broadcastGameState();
-
-
-            setTimeout(() => {
-                const uneliminated = gameState.players.filter(p => !p.eliminated);
-
-                if (uneliminated.length <= 1) {
-                    gameState.gamePhase = 'game_over';
-                    const winner = uneliminated.length === 1 ? uneliminated[0] : null;
-                    const goData = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} is the last one standing!` : "It's a draw... or mutual destruction!" };
-
-                    sendMessage('GAME_OVER', goData);
-                    handleClientGameOver(goData);
-
-                } else {
-                    startNewRound();
-                }
-            }, 3500);
-        }
-
-        function handleClientChallengeRouletteResults(data) {
-            rouletteResultTextP.textContent = '';
-
-            if (data.isCardDepletion) {
-                addLogMessage(`${data.rouletteTarget.name} ran out of cards! Facing roulette.`, "system");
-                challengeRouletteTitle.textContent = `${data.rouletteTarget.name} RAN OUT OF CARDS!`;
-                challengeRouletteDetailsP.textContent = `Player ran out of cards during their turn.`;
-                revealedCardsDisplay.innerHTML = '';
-            } else {
-                if (localPlayer.id !== data.challenger.id && localPlayer.id !== data.accused.id) {
-                    addLogMessage(`${data.challenger.name} calls LIAR! on ${data.accused.name}.`, "system");
-                }
-                if (data.claimWasLie) { addLogMessage(`${data.accused.name} was LYING! (Not all ${SUIT_SYMBOLS[data.tableSuit]})`, "error"); }
-                else { addLogMessage(`${data.accused.name} was TRUTHFUL! (All ${SUIT_SYMBOLS[data.tableSuit]})`, "success"); }
-
-                challengeRouletteTitle.textContent = data.claimWasLie ? `${data.accused.name} CAUGHT LYING!` : `CHALLENGE FAILED!`;
-                challengeRouletteDetailsP.textContent = `${data.challenger.name} challenged ${data.accused.name}. Claimed Suit: ${SUIT_SYMBOLS[data.tableSuit]}.`;
-                revealedCardsDisplay.innerHTML = ''; data.playedCards.forEach(c => revealedCardsDisplay.appendChild(createCardElement(c.rank, c.suit, true, true)));
-            }
-
-            gameState.gamePhase = 'roulette';
-            data.updatedPlayersData.forEach(updP => { const pLocal = gameState.players.find(p => p.id === updP.id); if (pLocal) Object.assign(pLocal, updP); if (localPlayer.id === updP.id) Object.assign(localPlayer, updP); });
-
-            challengeRouletteConsequenceP.textContent = `${data.rouletteTarget.name} faces the Roulette!`;
-
-            if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
-            const rouletteSymbols = ['<span style="font-size:2em; padding: 0 5px;">🃏</span>', '<span style="font-size:2em; padding: 0 5px;">🎲</span>', '<span style="font-size:2em; padding: 0 5px;">❔</span>', '<span style="font-size:2em; padding: 0 5px;">💀</span>', '<span style="font-size:2em; padding: 0 5px;">🤞</span>'];
-            let symbolIndex = 0;
-            rouletteAnimationDiv.innerHTML = rouletteSymbols[0];
-            rouletteAnimationDiv.classList.add('spinning');
-
-            rouletteSymbolInterval = setInterval(() => {
-                symbolIndex = (symbolIndex + 1) % rouletteSymbols.length;
-                rouletteAnimationDiv.innerHTML = rouletteSymbols[symbolIndex];
-            }, 150);
-
-            setTimeout(() => {
-                if (rouletteSymbolInterval) clearInterval(rouletteSymbolInterval);
-                rouletteAnimationDiv.classList.remove('spinning');
-                rouletteAnimationDiv.innerHTML = data.rouletteOutcome === 'lethal' ? `<span style="font-size:2.2em; color: var(--accent-red-darker); font-weight:bold;">💥 BANG! 💥</span>` : `<span style="font-size:2.2em; color: var(--accent-green-darker); font-weight:bold;">💨 Click! 💨</span>`;
-                rouletteResultTextP.textContent = data.rouletteOutcomeText;
-                rouletteResultTextP.style.color = data.rouletteOutcome === 'lethal' ? 'var(--accent-red)' : 'var(--accent-green)';
-                addLogMessage(data.rouletteOutcomeText, data.rouletteOutcome === 'lethal' ? "error" : "system");
-            }, 2000);
-
-            toggleModal(challengeRouletteOverlay, true); updateFullUI();
-        }
-
-        function updateRematchStatusDisplay() {
-            if (gameState.gamePhase !== 'game_over' || !rematchStatusContainer) {
-                if (rematchStatusContainer) rematchStatusContainer.style.display = 'none';
-                return;
-            }
-            rematchStatusContainer.style.display = 'block';
-            rematchStatusListDiv.innerHTML = '';
-
-            const eligibleForRematchDisplay = getConnectedAndActivePlayerIds();
-
-            eligibleForRematchDisplay.forEach(playerId => {
-                const player = gameState.players.find(p => p.id === playerId);
-                if (player) {
-                    const statusSpan = document.createElement('span');
-                    const isReady = gameState.rematchReadyStatus[playerId] === true;
-                    statusSpan.textContent = `${player.name}: ${isReady ? 'Ready 👍' : 'Not Ready...'}`;
-                    statusSpan.className = isReady ? 'ready' : 'not-ready';
-                    rematchStatusListDiv.appendChild(statusSpan);
-                }
-            });
-        }
-
-        function handleClientGameOver(data) {
-            gameState.gamePhase = 'game_over';
-            gameState.rematchReadyStatus = {};
-
-            const eligibleForRematchInit = getConnectedAndActivePlayerIds();
-            eligibleForRematchInit.forEach(id => {
-                gameState.rematchReadyStatus[id] = false;
-            });
-
-            localPlayer.readyForRematch = false;
-
-            gameOverTitle.textContent = data.winner ? `👑 ${data.winner.name} Wins! 👑` : "Game Over!";
-            gameOverMessageP.textContent = data.reason;
-            addLogMessage(data.reason, "system");
-
-            playAgainBtn.textContent = "Ready for Rematch";
-            playAgainBtn.style.backgroundColor = 'var(--accent-gold)';
-            playAgainBtn.disabled = false;
-
-            updateRematchStatusDisplay();
-            toggleModal(gameOverOverlay, true);
-            toggleModal(challengeRouletteOverlay, false);
-            updateActionButtons();
-            updateFullUI();
-        }
-
-        function broadcastGameState() {
-            if (!localPlayer.isHost) return;
-            const common = {
-                players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, eliminated: p.eliminated, revolverChambersLeft: p.revolverChambersLeft, cardCount: p.cardCount })),
-                currentPlayerId: gameState.currentPlayerId,
-                currentTableSuit: gameState.currentTableSuit,
-                lastPlayedTurn: gameState.lastPlayedTurn ? { playerId: gameState.lastPlayedTurn.playerId, playerName: gameState.lastPlayedTurn.playerName, cardsPlayedCount: gameState.lastPlayedTurn.cardsPlayedCount, declaredSuit: gameState.lastPlayedTurn.declaredSuit } : null,
-                gamePhase: gameState.gamePhase,
-                centerPileCardCount: gameState.centerPile.length,
-                rematchReadyStatus: gameState.rematchReadyStatus,
-                lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId
-            };
-            gameState.players.forEach(p => {
-                if (p.id !== localPlayer.id && hostConnections[p.id]) {
-                    sendMessage('GAME_STATE_UPDATE', { gameState: { ...common }, yourHand: p.hand }, p.id);
-                }
-            });
-            const myPData = gameState.players.find(p => p.id === localPlayer.id);
-            if (myPData) Object.assign(localPlayer, myPData);
-            updateFullUI();
-        }
-        function showConnectionSetup() {
-            connectionSetupDiv.style.display = 'flex';
-            gameBoardDiv.style.display = 'none';
-            toggleModal(gameOverOverlay, false);
-            toggleModal(challengeRouletteOverlay, false);
-            toggleModal(rulesModal, false);
-            hostControlsDiv.style.display = 'none';
-            clientControlsDiv.style.display = 'none';
-            roomCodeDisplay.textContent = 'Waiting for Room Code...';
-            roomCodeInput.value = '';
-            connectedPlayersCountSpan.textContent = `0 / ${MAX_PLAYERS - 1}`;
-            connectedPlayersListDiv.innerHTML = '';
-            startGameBtn.disabled = true;
-            clientStatusP.textContent = 'Enter your name above, then the Room Code from the host and click "Connect to Host".';
-            clientStatusP.style.color = 'var(--secondary-text)';
-
-            const currentName = playerNameInput.value || localPlayer.name;
-            localPlayer = { id: socket?.id, name: currentName, isHost: false, hand: [], eliminated: false, revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0, readyForRematch: false };
-            if (currentName) playerNameInput.value = currentName;
-
-            gameState = { players: [], liarsDeck: [], tableDeck: [], centerPile: [], currentPlayerId: null, currentTableSuit: null, lastPlayedTurn: null, gamePhase: 'lobby', config: { handSize: HAND_SIZE }, centerPileCardCount: 0, rematchReadyStatus: {}, lastChallengeRouletteTargetId: null };
-
-            hostConnections = {};
-            selectedCardsForPlayUI = [];
-
-            logDebug("UI reset to connection setup.");
-            lastLoggedGameStateForClient = {};
-            logMessagesDiv.innerHTML = '';
-            localPlayerStatsArea.style.display = 'none';
-        }
-
-        function showGameBoard() {
-            connectionSetupDiv.style.display = 'none';
-            gameBoardDiv.style.display = 'flex'; // Fix: maintains the flex layout context
-            if (gameOverOverlay.classList.contains('visible')) {
-                toggleModal(gameOverOverlay, false);
-            }
-            if (challengeRouletteOverlay.classList.contains('visible')) {
-                toggleModal(challengeRouletteOverlay, false);
-            }
-            updateFullUI();
-        }
-
-        function updateFullUI() {
-            if (gameState.gamePhase === 'lobby' && gameBoardDiv.style.display === 'none') return;
-            renderPlayerHand();
-            renderPlayerAreas();
-            renderLocalPlayerStats();
-            updateTableDisplay();
-            updateActionButtons();
-            if (gameState.gamePhase === 'game_over') {
-                updateRematchStatusDisplay();
-            }
-        }
-
-        function updatePlayerNameDisplay() { playerNameInput.value = localPlayer.name; }
-
-        function initializeSocketHost() {
-            if (!socket || !socket.connected) {
-                alert("Still connecting to server. Please wait a moment.");
-                return;
-            }
-            currentRoomCode = generateShortCode();
-            socket.emit('create_room', currentRoomCode);
-
-            localPlayer.id = socket.id;
-            roomCodeDisplay.textContent = currentRoomCode;
-            logDebug(`Host Socket ID: ${socket.id}, Room Code: ${currentRoomCode}`);
-            addLogMessage(`Room created! Share Code: ${currentRoomCode}`, "success");
-            clientStatusP.textContent = "";
-
-            gameState.players = [{
-                id: localPlayer.id, name: localPlayer.name, isHost: true, eliminated: false,
-                hand: [], revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
-            }];
-            updateConnectedPlayersDisplay();
-
-            socket.off('player_joined');
-            socket.on('player_joined', ({ id, name }) => {
-                logDebug(`Host: Incoming connection from ${name} (${id})`);
-                if (Object.keys(hostConnections).length >= MAX_PLAYERS - 1) {
-                    logDebug(`Host: Room full. Rejecting connection from ${id}`);
-                    socket.emit('host_private', { targetId: id, data: { type: 'ROOM_FULL_REJECT' } });
-                    return;
-                }
-
-                hostConnections[id] = true;
-
-                const newPlayer = {
-                    id: id,
-                    name: name || `Player ${Object.keys(hostConnections).length + 1}`,
-                    isHost: false, eliminated: false, hand: [],
-                    revolverDeck: [], revolverChambersLeft: REVOLVER_CHAMBERS, cardCount: 0
-                };
-                gameState.players.push(newPlayer);
-                updateConnectedPlayersDisplay();
-
-                sendMessage('PLAYER_JOINED_ACK', {
-                    yourId: id,
-                    hostName: localPlayer.name,
-                    players: gameState.players.map(p => ({ id: p.id, name: p.name, isHost: p.isHost, cardCount: p.cardCount }))
-                }, id);
-            });
-
-            socket.off('player_data');
-            socket.on('player_data', ({ id, data }) => {
-                if (data.type === 'CLIENT_DISCONNECTED') {
-                    handleClientDisconnect(id);
-                } else {
-                    handleIncomingMessage(data);
-                }
-            });
-        }
-
-        function connectToSocketClient(hostIdToJoin) {
-            if (!socket || !socket.connected) {
-                alert("Still connecting to server. Please wait a moment.");
-                return;
-            }
-
-            currentRoomCode = hostIdToJoin;
-            localPlayer.id = socket.id;
-            socket.emit('join_room', { roomCode: currentRoomCode, name: localPlayer.name });
-            logDebug(`Client Socket ID: ${socket.id}. Attempting to connect to room: ${currentRoomCode}`);
-
-            clientStatusP.textContent = `Attempting to join room: ${currentRoomCode}...`;
-            clientStatusP.style.color = "var(--accent-highlight)";
-
-            socket.off('game_data');
-            socket.on('game_data', (data) => {
-                if (data.type === 'ROOM_FULL_REJECT') {
-                    alert("Host's room is full. Cannot join.");
-                    showConnectionSetup();
-                    return;
-                }
-                handleIncomingMessage(data);
-            });
-
-            socket.off('error_msg');
-            socket.on('error_msg', (msg) => {
-                alert(msg);
-                showConnectionSetup();
-            });
-        }
-
-        function handleClientDisconnect(clientId) {
-            logDebug(`Host: Client ${gameState.players.find(p => p.id === clientId)?.name || clientId} disconnect processing.`);
-
-            if (hostConnections[clientId]) {
-                delete hostConnections[clientId];
-            }
-
-            const dP = gameState.players.find(p => p.id === clientId);
-            let gameLogicChanged = false;
-
-            if (dP) {
-                if (gameState.gamePhase === 'game_over') {
-                    let statusActuallyChanged = false;
-                    if (gameState.rematchReadyStatus.hasOwnProperty(clientId)) {
-                        delete gameState.rematchReadyStatus[clientId];
-                        statusActuallyChanged = true;
-                    }
-                    addLogMessage(`${dP.name} disconnected. No longer part of rematch.`, "system");
-                    statusActuallyChanged = true;
-
-                    const eligibleRematchPlayers = getConnectedAndActivePlayerIds();
-                    const allActuallyReady = eligibleRematchPlayers.length > 0 &&
-                        eligibleRematchPlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                    if (eligibleRematchPlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                        addLogMessage("All remaining players ready! Starting rematch...", "success");
-                        initializeNewGame();
-                    } else if (statusActuallyChanged) {
-                        broadcastGameState();
-                    }
-                } else if (!dP.eliminated && ['playing', 'challenge_reveal', 'roulette', 'roulette_resolved'].includes(gameState.gamePhase)) {
-                    dP.eliminated = true; dP.cardCount = 0; addLogMessage(`${dP.name} disconnected & was eliminated.`, "system"); gameLogicChanged = true;
-                    const unelim = gameState.players.filter(p => !p.eliminated);
-                    if (unelim.length <= 1 && gameState.gamePhase !== 'game_over') {
-                        gameState.gamePhase = 'game_over';
-                        const winner = unelim.length === 1 ? unelim[0] : null;
-                        const goD = { winner: winner ? { id: winner.id, name: winner.name } : null, reason: winner ? `${winner.name} wins by default (opponent disconnected)!` : "Game ended due to disconnections." };
-                        sendMessage('GAME_OVER', goD);
-                        handleClientGameOver(goD);
-                    } else if (gameState.gamePhase !== 'game_over' && gameState.currentPlayerId === clientId) {
-                        let cpi = gameState.players.findIndex(p => p.id === clientId);
-                        let att = 0; let nextF = false;
-                        if (gameState.players.length > 0) {
-                            do { cpi = (cpi + 1) % gameState.players.length; att++; if (!gameState.players[cpi].eliminated) nextF = true; break; }
-                            while (att < gameState.players.length * 2);
-                        }
-                        if (nextF) { gameState.currentPlayerId = gameState.players[cpi].id; addLogMessage(`Turn passed to ${gameState.players.find(p => p.id === gameState.currentPlayerId)?.name}.`, "system"); }
-                        else logDebug("Disconnect: No next player found.");
-                    }
-                } else if (gameState.gamePhase === 'lobby') {
-                    gameState.players = gameState.players.filter(p => p.id !== clientId);
-                    gameLogicChanged = true;
-                }
-            }
-
-            updateConnectedPlayersDisplay();
-
-            if (gameLogicChanged && gameState.gamePhase !== 'game_over' && gameState.gamePhase !== 'playing_starting_new_round') {
-                if (!(gameState.gamePhase === 'game_over' && dP && (gameState.players.filter(p => !p.eliminated).length <= 1))) {
-                    if (gameState.gamePhase !== 'lobby' || (gameState.gamePhase === 'lobby' && dP)) {
-                        broadcastGameState();
-                    }
-                }
-            }
-        }
-
-        function updateConnectedPlayersDisplay() {
-            const openConnectionsCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length;
-            connectedPlayersCountSpan.textContent = `${openConnectionsCount} / ${MAX_PLAYERS - 1}`;
-
-            connectedPlayersListDiv.innerHTML = '';
-            if (localPlayer.isHost && gameState.players.find(p => p.id === localPlayer.id)) {
-                const hostSpan = document.createElement('span');
-                hostSpan.textContent = `${localPlayer.name} (Host)`;
-                hostSpan.style.fontWeight = 'bold';
-                connectedPlayersListDiv.appendChild(hostSpan);
-            }
-
-            gameState.players.filter(p => !p.isHost && hostConnections[p.id]).forEach(p => {
-                const s = document.createElement('span');
-                s.textContent = p.name;
-                connectedPlayersListDiv.appendChild(s);
-            });
-
-            const totalPlayersInGame = gameState.players.filter(p => p.isHost || hostConnections[p.id]).length;
-            startGameBtn.disabled = !(totalPlayersInGame >= MIN_PLAYERS && totalPlayersInGame <= MAX_PLAYERS);
-        }
-
-        function init() {
-            // Initialize Socket.IO connection
-            socket = io('https://quicklash-server.onrender.com');
-            serverStatusBanner.style.display = 'block';
-
-            socket.on('connect', () => {
-                serverStatusBanner.textContent = "🟢 Server Connected!";
-                serverStatusBanner.style.color = "var(--accent-green)";
-                setTimeout(() => serverStatusBanner.style.display = 'none', 3000);
-            });
-
-            socket.on('disconnect', () => {
-                serverStatusBanner.style.display = 'block';
-                serverStatusBanner.textContent = "🔴 Server Disconnected. Reconnecting...";
-                serverStatusBanner.style.color = "var(--accent-red)";
-            });
-
-            createRoomBtn.onclick = () => {
-                localPlayer.name = playerNameInput.value.trim();
-                if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
-                localPlayer.isHost = true;
-                updatePlayerNameDisplay();
-                hostControlsDiv.style.display = 'block';
-                clientControlsDiv.style.display = 'none';
-                roomCodeDisplay.textContent = 'Creating room...';
-                clientStatusP.textContent = "";
-                initializeSocketHost();
-            };
-
-            joinRoomBtn.onclick = () => {
-                localPlayer.name = playerNameInput.value.trim();
-                if (localPlayer.name.length < 3) { alert("Name must be at least 3 characters long."); return; }
-                localPlayer.isHost = false;
-                updatePlayerNameDisplay();
-                hostControlsDiv.style.display = 'none';
-                clientControlsDiv.style.display = 'block';
-                clientStatusP.textContent = "Enter the Host's Room Code and click 'Connect to Host'.";
-                clientStatusP.style.color = "var(--secondary-text)";
-                roomCodeInput.focus();
-            };
-
-            connectToHostBtn.onclick = () => {
-                if (localPlayer.name.length < 3) {
-                    alert("Please ensure your name is entered (Min 3 chars).");
-                    playerNameInput.focus();
-                    return;
-                }
-                const hostIdToJoin = roomCodeInput.value.trim().toUpperCase();
-                if (!hostIdToJoin) { alert("Please enter the Host's Room Code."); roomCodeInput.focus(); return; }
-                if (hostIdToJoin.length !== 5) {
-                    alert("Room Code must be exactly 5 characters long."); roomCodeInput.focus(); return;
-                }
-                connectToSocketClient(hostIdToJoin);
-            };
-
-            if (copyRoomCodeBtn) {
-                copyRoomCodeBtn.onclick = () => {
-                    const roomCode = roomCodeDisplay.textContent;
-                    copyToClipboard(roomCode, copyRoomCodeBtn);
-                };
-            }
-
-            startGameBtn.onclick = () => {
-                if (localPlayer.isHost) {
-                    const connectedPlayerCount = Object.keys(hostConnections).filter(id => hostConnections[id]).length + 1;
-                    if (connectedPlayerCount < MIN_PLAYERS) {
-                        alert(`Need at least ${MIN_PLAYERS} players to start. Currently have ${connectedPlayerCount}.`);
-                        return;
-                    }
-                    logDebug("Host starting game (standard deck)...");
-                    addLogMessage("Game starting!", "success");
-                    initializeNewGame();
-                    showGameBoard();
-                }
-            };
-
-            playCardsBtn.onclick = () => {
-                if (selectedCardsForPlayUI.length > 0 && selectedCardsForPlayUI.length <= 3) {
-                    const cIds = selectedCardsForPlayUI.map(c => c.id);
-                    if (localPlayer.isHost) {
-                        handleHostPlayerPlayCards(localPlayer.id, cIds);
-                    } else {
-                        sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: cIds });
-                    }
-                    selectedCardsForPlayUI = [];
-                    updateActionButtons();
-                    renderPlayerHand();
-                } else {
-                    alert("Please select 1 to 3 cards to play.");
-                }
-            };
-
-            callLiarBtn.onclick = () => { if (confirm("Are you sure you want to call LIAR!? This cannot be undone.")) { if (localPlayer.isHost) handleHostPlayerCallLiar(localPlayer.id); else sendMessage('PLAYER_ACTION_CALL_LIAR', {}); } };
-
-            showRulesBtn.onclick = () => toggleModal(rulesModal, true);
-            closeRulesBtn.onclick = () => toggleModal(rulesModal, false);
-
-            continueGameBtn.onclick = () => {
-                toggleModal(challengeRouletteOverlay, false);
-
-                if (gameState.gamePhase === 'game_over' && !gameOverOverlay.classList.contains('visible')) {
-                    toggleModal(gameOverOverlay, true);
-                }
-            };
-
-            playAgainBtn.onclick = () => {
-                if (gameState.gamePhase !== 'game_over') return;
-                localPlayer.readyForRematch = !localPlayer.readyForRematch;
-                playAgainBtn.textContent = localPlayer.readyForRematch ? "Waiting for Others..." : "Ready for Rematch";
-                playAgainBtn.style.backgroundColor = localPlayer.readyForRematch ? 'var(--accent-green)' : 'var(--accent-gold)';
-
-                if (localPlayer.isHost) {
-                    gameState.rematchReadyStatus[localPlayer.id] = localPlayer.readyForRematch;
-                    updateRematchStatusDisplay();
-
-                    const eligiblePlayers = getConnectedAndActivePlayerIds();
-                    const allActuallyReady = eligiblePlayers.length > 0 &&
-                        eligiblePlayers.every(id => gameState.rematchReadyStatus[id] === true);
-
-                    if (eligiblePlayers.length >= MIN_PLAYERS && allActuallyReady) {
-                        addLogMessage("All players ready! Starting rematch...", "success");
-                        initializeNewGame();
-                    } else {
-                        broadcastGameState();
-                    }
-                } else {
-                    sendMessage('PLAYER_TOGGLE_REMATCH_READY', { isReady: localPlayer.readyForRematch });
-                }
-            };
-
-            exitGameBtn.onclick = () => {
-                if (localPlayer.isHost && Object.keys(hostConnections).length > 0) {
-                    sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
-                } else if (!localPlayer.isHost && currentRoomCode) {
-                    sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
-                }
-                addLogMessage("Exiting game to setup screen.", "system");
-                showConnectionSetup();
-            };
-
-            document.addEventListener('keydown', e => {
-                const modalVis = Array.from(document.querySelectorAll('.modal')).some(m => m.classList.contains('visible'));
-                const inputFoc = ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName);
-                if (modalVis || inputFoc || connectionSetupDiv.style.display !== 'none') return;
-
-                if (e.key.toUpperCase() === 'P' && !playCardsBtn.disabled) { e.preventDefault(); playCardsBtn.click(); }
-                if (e.key.toUpperCase() === 'L' && !callLiarBtn.disabled) { e.preventDefault(); callLiarBtn.click(); }
-            });
-
-            const debouncedRender = debounce(updateFullUI, 250);
-            window.addEventListener('resize', debouncedRender);
-
-            window.addEventListener('beforeunload', () => {
-                if (localPlayer.isHost && gameState.gamePhase !== 'lobby' && Object.keys(hostConnections).length > 0) {
-                    sendMessage('HOST_DISCONNECTED', { message: "Host has left the page." });
-                } else if (!localPlayer.isHost && currentRoomCode) {
-                    sendMessage('CLIENT_DISCONNECTED', { message: "Player left." });
-                }
-            });
-            showConnectionSetup();
-            logDebug("E-Money's Bar initialized with Socket.IO.");
-        }
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+    <div id="modal-rules" class="modal modal--rules">
+        <div class="modal__backdrop" data-close-modal></div>
+        <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+            <h2 id="rulesTitle" class="modal__title">House rules</h2>
+            <div class="rules">
+                <p class="rules__intro">A bluffing game of cards and nerve. Lie well, or answer to the revolver.</p>
+
+                <section class="rule">
+                    <span class="rule__num">1</span>
+                    <div>
+                        <h3>The goal</h3>
+                        <p>Be the last player breathing.</p>
+                    </div>
+                </section>
+                <section class="rule">
+                    <span class="rule__num">2</span>
+                    <div>
+                        <h3>The setup</h3>
+                        <p>Everyone gets <strong>5 cards</strong> and a <strong>6-chamber revolver</strong> holding one
+                            live round. One suit — <span class="suit suit--red">♥</span>
+                            <span class="suit suit--red">♦</span> <span class="suit">♣</span>
+                            <span class="suit">♠</span> — is named the <strong>table suit</strong> for the round.</p>
+                    </div>
+                </section>
+                <section class="rule">
+                    <span class="rule__num">3</span>
+                    <div>
+                        <h3>Playing cards</h3>
+                        <p>On your turn, play <strong>1–3 cards face down</strong> and declare them all to be the table
+                            suit. They don't have to be. That's the whole game.</p>
+                    </div>
+                </section>
+                <section class="rule">
+                    <span class="rule__num">4</span>
+                    <div>
+                        <h3>Calling "Liar!"</h3>
+                        <p>Instead of playing, call out the previous player. The cards are flipped:</p>
+                        <ul>
+                            <li>They lied → <strong>they</strong> face the revolver.</li>
+                            <li>They told the truth → <strong>you</strong> face the revolver.</li>
+                        </ul>
+                        <p>Out of cards on your turn? You <em>must</em> call Liar.</p>
+                    </div>
+                </section>
+                <section class="rule">
+                    <span class="rule__num">5</span>
+                    <div>
+                        <h3>Emptying your hand</h3>
+                        <p>Play your last card successfully and you still face the revolver — but survive it and the
+                            round ends on your terms.</p>
+                    </div>
+                </section>
+                <section class="rule">
+                    <span class="rule__num">6</span>
+                    <div>
+                        <h3>The revolver</h3>
+                        <p>Spin, pull. A <strong class="txt-red">bang</strong> eliminates you. A
+                            <strong class="txt-green">click</strong> and you live — the cylinder reloads for the next
+                            round, and you start it.</p>
+                    </div>
+                </section>
+            </div>
+            <button id="closeRulesBtn" class="btn btn--primary btn--block">Got it</button>
+        </div>
+    </div>
+
+    <div id="modal-confirm" class="modal modal--confirm">
+        <div class="modal__backdrop" data-close-modal></div>
+        <div class="modal__box modal__box--narrow" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <h2 id="confirmTitle" class="modal__title">Are you sure?</h2>
+            <p id="confirmMessage" class="modal__sub"></p>
+            <div class="modal__actions">
+                <button id="confirmOkBtn" class="btn btn--danger">Confirm</button>
+                <button id="confirmCancelBtn" class="btn btn--ghost">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------- Transient UI ---------- -->
+    <div id="toast-stack" role="status" aria-live="polite"></div>
+    <div id="server-status" class="server-status" data-state="connecting">
+        <span class="server-status__dot"></span>
+        <span id="server-status-text">Waking the server… this can take a minute.</span>
+    </div>
+
+    <script type="module" src="src/main.js"></script>
 </body>
 
 </html>

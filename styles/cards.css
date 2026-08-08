@@ -1,0 +1,196 @@
+/* ============================================================
+   cards.css — playing cards, the fanned hand, flight animation
+   ============================================================ */
+
+.card {
+    position: relative;
+    width: var(--card-w);
+    height: var(--card-h);
+    flex: none;
+    /* the one place a real radius belongs — physical cards have rounded corners */
+    border-radius: var(--r-card);
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+    -webkit-tap-highlight-color: transparent;
+}
+
+.card svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.card--mini {
+    width: var(--card-w-mini);
+    height: var(--card-h-mini);
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .6));
+}
+
+.card--sm {
+    width: calc(var(--card-w) * .7);
+    height: calc(var(--card-h) * .7);
+}
+
+/* Text inside the card SVG */
+.card__rank {
+    font-family: var(--font-ui);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.card__rank--wide {
+    font-size: 12.5px;
+}
+
+.card__pip-sm {
+    font-family: var(--font-suit);
+    font-size: 12px;
+}
+
+.card__pip-lg {
+    font-family: var(--font-suit);
+    font-size: 34px;
+}
+
+.card__monogram {
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: .06em;
+}
+
+/* ---------------- The hand ---------------- */
+
+.hand {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: calc(var(--card-h) + 26px);
+    padding-top: 26px;
+}
+
+.hand .card {
+    margin: 0 calc(var(--card-overlap, -18px) / 2);
+    transform-origin: 50% 145%;
+    transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
+    transition:
+        transform var(--t-med) var(--ease-back),
+        filter var(--t-med) var(--ease-out);
+    cursor: default;
+    /* backwards, not both: a filled animation would beat the :hover transform */
+    animation: dealIn .4s var(--ease-out) backwards;
+    animation-delay: var(--deal-delay, 0ms);
+}
+
+@keyframes dealIn {
+    from {
+        opacity: 0;
+        transform: translateY(80px) rotate(calc(var(--rot, 0deg) * 2.4)) scale(.85);
+    }
+}
+
+/* Playable state */
+.hand.is-live .card {
+    cursor: pointer;
+}
+
+.hand.is-live .card:hover {
+    transform: rotate(var(--rot, 0deg)) translateY(calc(var(--lift, 0px) - 22px)) scale(1.05);
+    filter: drop-shadow(0 14px 20px rgba(0, 0, 0, .6)) brightness(1.06);
+    z-index: 20;
+}
+
+.hand .card.is-selected {
+    transform: rotate(var(--rot, 0deg)) translateY(calc(var(--lift, 0px) - 34px)) scale(1.04);
+    filter:
+        drop-shadow(0 0 10px rgba(255, 180, 77, .85))
+        drop-shadow(0 14px 20px rgba(0, 0, 0, .55));
+    z-index: 15;
+}
+
+.hand.is-live .card.is-selected:hover {
+    transform: rotate(var(--rot, 0deg)) translateY(calc(var(--lift, 0px) - 42px)) scale(1.07);
+}
+
+/* selection order chip */
+.card__order {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    display: grid;
+    place-items: center;
+    width: 21px;
+    height: 21px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #14100a;
+    background: var(--amber);
+    border-radius: 0;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .4), 0 2px 0 rgba(0, 0, 0, .5);
+    animation: fadeIn .18s var(--ease-out) backwards;
+    pointer-events: none;
+}
+
+/* a card leaving the hand */
+.card.is-leaving {
+    animation: cardLeave .3s var(--ease-out) forwards;
+    pointer-events: none;
+}
+
+@keyframes cardLeave {
+    to {
+        opacity: 0;
+        transform: translateY(-70px) scale(.8) rotate(var(--rot, 0deg));
+    }
+}
+
+/* ---------------- Card in flight (played) ---------------- */
+
+.card-flight {
+    position: fixed;
+    z-index: 800;
+    pointer-events: none;
+    transition:
+        transform .55s cubic-bezier(.3, 0, .25, 1),
+        opacity .3s linear .3s;
+}
+
+/* ---------------- Revealed cards (challenge modal) ---------------- */
+
+.revealed-cards {
+    display: flex;
+    justify-content: center;
+    gap: var(--sp-3);
+    min-height: 0;
+    margin: var(--sp-3) 0;
+}
+
+.revealed-cards:empty {
+    display: none;
+}
+
+.revealed-cards .card {
+    animation: flipReveal .5s var(--ease-back) both;
+    animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes flipReveal {
+    from {
+        opacity: 0;
+        transform: rotateY(90deg) translateY(-14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: rotateY(0) translateY(0);
+    }
+}
+
+.card.is-lie {
+    filter: drop-shadow(0 0 12px rgba(255, 47, 78, .9)) drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+}
+
+.card.is-truth {
+    filter: drop-shadow(0 0 12px rgba(75, 224, 138, .8)) drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+}

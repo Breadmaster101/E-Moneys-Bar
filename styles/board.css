@@ -1,0 +1,647 @@
+/* ============================================================
+   board.css — HUD, table, dock, action bar, game log
+   ============================================================ */
+
+#screen-game {
+    height: 100%;
+}
+
+/* ---------------- HUD ---------------- */
+
+#hud {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    height: calc(var(--hud-h) + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) var(--sp-4) 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .55), transparent);
+    z-index: 30;
+}
+
+.hud__side {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex: 1 1 0;
+}
+
+.hud__side--right {
+    justify-content: flex-end;
+}
+
+.hud__center {
+    flex: 0 0 auto;
+}
+
+.hud-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 34px;
+    padding: 0 13px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+}
+
+.hud-chip--mono {
+    font-family: var(--font-mono);
+    letter-spacing: .16em;
+    color: var(--amber);
+}
+
+/* ---------------- Turn pill ---------------- */
+
+.turn-pill {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    height: 48px;
+    padding: 0 22px 0 5px;
+    background: #141119;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    transition: border-color var(--t-med), box-shadow var(--t-med), background var(--t-med);
+}
+
+.turn-pill.is-mine {
+    border-color: var(--amber-deep);
+    box-shadow: 0 0 14px rgba(255, 180, 77, .22);
+    background: #241a0c;
+}
+
+.turn-pill.is-urgent {
+    animation: urgentPulse .6s var(--ease-in-out) infinite;
+}
+
+@keyframes urgentPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 rgba(255, 47, 78, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(255, 47, 78, .6);
+    }
+}
+
+.turn-pill__ring {
+    position: absolute;
+    left: 3px;
+    top: 50%;
+    width: 46px;
+    height: 46px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.turn-pill__ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, .1);
+    stroke-width: 2.4;
+}
+
+.turn-pill__ring-arc {
+    fill: none;
+    stroke: var(--amber);
+    stroke-width: 2.4;
+    stroke-linecap: butt;
+    /* 136 = the perimeter of the 34×34 path above */
+    stroke-dasharray: 136;
+    stroke-dashoffset: 136;
+    transition: stroke-dashoffset .25s linear, stroke .3s;
+    filter: drop-shadow(0 0 4px rgba(255, 180, 77, .8));
+}
+
+.turn-pill__ring-arc.is-low {
+    stroke: var(--red);
+    filter: drop-shadow(0 0 5px rgba(255, 47, 78, .9));
+}
+
+.turn-pill__avatar {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-left: 5px;
+    font-family: var(--font-display);
+    font-size: 19px;
+    letter-spacing: .05em;
+    color: #0d0a10;
+    background: var(--seat-color, var(--amber));
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
+}
+
+.turn-pill__text {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+/* ---------------- Table area ---------------- */
+
+#table-area {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#seats {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* ---------------- The table ---------------- */
+
+/*
+ * Sized off the *height* of the play area, not the width. max-height with a
+ * fixed aspect-ratio keeps the ellipse honest while guaranteeing the table can
+ * never grow tall enough to run into the seats above it on a short screen.
+ */
+#table {
+    position: absolute;
+    left: 50%;
+    top: 56%;
+    width: min(62vw, 700px);
+    aspect-ratio: 1.5 / 1;
+    max-height: 60%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.table__felt {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background:
+        radial-gradient(78% 78% at 50% 30%, var(--felt-hi) 0%, var(--felt) 52%, var(--felt-edge) 100%);
+    box-shadow:
+        inset 0 0 60px rgba(0, 0, 0, .65),
+        inset 0 6px 30px rgba(255, 255, 255, .06),
+        0 34px 70px rgba(0, 0, 0, .7);
+}
+
+.table__felt::after {
+    /* felt fuzz */
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    opacity: .3;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+
+.table__rim {
+    position: absolute;
+    inset: -13px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--wood-hi), var(--wood) 45%, #150c08 100%);
+    box-shadow:
+        inset 0 2px 3px rgba(255, 190, 120, .18),
+        inset 0 -3px 8px rgba(0, 0, 0, .7),
+        0 12px 34px rgba(0, 0, 0, .55);
+    z-index: -1;
+}
+
+.table__content {
+    position: absolute;
+    inset: 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4% 0;
+}
+
+/* ---------------- Suit medallion ---------------- */
+
+.suit-medallion {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 6px 22px 8px;
+    background: rgba(8, 20, 14, .45);
+    border: 1px solid rgba(207, 168, 106, .22);
+    border-radius: 0;
+    transition: transform var(--t-slow) var(--ease-back);
+}
+
+/* corner ticks — the deco marker that says "this is the called suit" */
+.suit-medallion::before,
+.suit-medallion::after {
+    content: '';
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border: 1px solid rgba(207, 168, 106, .5);
+    pointer-events: none;
+}
+
+.suit-medallion::before {
+    top: -1px;
+    left: -1px;
+    border-width: 1px 0 0 1px;
+}
+
+.suit-medallion::after {
+    right: -1px;
+    bottom: -1px;
+    border-width: 0 1px 1px 0;
+}
+
+.suit-medallion.is-new {
+    animation: medallionSlam .6s var(--ease-back);
+}
+
+@keyframes medallionSlam {
+    0% {
+        transform: scale(2.1) rotate(-9deg);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(.94) rotate(2deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0);
+    }
+}
+
+.suit-medallion__label {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.suit-medallion__glyph {
+    font-family: var(--font-suit);
+    font-size: 46px;
+    line-height: 1.05;
+    color: var(--text-dim);
+    text-shadow: 0 0 18px currentColor;
+    transition: color var(--t-med);
+}
+
+.suit-medallion[data-color="red"] .suit-medallion__glyph {
+    color: #ff5566;
+}
+
+.suit-medallion[data-color="black"] .suit-medallion__glyph {
+    color: #e8e2f5;
+}
+
+.suit-medallion__name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    letter-spacing: .16em;
+    color: var(--text);
+    opacity: .85;
+}
+
+/* ---------------- Center pile ---------------- */
+
+.pile {
+    position: relative;
+    width: var(--card-w-mini);
+    height: var(--card-h-mini);
+    flex: none;
+}
+
+.pile .card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    animation: pileDrop .35s var(--ease-back) backwards;
+}
+
+@keyframes pileDrop {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(1.15) rotate(var(--pile-rot, 0deg));
+    }
+}
+
+.pile__count {
+    position: absolute;
+    left: 50%;
+    bottom: -26px;
+    transform: translateX(-50%);
+    padding: 2px 9px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    background: rgba(0, 0, 0, .55);
+    border-radius: 0;
+    white-space: nowrap;
+}
+
+/* ---------------- Last play caption ---------------- */
+
+.last-play {
+    max-width: 92%;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-dim);
+    background: rgba(7, 18, 13, .55);
+    border: 1px solid rgba(255, 255, 255, .07);
+    border-radius: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.last-play b {
+    color: var(--amber);
+}
+
+/* ---------------- Dock (hand + actions) ---------------- */
+
+#dock {
+    position: relative;
+    flex: none;
+    height: var(--dock-h);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: max(var(--sp-4), env(safe-area-inset-bottom));
+    z-index: 25;
+}
+
+#dock::before {
+    /* bar-top light spill under your own hand */
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: min(760px, 92%);
+    height: 190px;
+    transform: translateX(-50%);
+    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 180, 77, .09), transparent 72%);
+    opacity: 0;
+    transition: opacity var(--t-slow);
+    pointer-events: none;
+}
+
+#dock.is-my-turn::before {
+    opacity: 1;
+}
+
+#hand-wrap {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    padding: 0 var(--sp-4);
+}
+
+/* ---------------- Action bar ---------------- */
+
+#actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-4);
+    margin-top: var(--sp-4);
+}
+
+.btn--action {
+    min-width: 184px;
+    height: 62px;
+    font-size: 17px;
+    letter-spacing: .1em;
+    border-radius: var(--r-md);
+}
+
+.btn--action .btn__label {
+    font-family: var(--font-display);
+    font-size: 27px;
+    font-weight: 400;
+    letter-spacing: .09em;
+}
+
+.btn--liar {
+    --btn-bg: linear-gradient(180deg, rgba(255, 47, 78, .16), rgba(120, 8, 26, .3));
+    --btn-fg: #ffd2d8;
+    --btn-line: rgba(255, 47, 78, .55);
+}
+
+.btn--liar:not(:disabled) {
+    animation: liarHum 2.2s var(--ease-in-out) infinite;
+    text-shadow: 0 0 10px rgba(255, 47, 78, .8);
+}
+
+@keyframes liarHum {
+
+    0%,
+    100% {
+        box-shadow: 0 0 8px rgba(255, 47, 78, .3), inset 0 0 14px rgba(255, 47, 78, .12);
+    }
+
+    50% {
+        box-shadow: 0 0 24px rgba(255, 47, 78, .6), inset 0 0 22px rgba(255, 47, 78, .22);
+    }
+}
+
+.select-counter {
+    min-width: 124px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--text-faint);
+    transition: color var(--t-fast);
+}
+
+.select-counter b {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: var(--text-dim);
+}
+
+.select-counter.is-active b {
+    color: var(--amber);
+}
+
+.select-counter.is-full b {
+    color: var(--red-hot);
+}
+
+/* ---------------- Turn announcement ---------------- */
+
+.turn-announce {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 34%;
+    z-index: 700;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.turn-announce.is-shown {
+    animation: announce 1.7s var(--ease-out) both;
+}
+
+.turn-announce__text {
+    font-family: var(--font-display);
+    font-size: clamp(64px, 12vw, 132px);
+    letter-spacing: .1em;
+    color: var(--amber-hot);
+    text-shadow:
+        0 0 6px rgba(255, 215, 154, .9),
+        0 0 26px rgba(255, 180, 77, .8),
+        0 0 70px rgba(255, 140, 30, .5);
+}
+
+.turn-announce--danger .turn-announce__text {
+    color: #ffd2d8;
+    text-shadow:
+        0 0 6px rgba(255, 214, 220, .9),
+        0 0 26px rgba(255, 47, 78, .85),
+        0 0 70px rgba(220, 0, 40, .5);
+}
+
+@keyframes announce {
+    0% {
+        opacity: 0;
+        transform: scale(1.5);
+        filter: blur(14px);
+    }
+
+    16% {
+        opacity: 1;
+        transform: scale(1);
+        filter: blur(0);
+    }
+
+    72% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.08) translateY(-16px);
+    }
+}
+
+/* ---------------- Game log ---------------- */
+
+#log-panel {
+    position: absolute;
+    top: var(--hud-h);
+    right: 0;
+    bottom: 0;
+    width: var(--log-w);
+    display: flex;
+    flex-direction: column;
+    background: var(--ink-850);
+    border-left: 1px solid var(--line-strong);
+    box-shadow: -14px 0 40px rgba(0, 0, 0, .7);
+    transform: translateX(100%);
+    transition: transform var(--t-med) var(--ease-out);
+    z-index: 40;
+}
+
+#log-panel.is-open {
+    transform: translateX(0);
+}
+
+.log-panel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--line);
+}
+
+.log-panel__head h3 {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+.log-panel__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--sp-3) var(--sp-4) var(--sp-5);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.log-line {
+    padding-left: 11px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--text-dim);
+    border-left: 2px solid var(--line-strong);
+    animation: riseIn .25s var(--ease-out) both;
+}
+
+.log-line--system {
+    color: var(--text);
+    border-left-color: var(--amber);
+}
+
+.log-line--success {
+    color: var(--green);
+    border-left-color: var(--green);
+}
+
+.log-line--error {
+    color: var(--red-hot);
+    border-left-color: var(--red);
+}
+
+.log-line__time {
+    margin-right: 7px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+/* Unread dot on the log toggle */
+#logToggleBtn.has-unread::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 7px;
+    height: 7px;
+    background: var(--amber);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--amber);
+}
+
+#logToggleBtn {
+    position: relative;
+}

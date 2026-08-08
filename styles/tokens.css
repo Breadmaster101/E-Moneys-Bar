@@ -1,0 +1,117 @@
+/* ============================================================
+   tokens.css — the single source of truth for the look.
+   Neon-noir speakeasy: a dim room, warm amber key light,
+   red neon for danger, bone-white type.
+
+   Dim, not black — surfaces stay light enough that the deco
+   hairlines, brass plates and felt all read without straining.
+   ============================================================ */
+
+:root {
+    /* ---- Surfaces (the room) ---- */
+    --ink-900: #100e15;
+    --ink-850: #16131c;
+    --ink-800: #1b1723;
+    --ink-750: #211c2a;
+    --ink-700: #282232;
+    --ink-600: #332b3e;
+    --ink-500: #40374d;
+
+    --line: rgba(255, 255, 255, 0.09);
+    --line-strong: rgba(255, 255, 255, 0.19);
+    --line-amber: rgba(255, 180, 77, 0.34);
+
+    /* ---- Type ---- */
+    --text: #f7f2e9;
+    --text-dim: #bcb0a0;
+    --text-faint: #8d8376;
+
+    /* ---- Neon ---- */
+    --amber: #ffb44d;
+    --amber-hot: #ffdaa4;
+    --amber-deep: #c07d22;
+    --red: #ff3d5a;
+    --red-hot: #ff8496;
+    --red-deep: #ab0f26;
+    --cyan: #5fe7ff;
+    --green: #5be595;
+    --violet: #bd7bff;
+    --lime: #d0f45e;
+
+    /* ---- Player accents (assigned by seat) ---- */
+    --p1: #ffb44d;
+    --p2: #5fe7ff;
+    --p3: #ff6ea6;
+    --p4: #86ee76;
+
+    /* ---- Table ---- */
+    --felt: #163b2c;
+    --felt-hi: #26654b;
+    --felt-edge: #0c2419;
+    --wood: #3a251a;
+    --wood-hi: #5e3c29;
+
+    /* ---- Cards ---- */
+    --card-edge: #b9ad94;
+    --suit-red: #cf2438;
+    --suit-black: #171320;
+
+    /*
+     * ---- Geometry ----
+     * Near-square on purpose. Big radii and pill shapes read as a phone app;
+     * this is meant to look like painted signage and brass fittings. The only
+     * genuinely round things are ones that are round in real life: revolver
+     * chambers, the table, and playing-card corners.
+     */
+    --r-sm: 1px;
+    --r-md: 2px;
+    --r-lg: 3px;
+    --r-card: 5px;
+
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 18px;
+    --sp-5: 26px;
+    --sp-6: 36px;
+    --sp-7: 52px;
+    --sp-8: 68px;
+
+    /* ---- Fonts ---- */
+    --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-display: 'Bebas Neue', 'Inter', Impact, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --font-suit: 'Segoe UI Symbol', 'Apple Color Emoji', 'Noto Sans Symbols 2', sans-serif;
+
+    /* ---- Shadow: hard and close, like objects on a bar top, not UI layers ---- */
+    --sh-1: 0 1px 0 rgba(0, 0, 0, .6);
+    --sh-2: 0 2px 0 rgba(0, 0, 0, .48), 0 4px 10px rgba(0, 0, 0, .38);
+    --sh-3: 0 3px 0 rgba(0, 0, 0, .45), 0 10px 24px rgba(0, 0, 0, .48);
+    --sh-4: 0 4px 0 rgba(0, 0, 0, .45), 0 22px 50px rgba(0, 0, 0, .62);
+
+    /* ---- Deco framing: the inset hairline rule used on panels and modals ---- */
+    --frame-inset: 6px;
+    --frame-line: rgba(214, 178, 118, .34);
+
+    /* ---- Glow: only for things that are literally lit (neon, muzzle flash) ---- */
+    --glow-amber: 0 0 10px rgba(255, 180, 77, .5), 0 0 34px rgba(255, 180, 77, .2);
+
+    /* ---- Motion ---- */
+    --ease-out: cubic-bezier(.16, 1, .3, 1);
+    --ease-back: cubic-bezier(.34, 1.56, .64, 1);
+    --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+    --t-fast: .14s;
+    --t-med: .26s;
+    --t-slow: .5s;
+
+    /* ---- Layout (desktop-first: sized for a monitor, stepped down below) ---- */
+    --hud-h: 68px;
+    --dock-h: 252px;
+    --log-w: 372px;
+
+    /* ---- Card sizing (scales the whole board) ---- */
+    --card-w: 106px;
+    --card-h: 159px;
+    --card-w-mini: 41px;
+    --card-h-mini: 62px;
+}
