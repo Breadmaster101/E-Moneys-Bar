@@ -64,7 +64,7 @@ src/
   toast.js          notices and the confirm dialog
   log.js            the game log panel
   icons.js          engraved line icons (symbols live in index.html)
-  topbar.js         the persistent bar (title, back, sound, rules, log)
+  topbar.js         the floating controls (back, sound, rules, log)
 tools/
   devserver.py      no-cache static server for local development
   lobby.js          name entry, hosting, joining, table options
@@ -109,10 +109,17 @@ the room-code plate, the LIAR button, and the muzzle flash.
   rather than width. The table is sized from the play area's height with
   `max-height` + a fixed `aspect-ratio`, so it can't grow into the seats above it
   on a short screen.
+- **`#topbar` is not a bar.** It's a row of controls positioned absolutely
+  *over* whatever screen is showing — no border, no solid fill, no layout
+  height, just a faint scrim for legibility. The container is
+  `pointer-events: none` so the scrim can't swallow clicks; only the controls
+  themselves are `auto`. Screens reserve their own headroom (`padding-top` on
+  `#screen-game`, on `.lobby-step`) rather than the controls pushing them down.
+  If you add a control, put it in a `.topbar__side` so it inherits that.
 - **Lobby steps**: `#lobby-menu` → `#lobby-join` → `#lobby-table`, switched by
   `goToStep()` in `lobby.js`. Only one is mounted at a time, so nothing from an
-  earlier step (the name field in particular) can linger. Back lives in the top
-  bar; `main.js` owns what it means on each screen via `onBack()`.
+  earlier step (the name field in particular) can linger. Each step titles
+  itself; `main.js` owns what "back" means on each screen via `onBack()`.
 - **`#screen-lobby` must not be given `position` of its own.** `.screen` already
   makes it `absolute; inset: 0`, and the steps size against that — an ID rule
   would out-specify it and collapse them to zero height.

@@ -17,7 +17,8 @@
     position: absolute;
     inset: 0;
     display: none;
-    padding: var(--sp-5);
+    /* top padding clears the floating controls, which overlay this screen */
+    padding: calc(var(--hud-h) + var(--sp-2)) var(--sp-5) var(--sp-5);
     overflow: auto;
 }
 

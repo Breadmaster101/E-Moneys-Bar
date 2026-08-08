@@ -57,7 +57,6 @@ export function showGameBoard() {
     el.game.classList.add('is-active');
 
     setTopbar({
-        title: '',
         back: true,
         backLabel: 'Leave table',
         roomCode: session.roomCode,

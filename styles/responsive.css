@@ -240,8 +240,9 @@
     }
 
     /* --- lobby --- */
+    /* keep the top clearance for the floating controls; only trim the sides */
     .lobby-step {
-        padding: var(--sp-3);
+        padding: calc(var(--hud-h) + var(--sp-2)) var(--sp-3) var(--sp-3);
     }
 
     .menu {

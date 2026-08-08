@@ -42,7 +42,6 @@ export const el = {
 
     // top bar
     topbar: $('#topbar'),
-    topbarTitle: $('#topbarTitle'),
     backBtn: $('#backBtn'),
     hudRoomCode: $('#hudRoomCode'),
     soundToggleBtn: $('#soundToggleBtn'),

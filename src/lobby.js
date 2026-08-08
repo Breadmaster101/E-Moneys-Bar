@@ -38,18 +38,16 @@ export function goToStep(next) {
     el.stepJoin.classList.toggle('is-active', next === 'join');
     el.stepTable.classList.toggle('is-active', next === 'table');
 
+    // each step titles itself in its own heading, so the floating controls
+    // stay just controls
     if (next === 'menu') {
-        setTopbar({ title: "E-Money's Bar", back: false });
+        setTopbar({ back: false });
         el.nameInput.focus();
     } else if (next === 'join') {
-        setTopbar({ title: 'Join a table', back: true });
+        setTopbar({ back: true });
         el.roomCodeInput.focus();
     } else {
-        setTopbar({
-            title: localPlayer.isHost ? 'Your table' : 'Table',
-            back: true,
-            roomCode: session.roomCode,
-        });
+        setTopbar({ back: true, roomCode: session.roomCode });
         renderWaitroom();
     }
 }
