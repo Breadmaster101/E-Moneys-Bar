@@ -160,6 +160,7 @@
     background-color: var(--ink-700);
     border-color: var(--seat-color, var(--gold));
     box-shadow: var(--sh-2);
+    animation: plateSweep 2.4s var(--ease-in-out) infinite;
 }
 
 /*
@@ -167,29 +168,25 @@
  * was a soft gradient sweep; it is now a solid cut bar that slides, which is
  * both hard-edged and cheaper (transform instead of background-position).
  */
-/* 1px, sitting exactly over the bottom border rather than on top of it. At 2px
-   it stacked with the border and the plate read as thicker along the bottom
-   than the other three sides. */
-.seat.is-turn .seat__plate::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: -1px;
-    width: 40%;
-    height: 1px;
-    background: var(--seat-color, var(--gold));
-    animation: plateSweep 2.4s var(--ease-in-out) infinite;
-}
-
+/*
+ * The active plate is marked by its border alone, which is the only way to
+ * guarantee the same weight on all four sides.
+ *
+ * There used to be a bar travelling along the bottom edge to carry the motion.
+ * Whatever its height, it sat on one edge and not the other three, so the
+ * rectangle never read as evenly ruled. The pulse now runs on border-color, so
+ * the whole frame brightens together and the thickness never changes at all.
+ * Do not reintroduce an edge-specific pseudo-element here.
+ */
 @keyframes plateSweep {
 
     0%,
     100% {
-        transform: translateX(0);
+        border-color: color-mix(in srgb, var(--seat-color, var(--gold)) 55%, transparent);
     }
 
     50% {
-        transform: translateX(150%);
+        border-color: var(--seat-color, var(--gold));
     }
 }
 

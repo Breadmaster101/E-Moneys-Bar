@@ -23,7 +23,12 @@ export const REVOLVER_CHAMBERS = 6;
 export const REVOLVER_BULLETS = 1;
 
 /** Per-seat accent colours, assigned in join order. */
-export const PLAYER_COLORS = ['#ffb44d', '#4fe3ff', '#ff5f9e', '#7bea6a'];
+/**
+ * Seat accents, as printed inks. These must stay in step with --p1 to --p4 in
+ * tokens.css: the tokens document the palette, but it is these values that get
+ * written into --seat-color inline, so they are the ones that actually show.
+ */
+export const PLAYER_COLORS = ['#c9a961', '#6f8f9e', '#b0616d', '#8a9c63'];
 
 /** How long the host waits after a roulette before dealing the next round. */
 export const ROULETTE_RESOLVE_MS = 4600;
