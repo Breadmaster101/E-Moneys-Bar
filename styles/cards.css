@@ -1,5 +1,5 @@
 /* ============================================================
-   cards.css — playing cards, the fanned hand, flight animation
+   cards.css: playing cards, the fanned hand, flight animation
    ============================================================ */
 
 .card {
@@ -7,7 +7,7 @@
     width: var(--card-w);
     height: var(--card-h);
     flex: none;
-    /* the one place a real radius belongs — physical cards have rounded corners */
+    /* the one place a real radius belongs: physical cards have rounded corners */
     border-radius: var(--r-card);
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
     -webkit-tap-highlight-color: transparent;
@@ -109,11 +109,13 @@
     z-index: 20;
 }
 
+/* the card faces are unchanged, but the selection cue can't stay a neon halo
+   next to hatched linework: it's a struck outline in gold instead */
 .hand .card.is-selected {
     transform: rotate(var(--rot, 0deg)) translateY(calc(var(--lift, 0px) - 34px)) scale(1.04);
-    filter:
-        drop-shadow(0 0 10px rgba(255, 180, 77, .85))
-        drop-shadow(0 14px 20px rgba(0, 0, 0, .55));
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+    filter: drop-shadow(0 14px 20px rgba(0, 0, 0, .55));
     z-index: 15;
 }
 
@@ -196,10 +198,15 @@
     }
 }
 
+/* the verdict on a revealed card: ruled, not lit */
 .card.is-lie {
-    filter: drop-shadow(0 0 12px rgba(255, 47, 78, .9)) drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+    outline: 2px solid var(--oxblood-hot);
+    outline-offset: 2px;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
 }
 
 .card.is-truth {
-    filter: drop-shadow(0 0 12px rgba(75, 224, 138, .8)) drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
+    outline: 2px solid #9dbf94;
+    outline-offset: 2px;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .55));
 }

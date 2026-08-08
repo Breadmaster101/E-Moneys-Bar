@@ -1,5 +1,5 @@
 /**
- * lobby.js — front of house, as three discrete steps:
+ * lobby.js: front of house, as three discrete steps:
  *
  *   menu  →  join  →  table          (client)
  *   menu  ─────────→  table          (host)
@@ -189,7 +189,7 @@ function takeName() {
 
 function requireConnection() {
     if (isConnected()) return true;
-    toast('Still waking the server — give it a moment.', { type: 'warn' });
+    toast('Still waking the server. Give it a moment.', { type: 'warn' });
     return false;
 }
 
@@ -206,7 +206,7 @@ async function copyRoomCode() {
         }, 1500);
         sfx.tap();
     } catch {
-        toast('Copy failed — select the code manually.', { type: 'error' });
+        toast('Copy failed. Select the code manually.', { type: 'error' });
     }
 }
 

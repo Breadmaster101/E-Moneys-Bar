@@ -1,5 +1,5 @@
 /**
- * roulette.js — the game's big moment, as a real spinning cylinder.
+ * roulette.js: the game's big moment, as a real spinning cylinder.
  *
  * Timeline (ms):
  *    0   modal opens, cards flip up
@@ -51,29 +51,30 @@ function buildRevolver(spentIndices) {
     const hammer = svgEl('g', { class: 'revolver-hammer' });
     hammer.appendChild(svgEl('path', {
         d: 'M92 4 L108 4 L112 34 L100 44 L88 34 Z',
-        fill: 'url(#grad-cyl-metal)', stroke: '#0a0810', 'stroke-width': '2',
+        fill: 'url(#grad-cyl-metal)', stroke: 'rgba(201,169,97,.62)', 'stroke-width': '1.5',
     }));
     hammer.appendChild(svgEl('rect', {
-        x: '96', y: '32', width: '8', height: '16', rx: '2',
-        fill: '#8f8a84', stroke: '#0a0810', 'stroke-width': '1.5',
+        x: '96', y: '32', width: '8', height: '16',
+        fill: '#c9a961', stroke: '#8a6f34', 'stroke-width': '1',
     }));
 
-    // frame
+    // frame. Colours here are the engraved palette from tokens.css: flat ink
+    // fills with gold rules, matching the rest of the plate.
     svg.appendChild(svgEl('circle', {
         cx: '100', cy: '108', r: '84',
-        fill: '#0d0b12', stroke: '#3a343f', 'stroke-width': '3',
+        fill: '#0a0908', stroke: 'rgba(201,169,97,.62)', 'stroke-width': '2',
     }));
 
-    // transform-origin lives in modals.css — one source of truth
+    // transform-origin lives in modals.css: one source of truth
     const cylinder = svgEl('g', { class: 'revolver-cylinder' });
 
     cylinder.appendChild(svgEl('circle', {
         cx: '100', cy: '108', r: '76',
-        fill: 'url(#grad-cyl-metal)', stroke: '#151219', 'stroke-width': '2',
+        fill: 'url(#grad-cyl-metal)', stroke: 'rgba(201,169,97,.34)', 'stroke-width': '1.5',
     }));
     cylinder.appendChild(svgEl('circle', {
         cx: '100', cy: '108', r: '64',
-        fill: 'none', stroke: 'rgba(255,255,255,.08)', 'stroke-width': '1.5',
+        fill: 'none', stroke: 'rgba(201,169,97,.16)', 'stroke-width': '1',
     }));
 
     for (let i = 0; i < REVOLVER_CHAMBERS; i++) {
@@ -84,16 +85,17 @@ function buildRevolver(spentIndices) {
 
         cylinder.appendChild(svgEl('circle', {
             cx, cy, r: '18',
-            fill: '#05040a', stroke: '#0a0810', 'stroke-width': '3',
+            fill: '#0a0908', stroke: 'rgba(201,169,97,.16)', 'stroke-width': '1',
         }));
+        // a live round is inked solid; a spent one is an empty ruled circle
         cylinder.appendChild(svgEl('circle', {
             cx, cy, r: '14',
             fill: spent ? 'url(#grad-chamber-spent)' : 'url(#grad-chamber-live)',
-            stroke: spent ? '#1a1620' : '#5c3d0d', 'stroke-width': '1.5',
+            stroke: spent ? 'rgba(201,169,97,.34)' : '#8a6f34', 'stroke-width': '1.5',
         }));
         if (!spent) {
             cylinder.appendChild(svgEl('circle', {
-                cx, cy, r: '5.5', fill: '#4a2f08', opacity: '.75',
+                cx, cy, r: '5.5', fill: '#8a6f34',
             }));
         }
     }
@@ -101,7 +103,7 @@ function buildRevolver(spentIndices) {
     // centre pin
     cylinder.appendChild(svgEl('circle', {
         cx: '100', cy: '108', r: '11',
-        fill: '#26222c', stroke: '#4b4552', 'stroke-width': '2',
+        fill: '#16130f', stroke: 'rgba(201,169,97,.34)', 'stroke-width': '1.5',
     }));
 
     svg.append(cylinder, hammer);
@@ -146,7 +148,7 @@ export function playRoulette(data, targetAfter) {
     if (data.isCardDepletion) {
         el.rouletteTitle.textContent = 'Hand empty';
         el.rouletteDetails.textContent =
-            `${data.rouletteTarget.name} played their last card — the table wants proof of luck.`;
+            `${data.rouletteTarget.name} played their last card. The table wants proof of luck.`;
     } else {
         el.rouletteTitle.textContent = data.claimWasLie ? 'Caught lying' : 'Bad call';
         el.rouletteTitle.classList.add(data.claimWasLie ? 'is-danger' : 'is-good');
@@ -166,7 +168,7 @@ export function playRoulette(data, targetAfter) {
     el.rouletteConsequence.innerHTML = '';
     el.rouletteConsequence.append(
         Object.assign(document.createElement('b'), { textContent: data.rouletteTarget.name }),
-        document.createTextNode(targetIsMe ? ' — that\'s you. Spin it.' : ' takes the revolver.'),
+        document.createTextNode(targetIsMe ? '. That is you. Spin it.' : ' takes the revolver.'),
     );
 
     el.rouletteResult.textContent = '';
@@ -231,8 +233,8 @@ export function playRoulette(data, targetAfter) {
 
     after(3000, () => {
         el.rouletteResult.textContent = lethal
-            ? `BANG — ${data.rouletteTarget.name} is out.`
-            : `CLICK — ${data.rouletteTarget.name} lives.`;
+            ? `BANG. ${data.rouletteTarget.name} is out.`
+            : `CLICK. ${data.rouletteTarget.name} lives.`;
         el.rouletteResult.className = `roulette-result is-shown ${lethal ? 'is-bang' : 'is-click'}`;
         el.continueBtn.disabled = false;
         addLog(data.rouletteOutcomeText, lethal ? 'error' : 'success');

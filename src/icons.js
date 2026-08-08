@@ -1,5 +1,5 @@
 /**
- * icons.js — engraved line icons, defined once as <symbol>s in index.html.
+ * icons.js: engraved line icons, defined once as <symbol>s in index.html.
  * No emoji anywhere in the UI: they render differently on every platform and
  * read as generic, which is the opposite of what this thing should feel like.
  */

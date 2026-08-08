@@ -1,5 +1,5 @@
 /**
- * log.js — the running game log in the side panel.
+ * log.js: the running game log in the side panel.
  */
 
 import { el } from './dom.js';

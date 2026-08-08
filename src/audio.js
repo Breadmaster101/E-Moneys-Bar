@@ -1,5 +1,5 @@
 /**
- * audio.js — every sound in the game is synthesised at runtime with WebAudio.
+ * audio.js: every sound in the game is synthesised at runtime with WebAudio.
  * No asset files, no network, ~nothing to load.
  *
  * The AudioContext can only start after a user gesture, so `unlock()` is wired
@@ -58,7 +58,7 @@ const ready = () => ctx && !muted && ctx.state === 'running';
 /* primitives                                                          */
 /* ------------------------------------------------------------------ */
 
-/** A filtered burst of noise — clicks, whooshes, gunshots. */
+/** A filtered burst of noise: clicks, whooshes, gunshots. */
 function noise({ at = 0, dur = 0.1, type = 'bandpass', freq = 1200, q = 1, gain = 0.3, sweepTo = null }) {
     if (!ready()) return;
     const t = now() + at;
@@ -101,7 +101,7 @@ function tone({ at = 0, freq = 440, to = null, type = 'sine', dur = 0.2, gain = 
     osc.stop(t + dur + 0.05);
 }
 
-/** Mechanical click — the revolver's whole personality. */
+/** Mechanical click: the revolver's whole personality. */
 function mechClick(at = 0, strength = 1) {
     noise({ at, dur: 0.035 * strength, type: 'highpass', freq: 2600, gain: 0.22 * strength });
     tone({ at, freq: 190, to: 70, type: 'square', dur: 0.035, gain: 0.06 * strength });

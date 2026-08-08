@@ -1,5 +1,5 @@
 /**
- * hand.js — your own cards: the fan, the picking, the throwing.
+ * hand.js: your own cards: the fan, the picking, the throwing.
  */
 
 import { el } from './dom.js';

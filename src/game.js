@@ -1,5 +1,5 @@
 /**
- * game.js — host-authoritative game logic. Only the host ever runs any of this;
+ * game.js: host-authoritative game logic. Only the host ever runs any of this;
  * clients just render whatever gets broadcast back to them.
  */
 
@@ -248,7 +248,7 @@ export function startNewRound() {
     gameState.gamePhase = 'playing';
 
     addLog(
-        `New round — table suit is ${SUIT_SYMBOLS[gameState.currentTableSuit]} ${gameState.currentTableSuit}.`,
+        `New round: the table suit is ${SUIT_SYMBOLS[gameState.currentTableSuit]} ${gameState.currentTableSuit}.`,
         'system',
     );
 
@@ -508,7 +508,7 @@ export function handleClientDisconnect(clientId) {
 
     if (gameState.gamePhase === 'game_over') {
         delete gameState.rematchReadyStatus[clientId];
-        addLog(`${player.name} left — dropped from the rematch.`, 'system');
+        addLog(`${player.name} left, so they are dropped from the rematch.`, 'system');
 
         const eligible = activeConnectedIds();
         const allReady = eligible.length > 0 && eligible.every((id) => gameState.rematchReadyStatus[id] === true);
@@ -535,7 +535,7 @@ export function handleClientDisconnect(clientId) {
             const payload = {
                 winner: winner ? { id: winner.id, name: winner.name } : null,
                 reason: winner
-                    ? `${winner.name} wins — everyone else walked out.`
+                    ? `${winner.name} wins because everyone else walked out.`
                     : 'The table emptied out.',
             };
             sendMessage('GAME_OVER', payload);

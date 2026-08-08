@@ -1,5 +1,5 @@
 /**
- * cards.js — how a playing card looks, and how it flies across the table.
+ * cards.js: how a playing card looks, and how it flies across the table.
  * Gradients and the card-back pattern live once in #svg-defs (index.html).
  */
 
@@ -43,7 +43,7 @@ function backMarkup() {
 }
 
 /**
- * @param {object} card  {rank, suit, id} — pass null for a face-down card.
+ * @param {object} card  {rank, suit, id}. Pass null for a face-down card.
  * @param {object} opts  {faceUp, size: 'full'|'sm'|'mini', className}
  */
 export function createCard(card, { faceUp = true, size = 'full', className = '' } = {}) {
@@ -58,7 +58,7 @@ export function createCard(card, { faceUp = true, size = 'full', className = '' 
 
 /**
  * Throw `count` face-down cards from one element to another.
- * Purely cosmetic — the real state has already moved.
+ * Purely cosmetic: the real state has already moved.
  */
 export function flyCards(fromNode, toNode, count = 1) {
     if (!fromNode || !toNode || count < 1) return;

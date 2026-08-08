@@ -4,13 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#07060a">
-    <meta name="description" content="E-Money's Bar — a high-stakes bluffing game of cards and Russian roulette.">
+    <meta name="theme-color" content="#0a0908">
+    <meta name="description" content="E-Money's Bar: a high-stakes bluffing game of cards and Russian roulette.">
     <title>E-Money's Bar</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="styles/tokens.css">
@@ -51,20 +51,26 @@
                     stroke-opacity="0.55" />
                 <circle cx="6" cy="6" r="1.1" fill="#d99a44" fill-opacity="0.35" />
             </pattern>
-            <radialGradient id="grad-cyl-metal" cx="0.34" cy="0.28" r="0.85">
-                <stop offset="0%" stop-color="#8f8a84" />
-                <stop offset="35%" stop-color="#565159" />
-                <stop offset="70%" stop-color="#2b2830" />
-                <stop offset="100%" stop-color="#141218" />
+            <!--
+                The revolver, flattened to match the engraved plate. These are
+                still <radialGradient> elements with the same ids so that
+                roulette.js and modals.css need no changes, but each one is a
+                single flat colour now: a rendered, glossy revolver was the last
+                three-dimensional object left in a UI that is otherwise entirely
+                drawn. Shading on the cylinder comes from the hatch pattern and
+                the stroked linework instead.
+            -->
+            <radialGradient id="grad-cyl-metal">
+                <stop offset="0%" stop-color="#16130f" />
+                <stop offset="100%" stop-color="#16130f" />
             </radialGradient>
-            <radialGradient id="grad-chamber-live" cx="0.35" cy="0.3" r="0.8">
-                <stop offset="0%" stop-color="#ffdf9e" />
-                <stop offset="45%" stop-color="#d9a049" />
-                <stop offset="100%" stop-color="#7a5417" />
+            <radialGradient id="grad-chamber-live">
+                <stop offset="0%" stop-color="#c9a961" />
+                <stop offset="100%" stop-color="#c9a961" />
             </radialGradient>
-            <radialGradient id="grad-chamber-spent" cx="0.35" cy="0.3" r="0.8">
-                <stop offset="0%" stop-color="#211e26" />
-                <stop offset="100%" stop-color="#050409" />
+            <radialGradient id="grad-chamber-spent">
+                <stop offset="0%" stop-color="#0a0908" />
+                <stop offset="100%" stop-color="#0a0908" />
             </radialGradient>
         </defs>
 
@@ -167,7 +173,7 @@
             <!-- ---------- LOBBY ---------- -->
             <section id="screen-lobby" class="screen is-active">
 
-                <!-- STEP 1 — the door -->
+                <!-- STEP 1: the door -->
                 <div class="lobby-step is-active" id="lobby-menu">
                     <div class="menu">
                         <div class="marquee">
@@ -200,7 +206,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 2 — knock on a door -->
+                <!-- STEP 2: knock on a door -->
                 <div class="lobby-step" id="lobby-join">
                     <div class="panel join-card">
                         <h2 class="step-title">Join a table</h2>
@@ -215,7 +221,7 @@
                     </div>
                 </div>
 
-                <!-- STEP 3 — the waiting room -->
+                <!-- STEP 3: the waiting room -->
                 <div class="lobby-step" id="lobby-table">
                     <div class="waitroom">
                         <div class="waitroom__stage">
@@ -282,7 +288,7 @@
                         <div id="suit-medallion" class="suit-medallion" title="Table suit">
                             <span class="suit-medallion__label">Table suit</span>
                             <span id="suit-medallion-glyph" class="suit-medallion__glyph">?</span>
-                            <span id="suit-medallion-name" class="suit-medallion__name">—</span>
+                            <span id="suit-medallion-name" class="suit-medallion__name">None</span>
                         </div>
 
                         <div id="pile" class="pile" aria-hidden="true"></div>
@@ -386,16 +392,16 @@
                     <div>
                         <h3>The setup</h3>
                         <p>Everyone gets <strong>5 cards</strong> and a <strong>6-chamber revolver</strong> holding one
-                            live round. One suit — <span class="suit suit--red">♥</span>
+                            live round. One suit, <span class="suit suit--red">♥</span>
                             <span class="suit suit--red">♦</span> <span class="suit">♣</span>
-                            <span class="suit">♠</span> — is named the <strong>table suit</strong> for the round.</p>
+                            <span class="suit">♠</span>, is named the <strong>table suit</strong> for the round.</p>
                     </div>
                 </section>
                 <section class="rule">
                     <span class="rule__num">3</span>
                     <div>
                         <h3>Playing cards</h3>
-                        <p>On your turn, play <strong>1–3 cards face down</strong> and declare them all to be the table
+                        <p>On your turn, play <strong>1-3 cards face down</strong> and declare them all to be the table
                             suit. They don't have to be. That's the whole game.</p>
                     </div>
                 </section>
@@ -415,7 +421,7 @@
                     <span class="rule__num">5</span>
                     <div>
                         <h3>Emptying your hand</h3>
-                        <p>Play your last card successfully and you still face the revolver — but survive it and the
+                        <p>Play your last card successfully and you still face the revolver, but survive it and the
                             round ends on your terms.</p>
                     </div>
                 </section>
@@ -424,7 +430,7 @@
                     <div>
                         <h3>The revolver</h3>
                         <p>Spin, pull. A <strong class="txt-red">bang</strong> eliminates you. A
-                            <strong class="txt-green">click</strong> and you live — the cylinder reloads for the next
+                            <strong class="txt-green">click</strong> and you live: the cylinder reloads for the next
                             round, and you start it.</p>
                     </div>
                 </section>

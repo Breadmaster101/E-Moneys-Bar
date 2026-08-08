@@ -1,5 +1,5 @@
 /**
- * main.js — boot, global wiring, keyboard shortcuts.
+ * main.js: boot, global wiring, keyboard shortcuts.
  */
 
 import { el, openModal, closeModal, isModalOpen } from './dom.js';
@@ -88,7 +88,7 @@ el.liarBtn.addEventListener('click', async () => {
 
     // the table may have moved on while the dialog was up
     if (!isMyTurn() || !gameState.lastPlayedTurn) {
-        toast('Too late — the turn already passed.', { type: 'warn' });
+        toast('Too late. The turn already passed.', { type: 'warn' });
         return;
     }
 
@@ -141,7 +141,7 @@ function leaveTable() {
 el.exitGameBtn.addEventListener('click', leaveTable);
 
 /*
- * One back button, three meanings — the top bar doesn't know the rules, so the
+ * One back button, three meanings. The floating controls don't know the rules, so the
  * decision about what "back" costs you lives here.
  */
 onBack(async () => {
@@ -151,7 +151,7 @@ onBack(async () => {
         const ok = await confirmDialog({
             title: 'Leave the table?',
             message: localPlayer.isHost
-                ? 'You are the host — leaving ends the game for everyone.'
+                ? 'You are the host, so leaving ends the game for everyone.'
                 : 'You will be eliminated from the current round.',
             confirmText: 'Leave',
             cancelText: 'Stay',
@@ -166,7 +166,7 @@ onBack(async () => {
 });
 
 // beforeunload is unreliable on mobile Safari; pagehide is the one that fires
-// there. Both are best-effort — a hard tab close can still cut the socket first.
+// there. Both are best-effort: a hard tab close can still cut the socket first.
 window.addEventListener('beforeunload', announceDeparture);
 window.addEventListener('pagehide', announceDeparture);
 

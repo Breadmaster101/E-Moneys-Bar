@@ -4,7 +4,7 @@ Static file server for local development.
 Identical to `python -m http.server` except that it refuses to let the browser
 cache anything. Plain http.server answers with 304 Not Modified, which means an
 edited stylesheet or module keeps serving the old copy until you manually hard
--refresh — easy to mistake for the change not working.
+-refresh, which is easy to mistake for the change not working.
 
     python tools/devserver.py [port]
 """
@@ -36,7 +36,7 @@ def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5173
     handler = partial(NoCacheHandler, directory=".")
     with ThreadingHTTPServer(("127.0.0.1", port), handler) as httpd:
-        print(f"E-Money's Bar — serving on http://localhost:{port}")
+        print(f"E-Money's Bar, serving on http://localhost:{port}")
         httpd.serve_forever()
 
 

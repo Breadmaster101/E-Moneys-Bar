@@ -1,5 +1,5 @@
 /**
- * seats.js — opponents around the table, plus your own status plate.
+ * seats.js: opponents around the table, plus your own status plate.
  */
 
 import { el } from './dom.js';

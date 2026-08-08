@@ -1,5 +1,5 @@
 /* ============================================================
-   responsive.css — desktop-first.
+   responsive.css: desktop-first.
 
    The base scale in tokens.css targets a monitor. Everything below
    steps that down: width breakpoints trim the chrome, height
@@ -163,9 +163,10 @@
         aspect-ratio: auto;
         max-height: none;
         padding: var(--sp-5) var(--sp-4);
-        border: 1px solid var(--line-strong);
+        border: 1px solid var(--rule);
         border-radius: var(--r-md);
-        background: radial-gradient(130% 150% at 50% 0%, var(--felt-hi), var(--felt) 58%, var(--felt-edge));
+        background-color: var(--felt);
+        background-image: var(--hatch-cross);
         box-shadow: var(--sh-2);
     }
 
@@ -261,7 +262,7 @@
         padding: var(--sp-5) var(--sp-4) var(--sp-4);
     }
 
-    /* the seat ring needs more room than a phone has — stack it */
+    /* the seat ring needs more room than a phone has, so stack it */
     .wtable {
         width: min(100%, 300px);
     }
@@ -439,7 +440,7 @@
     }
 
     /*
-     * There isn't room for your own plate under the hand on a phone — the fanned
+     * There isn't room for your own plate under the hand on a phone: the fanned
      * cards overflow the dock upward and would sit on top of it. Stand it up
      * vertically in the gutter to the left of the fan instead.
      */

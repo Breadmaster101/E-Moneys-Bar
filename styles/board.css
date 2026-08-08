@@ -1,5 +1,5 @@
 /* ============================================================
-   board.css — HUD, table, dock, action bar, game log
+   board.css: HUD, table, dock, action bar, game log
    ============================================================ */
 
 /* ---------------- App shell ---------------- */
@@ -37,10 +37,16 @@
     gap: var(--sp-3);
     height: calc(var(--hud-h) + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) var(--sp-4) 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, .5), transparent);
     pointer-events: none;
     z-index: 60;
 }
+
+/*
+ * No scrim. The old one existed because the controls sat over pools of
+ * lamplight that could wash them out; the plate behind them is flat ink now,
+ * so contrast is guaranteed and the strip can stay genuinely invisible. Each
+ * control carries its own ruled frame, which is all the separation it needs.
+ */
 
 .topbar__side,
 .topbar__center {
@@ -49,7 +55,7 @@
     gap: var(--sp-2);
 }
 
-/* only the controls themselves take clicks — the scrim must not eat them */
+/* only the controls themselves take clicks: the scrim must not eat them */
 .topbar__side>*,
 .topbar__center>* {
     pointer-events: auto;
@@ -76,15 +82,16 @@
     font-size: 13px;
     font-weight: 700;
     color: var(--text-dim);
-    background: rgba(255, 255, 255, .04);
-    border: 1px solid var(--line);
+    background: var(--ink-850);
+    border: 1px solid var(--rule);
     border-radius: var(--r-sm);
 }
 
 .hud-chip--mono {
-    font-family: var(--font-mono);
+    font-family: var(--font-engraved);
+    font-weight: 700;
     letter-spacing: .16em;
-    color: var(--amber);
+    color: var(--gold);
 }
 
 /* ---------------- Turn pill ---------------- */
@@ -96,18 +103,19 @@
     gap: var(--sp-2);
     height: 48px;
     padding: 0 22px 0 5px;
-    background: #141119;
-    border: 1px solid var(--line-strong);
+    background: var(--ink-850);
+    border: 1px solid var(--rule);
     border-radius: var(--r-sm);
-    transition: border-color var(--t-med), box-shadow var(--t-med), background var(--t-med);
+    transition: border-color var(--t-med), background var(--t-med);
 }
 
+/* your turn: the rule thickens rather than the plate lighting up */
 .turn-pill.is-mine {
-    border-color: var(--amber-deep);
-    box-shadow: 0 0 14px rgba(255, 180, 77, .22);
-    background: #241a0c;
+    border-color: var(--rule-strong);
+    background: var(--ink-700);
 }
 
+/* running out of time: the rule alternates weight, like a warning border */
 .turn-pill.is-urgent {
     animation: urgentPulse .6s var(--ease-in-out) infinite;
 }
@@ -116,11 +124,11 @@
 
     0%,
     100% {
-        box-shadow: 0 0 0 rgba(255, 47, 78, 0);
+        border-color: var(--oxblood);
     }
 
     50% {
-        box-shadow: 0 0 20px rgba(255, 47, 78, .6);
+        border-color: var(--oxblood-hot);
     }
 }
 
@@ -136,25 +144,23 @@
 
 .turn-pill__ring-bg {
     fill: none;
-    stroke: rgba(255, 255, 255, .1);
-    stroke-width: 2.4;
+    stroke: var(--rule-faint);
+    stroke-width: 2;
 }
 
 .turn-pill__ring-arc {
     fill: none;
-    stroke: var(--amber);
-    stroke-width: 2.4;
+    stroke: var(--gold);
+    stroke-width: 2;
     stroke-linecap: butt;
-    /* 136 = the perimeter of the 34×34 path above */
+    /* 136 = the perimeter of the 34x34 path above */
     stroke-dasharray: 136;
     stroke-dashoffset: 136;
     transition: stroke-dashoffset .25s linear, stroke .3s;
-    filter: drop-shadow(0 0 4px rgba(255, 180, 77, .8));
 }
 
 .turn-pill__ring-arc.is-low {
-    stroke: var(--red);
-    filter: drop-shadow(0 0 5px rgba(255, 47, 78, .9));
+    stroke: var(--oxblood-hot);
 }
 
 .turn-pill__avatar {
@@ -163,13 +169,13 @@
     width: 36px;
     height: 36px;
     margin-left: 5px;
-    font-family: var(--font-display);
-    font-size: 19px;
-    letter-spacing: .05em;
-    color: #0d0a10;
-    background: var(--seat-color, var(--amber));
+    font-family: var(--font-engraved);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: .04em;
+    color: #0a0908;
+    background: var(--seat-color, var(--gold));
     border-radius: 0;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
 }
 
 .turn-pill__text {
@@ -214,48 +220,48 @@
 }
 
 /*
- * The table is four stacked ellipses: a wood rim, a brass bead, the baize, and
- * a painted deco inlay. Lit from the upper-left, as if from the lamp above it.
+ * Four stacked ellipses, all drawn: an outer rim, a bead rule, the crosshatched
+ * baize, and a deco inlay. There is no light source any more, so the depth
+ * comes from line weight stepping down as you move inward: the bead is the
+ * strongest rule on the board, the innermost inlay the faintest.
  */
 
 .table__felt {
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background:
-        radial-gradient(58% 58% at 38% 26%, rgba(255, 226, 170, .12) 0%, transparent 62%),
-        radial-gradient(82% 82% at 50% 34%, var(--felt-hi) 0%, var(--felt) 56%, var(--felt-edge) 100%);
-    box-shadow:
-        inset 0 0 44px rgba(0, 0, 0, .5),
-        inset 0 0 0 1px rgba(0, 0, 0, .5),
-        0 34px 70px rgba(0, 0, 0, .6);
+    overflow: hidden;
+    background-color: var(--felt);
+    background-image: var(--hatch-cross);
+    box-shadow: inset 0 0 0 1px var(--rule-faint);
 }
 
 .table__felt::after {
-    /* baize nap */
+    /* paper tooth over the hatching, so the field is not mechanically even */
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    opacity: .22;
+    opacity: .16;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
 }
 
-/* painted double ring, set in from the cushion */
+/* the ruled ring set in from the cushion */
 .table__felt::before {
     content: '';
     position: absolute;
     inset: 7%;
-    border: 1px solid rgba(214, 178, 118, .22);
+    border: 1px solid var(--rule);
     border-radius: 50%;
     pointer-events: none;
+    z-index: 1;
 }
 
 .table__inlay {
     position: absolute;
-    inset: calc(7% + 5px);
-    border: 1px solid rgba(214, 178, 118, .1);
+    inset: calc(7% + 6px);
+    border: 1px solid var(--rule-faint);
     border-radius: 50%;
     pointer-events: none;
     z-index: 1;
@@ -265,22 +271,18 @@
     position: absolute;
     inset: -18px;
     border-radius: 50%;
-    background:
-        linear-gradient(158deg, var(--wood-hi) 0%, var(--wood) 42%, #170d07 100%);
-    box-shadow:
-        inset 0 3px 4px rgba(255, 196, 130, .22),
-        inset 0 -4px 10px rgba(0, 0, 0, .75),
-        0 18px 44px rgba(0, 0, 0, .55);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border: 1px solid var(--rule-faint);
     z-index: -2;
 }
 
-/* thin brass bead where the wood meets the baize */
+/* the bead where the rim meets the baize: the heaviest rule on the table */
 .table__bead {
     position: absolute;
     inset: -5px;
     border-radius: 50%;
-    background: linear-gradient(160deg, #e8bb6a, #8a5f22 40%, #3a280e 100%);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .7);
+    border: 1px solid var(--rule-strong);
     z-index: -1;
 }
 
@@ -303,20 +305,20 @@
     align-items: center;
     gap: 1px;
     padding: 6px 22px 8px;
-    background: rgba(8, 20, 14, .45);
-    border: 1px solid rgba(207, 168, 106, .22);
+    background: var(--ink-900);
+    border: 1px solid var(--rule);
     border-radius: 0;
     transition: transform var(--t-slow) var(--ease-back);
 }
 
-/* corner ticks — the deco marker that says "this is the called suit" */
+/* corner ticks: the deco marker that says "this is the called suit" */
 .suit-medallion::before,
 .suit-medallion::after {
     content: '';
     position: absolute;
     width: 7px;
     height: 7px;
-    border: 1px solid rgba(207, 168, 106, .5);
+    border: 1px solid var(--rule-strong);
     pointer-events: none;
 }
 
@@ -365,24 +367,24 @@
     font-size: 46px;
     line-height: 1.05;
     color: var(--text-dim);
-    text-shadow: 0 0 18px currentColor;
     transition: color var(--t-med);
 }
 
 .suit-medallion[data-color="red"] .suit-medallion__glyph {
-    color: #ff5566;
+    color: #b8404e;
 }
 
 .suit-medallion[data-color="black"] .suit-medallion__glyph {
-    color: #e8e2f5;
+    color: var(--text);
 }
 
 .suit-medallion__name {
-    font-family: var(--font-display);
-    font-size: 18px;
-    letter-spacing: .16em;
-    color: var(--text);
-    opacity: .85;
+    font-family: var(--font-engraved);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--gold);
 }
 
 /* ---------------- Center pile ---------------- */
@@ -417,7 +419,8 @@
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--text-dim);
-    background: rgba(0, 0, 0, .55);
+    background: var(--ink-900);
+    border: 1px solid var(--rule-faint);
     border-radius: 0;
     white-space: nowrap;
 }
@@ -431,8 +434,8 @@
     font-weight: 600;
     text-align: center;
     color: var(--text-dim);
-    background: rgba(7, 18, 13, .55);
-    border: 1px solid rgba(255, 255, 255, .07);
+    background: var(--ink-900);
+    border: 1px solid var(--rule-faint);
     border-radius: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -440,7 +443,7 @@
 }
 
 .last-play b {
-    color: var(--amber);
+    color: var(--gold);
 }
 
 /* ---------------- Dock (hand + actions) ---------------- */
@@ -457,16 +460,26 @@
     z-index: 25;
 }
 
+/*
+ * Was a pool of light under your hand to say "you are up". Now a ruled band:
+ * a hatch field closed by a rule along the bottom edge, masked out at the
+ * sides so it does not read as a box.
+ */
 #dock::before {
-    /* bar-top light spill under your own hand */
     content: '';
     position: absolute;
     left: 50%;
     bottom: 0;
     width: min(760px, 92%);
-    height: 190px;
+    height: 120px;
     transform: translateX(-50%);
-    background: radial-gradient(60% 100% at 50% 100%, rgba(255, 180, 77, .09), transparent 72%);
+    background-image: var(--hatch);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent),
+        linear-gradient(0deg, #000 30%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 22%, #000 78%, transparent),
+        linear-gradient(0deg, #000 30%, transparent);
+    mask-composite: intersect;
     opacity: 0;
     transition: opacity var(--t-slow);
     pointer-events: none;
@@ -511,26 +524,34 @@
     letter-spacing: .09em;
 }
 
+/*
+ * The one place oxblood is used at full strength. It used to hum with a glow;
+ * now the inner rule breathes instead, which reads as the same urgency without
+ * anything emitting.
+ */
 .btn--liar {
-    --btn-bg: linear-gradient(180deg, rgba(255, 47, 78, .16), rgba(120, 8, 26, .3));
-    --btn-fg: #ffd2d8;
-    --btn-line: rgba(255, 47, 78, .55);
+    --btn-bg: #2a0f14;
+    --btn-fg: #e8bcc2;
+    --btn-line: var(--oxblood);
 }
 
 .btn--liar:not(:disabled) {
+    text-shadow: 1px 1px 0 #000;
+}
+
+.btn--liar:not(:disabled)::after {
     animation: liarHum 2.2s var(--ease-in-out) infinite;
-    text-shadow: 0 0 10px rgba(255, 47, 78, .8);
 }
 
 @keyframes liarHum {
 
     0%,
     100% {
-        box-shadow: 0 0 8px rgba(255, 47, 78, .3), inset 0 0 14px rgba(255, 47, 78, .12);
+        border-color: rgba(142, 34, 48, .5);
     }
 
     50% {
-        box-shadow: 0 0 24px rgba(255, 47, 78, .6), inset 0 0 22px rgba(255, 47, 78, .22);
+        border-color: rgba(209, 112, 124, .85);
     }
 }
 
@@ -552,11 +573,11 @@
 }
 
 .select-counter.is-active b {
-    color: var(--amber);
+    color: var(--gold);
 }
 
 .select-counter.is-full b {
-    color: var(--red-hot);
+    color: var(--oxblood-hot);
 }
 
 /* ---------------- Turn announcement ---------------- */
@@ -578,35 +599,36 @@
 }
 
 .turn-announce__text {
-    font-family: var(--font-display);
-    font-size: clamp(64px, 12vw, 132px);
-    letter-spacing: .1em;
-    color: var(--amber-hot);
-    text-shadow:
-        0 0 6px rgba(255, 215, 154, .9),
-        0 0 26px rgba(255, 180, 77, .8),
-        0 0 70px rgba(255, 140, 30, .5);
+    font-family: var(--font-engraved);
+    font-weight: 900;
+    font-size: clamp(58px, 10.5vw, 118px);
+    letter-spacing: .04em;
+    color: var(--gold-hot);
+    text-shadow: 4px 4px 0 #000;
 }
 
 .turn-announce--danger .turn-announce__text {
-    color: #ffd2d8;
-    text-shadow:
-        0 0 6px rgba(255, 214, 220, .9),
-        0 0 26px rgba(255, 47, 78, .85),
-        0 0 70px rgba(220, 0, 40, .5);
+    color: var(--oxblood-hot);
 }
 
+/*
+ * The entrance used to resolve out of a blur. It now lands as a stamp:
+ * overshoot, strike, settle. The 0% scale is bigger and the strike sharper
+ * to compensate for losing the blur as a softening cue.
+ */
 @keyframes announce {
     0% {
         opacity: 0;
-        transform: scale(1.5);
-        filter: blur(14px);
+        transform: scale(1.65);
     }
 
-    16% {
+    14% {
         opacity: 1;
+        transform: scale(.97);
+    }
+
+    22% {
         transform: scale(1);
-        filter: blur(0);
     }
 
     72% {
@@ -616,7 +638,7 @@
 
     100% {
         opacity: 0;
-        transform: scale(1.08) translateY(-16px);
+        transform: scale(1.06) translateY(-16px);
     }
 }
 
@@ -630,9 +652,9 @@
     width: var(--log-w);
     display: flex;
     flex-direction: column;
-    background: var(--ink-850);
-    border-left: 1px solid var(--line-strong);
-    box-shadow: -14px 0 40px rgba(0, 0, 0, .7);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border-left: 1px solid var(--rule);
     transform: translateX(100%);
     transition: transform var(--t-med) var(--ease-out);
     z-index: 40;
@@ -679,17 +701,17 @@
 
 .log-line--system {
     color: var(--text);
-    border-left-color: var(--amber);
+    border-left-color: var(--gold);
 }
 
 .log-line--success {
-    color: var(--green);
-    border-left-color: var(--green);
+    color: var(--verdigris);
+    border-left-color: var(--verdigris);
 }
 
 .log-line--error {
-    color: var(--red-hot);
-    border-left-color: var(--red);
+    color: var(--oxblood-hot);
+    border-left-color: var(--oxblood);
 }
 
 .log-line__time {
@@ -707,9 +729,8 @@
     right: 4px;
     width: 7px;
     height: 7px;
-    background: var(--amber);
+    background: var(--gold);
     border-radius: 50%;
-    box-shadow: 0 0 8px var(--amber);
 }
 
 #logToggleBtn {

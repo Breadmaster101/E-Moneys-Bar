@@ -1,5 +1,5 @@
 /* ============================================================
-   lobby.css — the front door, in three steps:
+   lobby.css: the front door, in three steps:
      #lobby-menu   the marquee and your name
      #lobby-join   room-code entry
      #lobby-table  the waiting room
@@ -8,7 +8,7 @@
    desktop, and only one is ever mounted at a time.
    ============================================================ */
 
-/* #screen-lobby deliberately has no positioning of its own — `.screen` in
+/* #screen-lobby deliberately has no positioning of its own: `.screen` in
    base.css already makes it absolute/inset-0, which is what the steps below
    size themselves against. An ID rule here would out-specify that and collapse
    them to zero height. */
@@ -52,6 +52,11 @@
     text-align: center;
 }
 
+/*
+ * The bulb row is now a rule of engraved dots: the same rhythm across the top
+ * of the sign, cut instead of lit. They still animate, but as ink catching the
+ * light rather than filaments coming on.
+ */
 .marquee-bulbs {
     display: block;
     width: 76%;
@@ -61,8 +66,9 @@
 }
 
 .marquee-bulbs circle {
-    fill: var(--amber-hot);
-    filter: drop-shadow(0 0 4px rgba(255, 180, 77, .95));
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 1;
     animation: bulbPulse 2.6s var(--ease-in-out) infinite;
 }
 
@@ -70,54 +76,63 @@
 
     0%,
     100% {
-        opacity: .35;
+        opacity: .3;
     }
 
     50% {
-        opacity: 1;
+        opacity: .9;
     }
 }
 
+/*
+ * The sign itself: cut into the plate, not wired up. Playfair for the house
+ * name because the engraved voice lives in the serif; the hard black offset
+ * behind each line is the second impression that sells it as printed.
+ */
 .neon-sign {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-family: var(--font-display);
-    font-weight: 400;
-    line-height: .82;
-    letter-spacing: .04em;
-    animation: neonHum 4.5s var(--ease-in-out) infinite;
+    font-family: var(--font-engraved);
+    font-weight: 900;
+    line-height: .9;
+    letter-spacing: .01em;
 }
 
 .neon-sign__line1 {
-    font-size: clamp(36px, 5vw, 62px);
-    color: var(--amber-hot);
-    text-shadow:
-        0 0 4px rgba(255, 215, 154, .9),
-        0 0 12px rgba(255, 180, 77, .8),
-        0 0 30px rgba(255, 150, 40, .5),
-        0 0 72px rgba(255, 120, 20, .32);
+    font-size: clamp(32px, 4.4vw, 54px);
+    color: var(--gold);
+    text-shadow: 2px 2px 0 #000;
 }
 
 .neon-sign__line2 {
-    margin-top: 2px;
-    font-size: clamp(62px, 9vw, 116px);
-    color: #ffd6dc;
-    text-shadow:
-        0 0 5px rgba(255, 214, 220, .95),
-        0 0 14px rgba(255, 47, 78, .85),
-        0 0 38px rgba(255, 20, 55, .6),
-        0 0 86px rgba(220, 0, 40, .38);
-    animation: neonFlicker 7s linear infinite;
+    margin-top: 4px;
+    font-size: clamp(58px, 8.4vw, 108px);
+    color: var(--gold-hot);
+    text-shadow: 3px 3px 0 #000, 4px 4px 0 rgba(0, 0, 0, .45);
 }
 
+/* a ruled line either side of the tagline, the way a title page sets it */
 .marquee-sub {
-    margin-top: var(--sp-3);
-    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-3);
+    margin-top: var(--sp-4);
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: .32em;
+    letter-spacing: .34em;
     text-transform: uppercase;
     color: var(--text-faint);
+}
+
+.marquee-sub::before,
+.marquee-sub::after {
+    content: '';
+    flex: 1 1 0;
+    max-width: 68px;
+    height: 1px;
+    background: var(--rule);
 }
 
 .menu__panel {
@@ -141,11 +156,12 @@
 }
 
 .step-title {
-    font-family: var(--font-display);
-    font-size: 32px;
-    font-weight: 400;
-    letter-spacing: .05em;
-    color: var(--amber);
+    font-family: var(--font-engraved);
+    font-size: 29px;
+    font-weight: 900;
+    letter-spacing: .01em;
+    color: var(--gold-hot);
+    text-shadow: 2px 2px 0 #000;
 }
 
 .step-sub {
@@ -168,14 +184,14 @@
     font-size: 14px;
     text-align: center;
     color: var(--text-dim);
-    background: rgba(0, 0, 0, .3);
-    border: 1px solid var(--line);
+    background: var(--ink-900);
+    border: 1px solid var(--rule-faint);
     border-radius: 0;
 }
 
 .status-line[data-tone="ok"] {
-    color: var(--green);
-    border-color: rgba(75, 224, 138, .3);
+    color: #9dbf94;
+    border-color: rgba(110, 143, 106, .45);
 }
 
 .status-line[data-tone="busy"] {
@@ -184,8 +200,8 @@
 }
 
 .status-line[data-tone="bad"] {
-    color: var(--red-hot);
-    border-color: rgba(255, 47, 78, .3);
+    color: var(--oxblood-hot);
+    border-color: rgba(142, 34, 48, .55);
 }
 
 /* ---------------- Step 3: the waiting room ---------------- */
@@ -216,29 +232,34 @@
     max-height: 100%;
 }
 
+/*
+ * The table, drawn rather than lit. Four concentric rules stepping inward
+ * (rim, cushion, two inlays) with the field crosshatched. Line weight falls
+ * off toward the centre, which is what gives it depth now that there is no
+ * gradient doing it.
+ */
 .wtable__rim {
     position: absolute;
     inset: -14px;
     border-radius: 50%;
-    background: linear-gradient(160deg, var(--wood-hi), var(--wood) 45%, #170d07 100%);
-    box-shadow:
-        inset 0 2px 3px rgba(255, 190, 120, .2),
-        inset 0 -3px 8px rgba(0, 0, 0, .7),
-        0 16px 40px rgba(0, 0, 0, .55);
+    background: var(--ink-850);
+    border: 1px solid var(--rule);
 }
 
 .wtable__felt {
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    background: radial-gradient(72% 72% at 50% 32%, var(--felt-hi) 0%, var(--felt) 55%, var(--felt-edge) 100%);
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, .6);
+    overflow: hidden;
+    background-color: var(--felt);
+    background-image: var(--hatch-cross);
+    border: 1px solid var(--rule-strong);
 }
 
 .wtable__inlay {
     position: absolute;
     inset: 9%;
-    border: 1px solid rgba(214, 178, 118, .28);
+    border: 1px solid var(--rule);
     border-radius: 50%;
     pointer-events: none;
 }
@@ -246,8 +267,8 @@
 .wtable__inlay::after {
     content: '';
     position: absolute;
-    inset: 5px;
-    border: 1px solid rgba(214, 178, 118, .14);
+    inset: 6px;
+    border: 1px solid var(--rule-faint);
     border-radius: 50%;
 }
 
@@ -266,17 +287,18 @@
     font-weight: 800;
     letter-spacing: .22em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, .38);
+    color: var(--text-faint);
 }
 
+/* the code is the one thing on the felt, so it is set like a plate number */
 .wtable__code {
-    font-family: var(--font-mono);
-    font-size: clamp(30px, 4vw, 44px);
+    font-family: var(--font-engraved);
+    font-size: clamp(32px, 4.2vw, 48px);
     font-weight: 700;
-    letter-spacing: .26em;
-    text-indent: .26em;
-    color: var(--amber-hot);
-    text-shadow: 0 0 18px rgba(255, 180, 77, .55), 0 2px 0 rgba(0, 0, 0, .6);
+    letter-spacing: .22em;
+    text-indent: .22em;
+    color: var(--gold-hot);
+    text-shadow: 2px 2px 0 #000;
 }
 
 /* ---------------- Waiting-room seats ---------------- */
@@ -310,16 +332,18 @@
 }
 
 .wseat.is-taken {
-    background: #16131f;
-    border-color: color-mix(in srgb, var(--seat-color, var(--amber)) 45%, transparent);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border-color: color-mix(in srgb, var(--seat-color, var(--gold)) 55%, transparent);
     box-shadow: var(--sh-2);
 }
 
+/* an unfilled seat is ruled but not inked */
 .wseat.is-empty {
     justify-content: center;
-    background: rgba(0, 0, 0, .3);
+    background: var(--ink-900);
     border-style: dashed;
-    border-color: rgba(255, 255, 255, .14);
+    border-color: var(--rule-faint);
 }
 
 .wseat__waiting {
@@ -363,7 +387,7 @@
     font-weight: 800;
     letter-spacing: .14em;
     text-transform: uppercase;
-    color: var(--seat-color, var(--amber));
+    color: var(--seat-color, var(--gold));
     opacity: .85;
 }
 
@@ -392,7 +416,7 @@
 .tally {
     font-family: var(--font-mono);
     letter-spacing: .05em;
-    color: var(--amber);
+    color: var(--gold);
 }
 
 .waitroom__foot {

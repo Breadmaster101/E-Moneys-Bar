@@ -1,71 +1,121 @@
 /* ============================================================
-   tokens.css — the single source of truth for the look.
-   Neon-noir speakeasy: a dim room, warm amber key light,
-   red neon for danger, bone-white type.
+   tokens.css: the single source of truth for the look.
 
-   Dim, not black — surfaces stay light enough that the deco
-   hairlines, brass plates and felt all read without straining.
+   Engraved letterpress. The whole interface is a printed plate:
+   gold linework struck into near-black, shaded with hatching
+   rather than blends. Two rules hold it together:
+
+     1. Nothing is filled that could be drawn. Depth comes from
+        line weight and hatch density, never from a gradient.
+     2. Nothing emits light except things that literally do
+        (the muzzle flash). No glow, no bloom, no blur.
+
+   Hatching is done with repeating-linear-gradient, which sounds
+   like a gradient but has hard stops only. There is no soft
+   colour blend anywhere in this file.
    ============================================================ */
 
 :root {
-    /* ---- Surfaces (the room) ---- */
-    --ink-900: #100e15;
-    --ink-850: #16131c;
-    --ink-800: #1b1723;
-    --ink-750: #211c2a;
-    --ink-700: #282232;
-    --ink-600: #332b3e;
-    --ink-500: #40374d;
+    /* ---- The plate ----
+       Warm near-black, like ink on aged stock. The steps are close
+       together on purpose: separation comes from the rules drawn
+       between surfaces, not from surfaces being different shades. */
+    --ink-900: #0a0908;
+    --ink-850: #0e0d0b;
+    --ink-800: #12100e;
+    --ink-750: #161311;
+    --ink-700: #1b1815;
+    --ink-600: #232019;
+    --ink-500: #2e2a22;
 
-    --line: rgba(255, 255, 255, 0.09);
-    --line-strong: rgba(255, 255, 255, 0.19);
-    --line-amber: rgba(255, 180, 77, 0.34);
+    /* ---- Rules ----
+       Three weights. Everything drawn on the plate uses one of them,
+       which is what keeps the linework reading as a single engraving
+       rather than a pile of borders. */
+    --rule-faint: rgba(201, 169, 97, .16);
+    --rule: rgba(201, 169, 97, .34);
+    --rule-strong: rgba(201, 169, 97, .62);
 
-    /* ---- Type ---- */
-    --text: #f7f2e9;
-    --text-dim: #bcb0a0;
-    --text-faint: #8d8376;
+    /* legacy names, kept so nothing has to be renamed at every call site */
+    --line: var(--rule-faint);
+    --line-strong: var(--rule);
+    --line-amber: var(--rule-strong);
 
-    /* ---- Neon ---- */
-    --amber: #ffb44d;
-    --amber-hot: #ffdaa4;
-    --amber-deep: #c07d22;
-    --red: #ff3d5a;
-    --red-hot: #ff8496;
-    --red-deep: #ab0f26;
-    --cyan: #5fe7ff;
-    --green: #5be595;
-    --violet: #bd7bff;
-    --lime: #d0f45e;
+    /* ---- Type ----
+       Bone, not white. Body copy stays bone at full strength; gold is
+       for headings, labels and accents only. Gold body text at 14px on
+       black is where this style usually falls apart. */
+    --text: #ece5d6;
+    --text-dim: #b3a688;
+    --text-faint: #8a8069;
 
-    /* ---- Player accents (assigned by seat) ---- */
-    --p1: #ffb44d;
-    --p2: #5fe7ff;
-    --p3: #ff6ea6;
-    --p4: #86ee76;
+    /* ---- Ink colours ----
+       Printed inks, not lit ones. Nothing here is meant to look like
+       it is emitting. */
+    --gold: #c9a961;
+    --gold-hot: #e3c98d;
+    --gold-deep: #8a6f34;
+    --oxblood: #8e2230;
+    --oxblood-hot: #d1707c;
+    --verdigris: #6e8f6a;
+    --steel: #6f8f9e;
+
+    /* aliases for the old neon names */
+    --amber: var(--gold);
+    --amber-hot: var(--gold-hot);
+    --amber-deep: var(--gold-deep);
+    --red: var(--oxblood);
+    --red-hot: var(--oxblood-hot);
+    --red-deep: #5c1420;
+    --green: var(--verdigris);
+    --cyan: var(--steel);
+    --violet: #8a7396;
+    --lime: #9aa668;
+
+    /* ---- Player accents ----
+       Four inks a press could actually run. The old neon set fought the
+       gold badly: anything that bright reads as backlit next to hatching. */
+    --p1: #c9a961;
+    --p2: #6f8f9e;
+    --p3: #b0616d;
+    --p4: #8a9c63;
 
     /* ---- Table ---- */
-    --felt: #163b2c;
-    --felt-hi: #26654b;
-    --felt-edge: #0c2419;
-    --wood: #3a251a;
-    --wood-hi: #5e3c29;
+    --felt: #0f1310;
+    --felt-hi: #151a15;
+    --felt-edge: #080a08;
+    --wood: #17130f;
+    --wood-hi: #241d16;
 
-    /* ---- Cards ---- */
+    /* ---- Cards (left as they were: still printed pasteboard) ---- */
     --card-edge: #b9ad94;
-    --suit-red: #cf2438;
-    --suit-black: #171320;
+    --suit-red: #a32433;
+    --suit-black: #14120f;
+
+    /* ---- Hatching ----
+       The shading system. Hard stops throughout, so these are patterns
+       rather than blends. Density, not opacity, carries tone. */
+    --hatch: repeating-linear-gradient(45deg,
+            rgba(201, 169, 97, .075) 0 1px,
+            transparent 1px 6px);
+    --hatch-fine: repeating-linear-gradient(45deg,
+            rgba(201, 169, 97, .05) 0 1px,
+            transparent 1px 4px);
+    --hatch-cross:
+        repeating-linear-gradient(45deg, rgba(201, 169, 97, .07) 0 1px, transparent 1px 7px),
+        repeating-linear-gradient(-45deg, rgba(201, 169, 97, .05) 0 1px, transparent 1px 9px);
+    --stipple: radial-gradient(circle, rgba(201, 169, 97, .09) .5px, transparent .6px);
+    --stipple-size: 5px 5px;
 
     /*
      * ---- Geometry ----
-     * Near-square on purpose. Big radii and pill shapes read as a phone app;
-     * this is meant to look like painted signage and brass fittings. The only
-     * genuinely round things are ones that are round in real life: revolver
-     * chambers, the table, and playing-card corners.
+     * Square. An engraved plate is cut, not moulded. The only round
+     * things are round in life: revolver chambers, the table, and the
+     * corners of a playing card.
      */
-    --r-sm: 1px;
-    --r-md: 2px;
-    --r-lg: 3px;
+    --r-sm: 0px;
+    --r-md: 0px;
+    --r-lg: 0px;
     --r-card: 5px;
 
     --sp-1: 4px;
@@ -77,24 +127,29 @@
     --sp-7: 52px;
     --sp-8: 68px;
 
-    /* ---- Fonts ---- */
+    /* ---- Fonts ----
+       Playfair carries the engraved voice: titles, numerals, room codes.
+       Bebas stays for the big display moments, Inter for body. */
     --font-ui: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     --font-display: 'Bebas Neue', 'Inter', Impact, sans-serif;
+    --font-engraved: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
     --font-suit: 'Segoe UI Symbol', 'Apple Color Emoji', 'Noto Sans Symbols 2', sans-serif;
 
-    /* ---- Shadow: hard and close, like objects on a bar top, not UI layers ---- */
-    --sh-1: 0 1px 0 rgba(0, 0, 0, .6);
-    --sh-2: 0 2px 0 rgba(0, 0, 0, .48), 0 4px 10px rgba(0, 0, 0, .38);
-    --sh-3: 0 3px 0 rgba(0, 0, 0, .45), 0 10px 24px rgba(0, 0, 0, .48);
-    --sh-4: 0 4px 0 rgba(0, 0, 0, .45), 0 22px 50px rgba(0, 0, 0, .62);
+    /* ---- Shadow ----
+       Paper does not float. These are hard offsets standing in for a
+       second impression slightly off register, not soft falloff. */
+    --sh-1: 0 1px 0 rgba(0, 0, 0, .7);
+    --sh-2: 0 2px 0 rgba(0, 0, 0, .7);
+    --sh-3: 0 3px 0 rgba(0, 0, 0, .75);
+    --sh-4: 0 4px 0 rgba(0, 0, 0, .8);
 
-    /* ---- Deco framing: the inset hairline rule used on panels and modals ---- */
+    /* ---- Deco framing: the inset rule struck inside panels and modals ---- */
     --frame-inset: 6px;
-    --frame-line: rgba(214, 178, 118, .34);
+    --frame-line: var(--rule);
 
-    /* ---- Glow: only for things that are literally lit (neon, muzzle flash) ---- */
-    --glow-amber: 0 0 10px rgba(255, 180, 77, .5), 0 0 34px rgba(255, 180, 77, .2);
+    /* ---- Glow: the muzzle flash only. Nothing else in the UI lights up. ---- */
+    --glow-amber: none;
 
     /* ---- Motion ---- */
     --ease-out: cubic-bezier(.16, 1, .3, 1);

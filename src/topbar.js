@@ -1,8 +1,8 @@
 /**
- * topbar.js — the controls that float above every screen.
+ * topbar.js: the controls that float above every screen.
  *
  * Sound and the rules are reachable everywhere; back/leave and the log appear
- * only where they mean something. Nothing here knows about game rules —
+ * only where they mean something. Nothing here knows about game rules, because
  * `onBack` is supplied by main.js, which decides what "back" means right now.
  */
 

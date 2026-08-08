@@ -1,5 +1,5 @@
 /**
- * fx.js — screen impact: particles on a full-screen canvas, camera shake,
+ * fx.js: screen impact: particles on a full-screen canvas, camera shake,
  * and colour flashes. Everything is opt-out under prefers-reduced-motion.
  */
 
@@ -246,7 +246,7 @@ export function confetti() {
     }
 }
 
-/** Warm embers drifting up — used behind the winner. */
+/** Warm embers drifting up: used behind the winner. */
 export function embers(count = 40) {
     if (reduced) return;
     const w = window.innerWidth;

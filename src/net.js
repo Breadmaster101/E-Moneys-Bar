@@ -1,5 +1,5 @@
 /**
- * net.js — the Socket.IO relay layer.
+ * net.js: the Socket.IO relay layer.
  *
  * The server is a dumb pipe: one player is the host and owns the truth, every
  * other player mirrors whatever the host broadcasts.
@@ -54,7 +54,7 @@ export function connectServer() {
     });
 
     socket.on('disconnect', () => {
-        setServerStatus('off', 'Disconnected — reconnecting…');
+        setServerStatus('off', 'Disconnected, reconnecting…');
     });
 
     socket.on('connect_error', () => {

@@ -1,5 +1,5 @@
 /**
- * board.js — the table centre, the turn indicator, and the action bar.
+ * board.js: the table centre, the turn indicator, and the action bar.
  */
 
 import { el } from './dom.js';
@@ -25,7 +25,7 @@ function updateSuitMedallion() {
 
     if (!suit) {
         el.suitGlyph.textContent = '?';
-        el.suitName.textContent = '—';
+        el.suitName.textContent = 'None';
         el.suitMedallion.removeAttribute('data-color');
         lastSuit = null;
         return;
@@ -87,7 +87,7 @@ function updateLastPlay() {
     } else if (gameState.gamePhase === 'playing') {
         el.lastPlay.textContent = 'Awaiting the first play…';
     } else {
-        el.lastPlay.textContent = '—';
+        el.lastPlay.textContent = 'No plays yet.';
     }
 }
 

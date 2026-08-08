@@ -1,5 +1,5 @@
 /**
- * Game-wide constants. No imports — this is the bottom of the dependency graph.
+ * Game-wide constants. No imports: this is the bottom of the dependency graph.
  */
 
 export const SERVER_URL = 'https://quicklash-server.onrender.com';
@@ -35,7 +35,7 @@ export const DEFAULT_TURN_SECONDS = 30;
 /**
  * Where opponents sit, as % of the table area. Index = opponent count.
  * Kept clear of the table ellipse (which starts around 24% and is centred
- * at 52–54%) so name plates never sit on top of the suit medallion.
+ * at 52-54%) so name plates never sit on top of the suit medallion.
  */
 export const SEAT_LAYOUTS = {
     1: [{ x: 50, y: 16 }],

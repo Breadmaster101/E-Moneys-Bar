@@ -1,5 +1,5 @@
 /* ============================================================
-   players.css — seats around the table, avatars, revolvers
+   players.css: seats around the table, avatars, revolvers
    ============================================================ */
 
 .seat {
@@ -40,7 +40,7 @@
     left: 50%;
     transform-origin: 50% 130%;
     transition: transform var(--t-med) var(--ease-back), opacity var(--t-med);
-    /* fade only — the fan position lives in an inline transform */
+    /* fade only: the fan position lives in an inline transform */
     animation: fadeIn .3s var(--ease-out) backwards;
 }
 
@@ -59,7 +59,7 @@
 
 /* ---------------- Name plate ---------------- */
 
-/* A nameplate screwed to the bar: solid, square, thin rule inside the edge. */
+/* A nameplate cut into the plate: flat field, ruled edge, hard offset. */
 .seat__plate {
     position: relative;
     display: flex;
@@ -67,14 +67,15 @@
     gap: 9px;
     width: 100%;
     padding: 7px 12px 7px 7px;
-    background: #16131f;
-    border: 1px solid var(--line-strong);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border: 1px solid var(--rule);
     border-radius: var(--r-sm);
     box-shadow: var(--sh-2);
-    transition: border-color var(--t-med), box-shadow var(--t-med), background var(--t-med);
+    transition: border-color var(--t-med), background-color var(--t-med);
 }
 
-/* Monogram struck into a brass tile. */
+/* Monogram struck into an inked tile. */
 .seat__avatar {
     position: relative;
     display: grid;
@@ -82,16 +83,14 @@
     width: 38px;
     height: 38px;
     flex: none;
-    font-family: var(--font-display);
-    font-size: 21px;
-    font-weight: 400;
-    letter-spacing: .06em;
-    color: #0c0910;
-    background: var(--seat-color, var(--amber));
+    font-family: var(--font-engraved);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: #0a0908;
+    background: var(--seat-color, var(--gold));
     border-radius: 0;
-    box-shadow:
-        inset 0 0 0 1px rgba(0, 0, 0, .35),
-        inset 0 1px 0 rgba(255, 255, 255, .4);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .35);
 }
 
 .seat__host-mark {
@@ -100,8 +99,7 @@
     right: -6px;
     width: 13px;
     height: 13px;
-    color: var(--amber-hot);
-    filter: drop-shadow(0 0 3px rgba(0, 0, 0, .95));
+    color: var(--gold-hot);
 }
 
 .seat__meta {
@@ -132,19 +130,21 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #17131c;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rule);
     transition: background var(--t-med), box-shadow var(--t-med);
 }
 
+/* a loaded chamber is filled in; a spent one is struck through and empty */
 .chamber.is-loaded {
-    background: linear-gradient(150deg, #ffd79a, #b8721c);
-    box-shadow: 0 0 5px rgba(255, 180, 77, .7);
+    background: var(--gold);
+    box-shadow: inset 0 0 0 1px var(--gold-deep);
 }
 
 .chamber.is-spent {
-    background: #0a0810;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, .9);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--rule-faint);
+    opacity: .5;
 }
 
 .revolver__count {
@@ -157,43 +157,41 @@
 /* ---------------- Active turn state ---------------- */
 
 .seat.is-turn .seat__plate {
-    background: #221809;
-    border-color: color-mix(in srgb, var(--seat-color, var(--amber)) 65%, transparent);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--seat-color, var(--amber)) 28%, transparent), var(--sh-2);
+    background-color: var(--ink-700);
+    border-color: var(--seat-color, var(--gold));
+    box-shadow: var(--sh-2);
 }
 
-/* the active seat gets a marquee rule that travels along the plate */
+/*
+ * The active seat gets a rule that travels along the bottom of the plate. It
+ * was a soft gradient sweep; it is now a solid cut bar that slides, which is
+ * both hard-edged and cheaper (transform instead of background-position).
+ */
 .seat.is-turn .seat__plate::after {
     content: '';
     position: absolute;
     left: 0;
-    right: 0;
     bottom: -1px;
+    width: 40%;
     height: 2px;
-    background: linear-gradient(90deg,
-            transparent 0%,
-            var(--seat-color, var(--amber)) 35%,
-            var(--seat-color, var(--amber)) 65%,
-            transparent 100%);
-    background-size: 55% 100%;
-    background-repeat: no-repeat;
-    animation: plateSweep 2.2s var(--ease-in-out) infinite;
+    background: var(--seat-color, var(--gold));
+    animation: plateSweep 2.4s var(--ease-in-out) infinite;
 }
 
 @keyframes plateSweep {
 
     0%,
     100% {
-        background-position: -10% 0;
+        transform: translateX(0);
     }
 
     50% {
-        background-position: 110% 0;
+        transform: translateX(150%);
     }
 }
 
 .seat.is-turn .seat__name {
-    color: var(--seat-color, var(--amber));
+    color: var(--seat-color, var(--gold));
 }
 
 /* ---------------- Eliminated ---------------- */
@@ -209,7 +207,7 @@
     font-size: 10px;
     font-weight: 800;
     letter-spacing: .14em;
-    color: var(--red-hot);
+    color: var(--oxblood-hot);
 }
 
 .seat.is-dying {
@@ -242,17 +240,18 @@
     align-items: center;
     gap: 10px;
     padding: 8px 16px 8px 8px;
-    background: #16131f;
-    border: 1px solid var(--line-strong);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border: 1px solid var(--rule);
     border-radius: var(--r-sm);
     box-shadow: var(--sh-2);
     z-index: 26;
-    transition: border-color var(--t-med), box-shadow var(--t-med);
+    transition: border-color var(--t-med), background-color var(--t-med);
 }
 
 .self-plate.is-turn {
-    border-color: var(--line-amber);
-    box-shadow: 0 0 16px rgba(255, 180, 77, .3), var(--sh-2);
+    border-color: var(--rule-strong);
+    background-color: var(--ink-700);
 }
 
 .self-plate .seat__avatar {
@@ -291,8 +290,8 @@
     font-weight: 600;
     white-space: nowrap;
     color: var(--text);
-    background: #131019;
-    border: 1px solid var(--line-strong);
+    background: var(--ink-800);
+    border: 1px solid var(--rule);
     border-radius: 0;
     box-shadow: var(--sh-2);
     opacity: 0;

@@ -1,5 +1,5 @@
 /**
- * toast.js — non-blocking notices and a styled confirm dialog.
+ * toast.js: non-blocking notices and a styled confirm dialog.
  * These replace every native alert()/confirm() the game used to fire.
  */
 
@@ -7,7 +7,7 @@ import { el, openModal, closeModal } from './dom.js';
 import { sfx } from './audio.js';
 
 /**
- * A toast is a coloured rule and a line of text. No icon — the tone carries it.
+ * A toast is a coloured rule and a line of text. No icon: the tone carries it.
  */
 export function toast(message, { type = 'info', duration = 3400 } = {}) {
     const node = document.createElement('div');
@@ -22,7 +22,7 @@ export function toast(message, { type = 'info', duration = 3400 } = {}) {
         if (!node.isConnected) return;
         node.classList.add('is-leaving');
         node.addEventListener('animationend', () => node.remove(), { once: true });
-        // animationend never fires in a backgrounded tab — don't leak the node
+        // animationend never fires in a backgrounded tab, so don't leak the node
         setTimeout(() => node.remove(), 400);
     };
     setTimeout(remove, duration);

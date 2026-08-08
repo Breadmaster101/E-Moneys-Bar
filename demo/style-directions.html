@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>E-Money's Bar: style directions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ==========================================================
+           style-directions.html: a bake-off, not shipping code.
+
+           The same slice of the waiting room is rendered four times.
+           Every specimen sets its own tokens on `.spec`; the scene
+           markup underneath is byte-identical (cloned from one
+           <template>) so any difference you see is the direction,
+           not the layout.
+
+           Scope shown: surfaces & panels, the table & felt, and the
+           atmosphere behind them. Cards are deliberately left out,
+           since you kept those as-is.
+           ========================================================== */
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #08070b;
+            color: #e8e2d6;
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---------------- page chrome ---------------- */
+
+        .page-head {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 54px 32px 8px;
+        }
+
+        .page-head h1 {
+            margin: 0 0 10px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 46px;
+            letter-spacing: .04em;
+            font-weight: 400;
+        }
+
+        .page-head p {
+            margin: 0 0 6px;
+            max-width: 70ch;
+            color: #9c9384;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .spec {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            border-top: 1px solid rgba(255, 255, 255, .09);
+        }
+
+        .spec__atmos {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .spec__body {
+            position: relative;
+            z-index: 2;
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 40px 32px 56px;
+        }
+
+        /* the caption block that names each direction */
+        .spec__head {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 26px;
+        }
+
+        .spec__num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 4px 9px;
+            border: 1px solid currentColor;
+            opacity: .8;
+        }
+
+        .spec__name {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 34px;
+            letter-spacing: .05em;
+            line-height: 1;
+        }
+
+        .spec__note {
+            font-size: 13.5px;
+            line-height: 1.55;
+            opacity: .72;
+            flex: 1 1 340px;
+            min-width: 260px;
+        }
+
+        /* ---------------- the scene (identical in all four) ---------------- */
+
+        .scene {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 900px) {
+            .scene {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .stage {
+            position: relative;
+            display: grid;
+            place-items: center;
+            min-height: 340px;
+            padding: 12px;
+        }
+
+        /* the controls that float over every screen */
+        .controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            gap: 8px;
+            z-index: 3;
+        }
+
+        .ibtn {
+            display: grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 21px;
+            line-height: 1;
+            padding-top: 2px;
+            cursor: pointer;
+        }
+
+        .ibtn svg {
+            width: 19px;
+            height: 19px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.5;
+            stroke-linecap: butt;
+            stroke-linejoin: miter;
+        }
+
+        /* the felt */
+        .felt {
+            position: relative;
+            width: min(100%, 460px);
+            aspect-ratio: 1.5 / 1;
+            display: grid;
+            place-items: center;
+        }
+
+        .felt__ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+        }
+
+        .felt__face {
+            position: absolute;
+            inset: 13px;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .felt__inlay {
+            position: absolute;
+            inset: 34px;
+            border-radius: 50%;
+        }
+
+        .felt__center {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .felt__kicker {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .3em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .felt__code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: .22em;
+            text-indent: .22em;
+            line-height: 1;
+        }
+
+        /* the side panel */
+        .panel {
+            position: relative;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .panel h3 {
+            margin: 0;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            letter-spacing: .05em;
+            line-height: 1;
+            font-weight: 400;
+        }
+
+        .panel .sub {
+            margin: -8px 0 0;
+            font-size: 13.5px;
+            line-height: 1.5;
+            opacity: .74;
+        }
+
+        .rule {
+            height: 1px;
+            border: 0;
+            margin: 0;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .lbl {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+        }
+
+        .tally b {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+        }
+
+        .seg {
+            display: inline-flex;
+            padding: 3px;
+        }
+
+        .seg button {
+            padding: 6px 11px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            font-weight: 700;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .seats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+        }
+
+        .seat {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            font-size: 12.5px;
+            min-width: 0;
+        }
+
+        .avatar {
+            display: grid;
+            place-items: center;
+            width: 28px;
+            height: 28px;
+            flex: none;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .seat__name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn {
+            padding: 14px 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .hint {
+            font-size: 12px;
+            text-align: center;
+            opacity: .66;
+            margin-top: -6px;
+        }
+
+        /* ==========================================================
+           1: VINTAGE SCREEN-PRINT POSTER
+           Flat ink on flat ink. No blend anywhere; the only depth cue
+           is a hard offset shadow, the way a second pass of ink sits
+           slightly off-register on a real print.
+           ========================================================== */
+
+        .spec--poster {
+            --paper: #17161c;
+            --ink: #0d0c10;
+            --cream: #efe7d2;
+            --ox: #b8323c;
+            --mustard: #dda43a;
+            --green: #2d5c46;
+            color: var(--cream);
+            background: var(--paper);
+        }
+
+        /* halftone: hard-edged dots, no falloff */
+        .spec--poster .spec__atmos {
+            background-image: radial-gradient(circle, rgba(239, 231, 210, .1) 1px, transparent 1.1px);
+            background-size: 6px 6px;
+        }
+
+        .spec--poster .spec__num {
+            color: var(--mustard);
+        }
+
+        .spec--poster .spec__name {
+            color: var(--cream);
+        }
+
+        .spec--poster .ibtn {
+            color: var(--cream);
+            background: var(--ink);
+            border: 2px solid var(--cream);
+            box-shadow: 3px 3px 0 var(--ox);
+        }
+
+        .spec--poster .felt__ring {
+            background: var(--ox);
+            box-shadow: 6px 7px 0 rgba(0, 0, 0, .45);
+        }
+
+        .spec--poster .felt__face {
+            background: var(--green);
+            border: 3px solid var(--cream);
+        }
+
+        .spec--poster .felt__face::after {
+            /* halftone shading on the felt, hard dots again */
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(0, 0, 0, .22) 1.4px, transparent 1.5px);
+            background-size: 7px 7px;
+        }
+
+        .spec--poster .felt__inlay {
+            border: 2px solid rgba(239, 231, 210, .3);
+        }
+
+        .spec--poster .felt__kicker {
+            color: var(--mustard);
+        }
+
+        .spec--poster .felt__code {
+            color: var(--cream);
+            text-shadow: 3px 3px 0 var(--ink);
+        }
+
+        .spec--poster .panel {
+            background: var(--ink);
+            border: 3px solid var(--cream);
+            box-shadow: 8px 8px 0 var(--ox);
+        }
+
+        .spec--poster .panel h3 {
+            color: var(--mustard);
+        }
+
+        .spec--poster .rule {
+            background: var(--cream);
+            height: 2px;
+        }
+
+        .spec--poster .lbl {
+            color: var(--cream);
+        }
+
+        .spec--poster .seg {
+            background: var(--paper);
+            border: 2px solid var(--cream);
+        }
+
+        .spec--poster .seg button.is-active {
+            background: var(--mustard);
+            color: var(--ink);
+        }
+
+        .spec--poster .seat {
+            background: var(--paper);
+            border: 2px solid rgba(239, 231, 210, .32);
+        }
+
+        .spec--poster .seat.is-empty {
+            border-style: dashed;
+            opacity: .45;
+        }
+
+        .spec--poster .avatar {
+            background: var(--seat-c, var(--mustard));
+            color: var(--ink);
+        }
+
+        .spec--poster .btn {
+            background: var(--mustard);
+            color: var(--ink);
+            border: 3px solid var(--cream);
+            box-shadow: 5px 5px 0 var(--ox);
+        }
+
+        /* ==========================================================
+           2: ENGRAVED / LETTERPRESS
+           Nothing is filled; everything is drawn. Shading is hatching
+           (hard-stop stripes), not blend. Double rules and corner
+           marks do the framing.
+           ========================================================== */
+
+        .spec--engraved {
+            --bg: #0b0a09;
+            --gold: #c9a961;
+            --gold-dim: rgba(201, 169, 97, .38);
+            --bone: #e6dfd0;
+            --oxblood: #8e2230;
+            color: var(--bone);
+            background: var(--bg);
+        }
+
+        .spec--engraved .spec__atmos {
+            /* fine hatch across the whole plate */
+            background-image: repeating-linear-gradient(45deg,
+                    rgba(201, 169, 97, .045) 0 1px,
+                    transparent 1px 5px);
+        }
+
+        .spec--engraved .spec__num,
+        .spec--engraved .spec__name {
+            color: var(--gold);
+        }
+
+        .spec--engraved .ibtn {
+            color: var(--gold);
+            background: transparent;
+            border: 1px solid var(--gold-dim);
+            outline: 1px solid var(--gold-dim);
+            outline-offset: 2px;
+        }
+
+        .spec--engraved .felt__ring {
+            border: 1px solid var(--gold-dim);
+            outline: 1px solid var(--gold-dim);
+            outline-offset: -5px;
+        }
+
+        .spec--engraved .felt__face {
+            background: #0f100e;
+            border: 1px solid var(--gold);
+        }
+
+        .spec--engraved .felt__face::after {
+            /* crosshatch, densest at the rim: two hatch layers, no gradient */
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(45deg, rgba(201, 169, 97, .1) 0 1px, transparent 1px 7px),
+                repeating-linear-gradient(-45deg, rgba(201, 169, 97, .07) 0 1px, transparent 1px 9px);
+        }
+
+        .spec--engraved .felt__inlay {
+            border: 1px solid var(--gold-dim);
+            outline: 1px solid var(--gold-dim);
+            outline-offset: 4px;
+        }
+
+        .spec--engraved .felt__kicker {
+            color: var(--gold);
+        }
+
+        .spec--engraved .felt__code {
+            color: var(--bone);
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            letter-spacing: .16em;
+        }
+
+        .spec--engraved .panel {
+            background: #0e0d0c;
+            border: 1px solid var(--gold-dim);
+            outline: 1px solid var(--gold-dim);
+            outline-offset: -6px;
+        }
+
+        /* engraved corner marks */
+        .spec--engraved .panel::before,
+        .spec--engraved .panel::after {
+            content: '';
+            position: absolute;
+            width: 13px;
+            height: 13px;
+            border: 1px solid var(--gold);
+        }
+
+        .spec--engraved .panel::before {
+            top: 3px;
+            left: 3px;
+            border-right: 0;
+            border-bottom: 0;
+        }
+
+        .spec--engraved .panel::after {
+            bottom: 3px;
+            right: 3px;
+            border-left: 0;
+            border-top: 0;
+        }
+
+        .spec--engraved .panel h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 900;
+            font-size: 25px;
+            letter-spacing: .01em;
+            color: var(--gold);
+        }
+
+        .spec--engraved .rule {
+            background: var(--gold-dim);
+            box-shadow: 0 3px 0 -2px var(--gold-dim);
+        }
+
+        .spec--engraved .lbl {
+            color: var(--gold);
+        }
+
+        .spec--engraved .seg {
+            border: 1px solid var(--gold-dim);
+        }
+
+        .spec--engraved .seg button.is-active {
+            color: var(--bg);
+            background: var(--gold);
+        }
+
+        .spec--engraved .seat {
+            border: 1px solid var(--gold-dim);
+        }
+
+        .spec--engraved .seat.is-empty {
+            border-style: dashed;
+            opacity: .4;
+        }
+
+        .spec--engraved .avatar {
+            color: var(--seat-c, var(--gold));
+            border: 1px solid currentColor;
+        }
+
+        .spec--engraved .btn {
+            color: var(--bg);
+            background: var(--gold);
+            border: 1px solid var(--gold);
+            outline: 1px solid var(--gold);
+            outline-offset: 3px;
+        }
+
+        /* ==========================================================
+           3: PAINTED SALOON SIGN
+           Flat colour with wear on top. Gold lettering carries a hard
+           dark shadow so it reads as painted-on-wood rather than lit.
+           Wood and brass are flat blocks: no bevel, no shine.
+           ========================================================== */
+
+        .spec--painted {
+            --wood: #2a1c14;
+            --wood-dk: #1a110c;
+            --sign: #14261f;
+            --gold: #d8ac52;
+            --gold-lt: #f0d18a;
+            --cream: #e9dcc0;
+            --red: #9e2b2b;
+            color: var(--cream);
+            background: var(--wood);
+        }
+
+        .spec--painted .spec__atmos {
+            /* plank lines + speckled wear */
+            background-image:
+                repeating-linear-gradient(90deg,
+                    rgba(0, 0, 0, .3) 0 2px,
+                    transparent 2px 118px),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='4'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+            opacity: .5;
+        }
+
+        .spec--painted .spec__num {
+            color: var(--gold);
+        }
+
+        .spec--painted .spec__name {
+            color: var(--gold-lt);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, .6);
+        }
+
+        .spec--painted .ibtn {
+            color: var(--gold-lt);
+            background: var(--wood-dk);
+            border: 2px solid var(--gold);
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, .7);
+        }
+
+        .spec--painted .felt__ring {
+            background: var(--wood-dk);
+            border: 3px solid var(--gold);
+        }
+
+        .spec--painted .felt__face {
+            background: var(--sign);
+        }
+
+        .spec--painted .felt__face::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: .35;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='4'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)'/%3E%3C/svg%3E");
+            mix-blend-mode: overlay;
+        }
+
+        .spec--painted .felt__inlay {
+            border: 2px solid var(--gold);
+            opacity: .5;
+        }
+
+        .spec--painted .felt__kicker {
+            color: var(--gold);
+        }
+
+        .spec--painted .felt__code {
+            color: var(--gold-lt);
+            text-shadow: 2px 3px 0 rgba(0, 0, 0, .75);
+        }
+
+        /* the panel is the wood sign board; only the table is painted felt,
+           otherwise the two merge into one green mass */
+        .spec--painted .panel {
+            background: var(--wood-dk);
+            border: 3px solid var(--gold);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, .5);
+        }
+
+        .spec--painted .panel::after {
+            /* worn paint, sitting over the fill */
+            content: '';
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: .3;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.6' numOctaves='4'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .spec--painted .panel>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .spec--painted .panel h3 {
+            color: var(--gold-lt);
+            text-shadow: 2px 2px 0 rgba(0, 0, 0, .65);
+        }
+
+        .spec--painted .rule {
+            background: var(--gold);
+            opacity: .55;
+        }
+
+        .spec--painted .lbl {
+            color: var(--gold);
+        }
+
+        .spec--painted .seg {
+            border: 2px solid var(--gold);
+            opacity: .95;
+        }
+
+        .spec--painted .seg button.is-active {
+            background: var(--gold);
+            color: var(--wood-dk);
+        }
+
+        .spec--painted .seat {
+            background: rgba(0, 0, 0, .3);
+            border: 2px solid rgba(216, 172, 82, .45);
+        }
+
+        .spec--painted .seat.is-empty {
+            border-style: dashed;
+            opacity: .45;
+        }
+
+        .spec--painted .avatar {
+            background: var(--seat-c, var(--gold));
+            color: var(--wood-dk);
+        }
+
+        .spec--painted .btn {
+            background: var(--red);
+            color: var(--gold-lt);
+            border: 2px solid var(--gold);
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, .6);
+            box-shadow: 0 4px 0 rgba(0, 0, 0, .55);
+        }
+
+        /* ==========================================================
+           4: FLATTENED NOIR
+           Same room, same palette, same layout. Every gradient
+           collapsed to one flat fill, every glow removed, every soft
+           shadow replaced with a hard offset. The conservative option.
+           ========================================================== */
+
+        .spec--flatnoir {
+            --ink-900: #100e15;
+            --ink-850: #16131c;
+            --ink-800: #1b1723;
+            --ink-700: #282232;
+            --text: #f7f2e9;
+            --amber: #ffb44d;
+            --felt: #1c4735;
+            --felt-dk: #0c2419;
+            --line: rgba(255, 255, 255, .19);
+            color: var(--text);
+            background: var(--ink-900);
+        }
+
+        .spec--flatnoir .spec__atmos {
+            background: transparent;
+        }
+
+        .spec--flatnoir .spec__num,
+        .spec--flatnoir .spec__name {
+            color: var(--amber);
+        }
+
+        .spec--flatnoir .ibtn {
+            color: var(--text);
+            background: var(--ink-700);
+            border: 1px solid var(--line);
+        }
+
+        .spec--flatnoir .felt__ring {
+            background: #3a251a;
+        }
+
+        .spec--flatnoir .felt__face {
+            background: var(--felt);
+            border: 2px solid var(--felt-dk);
+        }
+
+        .spec--flatnoir .felt__inlay {
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .spec--flatnoir .felt__kicker {
+            color: var(--amber);
+        }
+
+        .spec--flatnoir .felt__code {
+            color: var(--text);
+        }
+
+        .spec--flatnoir .panel {
+            background: var(--ink-850);
+            border: 1px solid var(--line);
+            outline: 1px solid rgba(214, 178, 118, .34);
+            outline-offset: -6px;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, .55);
+        }
+
+        .spec--flatnoir .panel h3 {
+            color: var(--text);
+        }
+
+        .spec--flatnoir .rule {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .spec--flatnoir .lbl {
+            color: #8d8376;
+        }
+
+        .spec--flatnoir .seg {
+            background: var(--ink-900);
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .spec--flatnoir .seg button.is-active {
+            background: var(--amber);
+            color: #14100a;
+        }
+
+        .spec--flatnoir .seat {
+            background: var(--ink-800);
+            border: 1px solid rgba(255, 255, 255, .1);
+        }
+
+        .spec--flatnoir .seat.is-empty {
+            border-style: dashed;
+            opacity: .45;
+        }
+
+        .spec--flatnoir .avatar {
+            background: var(--seat-c, var(--amber));
+            color: #14100a;
+        }
+
+        .spec--flatnoir .btn {
+            background: #c8912f;
+            color: #14100a;
+            border: 1px solid #e8bb6a;
+            box-shadow: 0 3px 0 rgba(0, 0, 0, .5);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-head">
+        <h1>Four ways to take the modern out</h1>
+        <p>The same slice of the waiting room, four times. Layout, spacing and content are identical in
+            all four &mdash; only the surface treatment changes, so what you're comparing is the direction
+            itself.</p>
+        <p>Showing the three areas you picked: <strong>surfaces &amp; panels</strong>,
+            <strong>the table &amp; felt</strong>, and <strong>atmosphere</strong>. Cards are left out
+            since you kept those as they are.
+        </p>
+    </div>
+
+    <template id="scene">
+        <div class="scene">
+            <div class="stage">
+                <div class="controls">
+                    <div class="ibtn" title="Back">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M14 5 L7 12 L14 19" />
+                        </svg>
+                    </div>
+                    <div class="ibtn" title="Sound">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M4 9 H8 L13 5 V19 L8 15 H4 Z" />
+                            <path d="M16 9 L20 15 M20 9 L16 15" />
+                        </svg>
+                    </div>
+                    <div class="ibtn" title="Rules">?</div>
+                </div>
+
+                <div class="felt">
+                    <div class="felt__ring"></div>
+                    <div class="felt__face"></div>
+                    <div class="felt__inlay"></div>
+                    <div class="felt__center">
+                        <div class="felt__kicker">Room code</div>
+                        <div class="felt__code">K7QW2</div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="panel">
+                <h3>Your table</h3>
+                <p class="sub">Share the code on the felt to fill the seats.</p>
+                <hr class="rule">
+                <div class="row">
+                    <span class="lbl">Turn timer</span>
+                    <div class="seg">
+                        <button>20s</button>
+                        <button class="is-active">30s</button>
+                        <button>45s</button>
+                    </div>
+                </div>
+                <div class="row tally">
+                    <span class="lbl">Players</span>
+                    <b>3 / 4</b>
+                </div>
+                <div class="seats">
+                    <div class="seat" style="--seat-c:#ffb44d">
+                        <span class="avatar" style="--seat-c:#ffb44d">EM</span>
+                        <span class="seat__name">E-Money</span>
+                    </div>
+                    <div class="seat" style="--seat-c:#5fe7ff">
+                        <span class="avatar" style="--seat-c:#5fe7ff">RJ</span>
+                        <span class="seat__name">Ruby</span>
+                    </div>
+                    <div class="seat" style="--seat-c:#ff6ea6">
+                        <span class="avatar" style="--seat-c:#ff6ea6">SL</span>
+                        <span class="seat__name">Slim</span>
+                    </div>
+                    <div class="seat is-empty">
+                        <span class="seat__name">Empty seat</span>
+                    </div>
+                </div>
+                <hr class="rule">
+                <button class="btn">Deal them in</button>
+                <div class="hint">Ready to deal 3 in.</div>
+            </aside>
+        </div>
+    </template>
+
+    <section class="spec spec--poster">
+        <div class="spec__atmos"></div>
+        <div class="spec__body">
+            <div class="spec__head">
+                <span class="spec__num">01</span>
+                <span class="spec__name">Vintage screen-print poster</span>
+                <span class="spec__note">Flat ink, off-register shadows, halftone dots. Zero blends. The
+                    loudest and most confident of the four &mdash; and the furthest from where you are
+                    now.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="spec spec--engraved">
+        <div class="spec__atmos"></div>
+        <div class="spec__body">
+            <div class="spec__head">
+                <span class="spec__num">02</span>
+                <span class="spec__name">Engraved / letterpress</span>
+                <span class="spec__note">Nothing filled, everything drawn. Shading is crosshatch, framing is
+                    double rules and corner marks. Extends the icon language you already have to the whole
+                    UI.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="spec spec--painted">
+        <div class="spec__atmos"></div>
+        <div class="spec__body">
+            <div class="spec__head">
+                <span class="spec__num">03</span>
+                <span class="spec__name">Painted saloon sign</span>
+                <span class="spec__note">Flat paint with wear on top, gold lettering with a hard shadow, wood
+                    and brass as flat blocks. Warmest and the most obviously "a place" rather than an
+                    interface.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="spec spec--flatnoir">
+        <div class="spec__atmos"></div>
+        <div class="spec__body">
+            <div class="spec__head">
+                <span class="spec__num">04</span>
+                <span class="spec__name">Flattened noir</span>
+                <span class="spec__note">Today's palette and layout with every gradient collapsed, every glow
+                    removed, every soft shadow hardened. Safe &mdash; but closest to the thing you said feels
+                    too modern.</span>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // one scene definition, cloned into each specimen: guarantees the only
+        // difference between the four is the CSS
+        const tpl = document.getElementById('scene');
+        document.querySelectorAll('.spec__body').forEach((body) => {
+            body.appendChild(tpl.content.cloneNode(true));
+        });
+    </script>
+
+</body>
+
+</html>

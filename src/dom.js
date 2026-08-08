@@ -16,19 +16,19 @@ export const el = {
     stepJoin: $('#lobby-join'),
     stepTable: $('#lobby-table'),
 
-    // step 1 — menu
+    // step 1: menu
     nameInput: $('#playerNameInput'),
     nameHint: $('#nameHint'),
     createRoomBtn: $('#createRoomBtn'),
     joinRoomBtn: $('#joinRoomBtn'),
     marqueeBulbs: $('.marquee-bulbs'),
 
-    // step 2 — join
+    // step 2: join
     roomCodeInput: $('#roomCodeInput'),
     connectBtn: $('#connectToHostBtn'),
     clientStatus: $('#client-status'),
 
-    // step 3 — waiting room
+    // step 3: waiting room
     roomCodeDisplay: $('#roomCodeDisplay'),
     copyRoomCodeBtn: $('#copyRoomCodeBtn'),
     turnTimerRow: $('#turnTimerRow'),
@@ -125,7 +125,7 @@ export function openModal(modal) {
     clearTimeout(modalTimers.get(modal));
     modal.classList.add('is-open');
     // let the browser register the closed state so the transition has a start
-    // point (setTimeout, not rAF — rAF never fires in a backgrounded tab)
+    // point (setTimeout, not rAF, because rAF never fires in a backgrounded tab)
     modalTimers.set(modal, setTimeout(() => modal.classList.add('is-visible'), 16));
 }
 

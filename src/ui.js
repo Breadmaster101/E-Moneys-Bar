@@ -1,5 +1,5 @@
 /**
- * ui.js — screen transitions and the handlers that both host and client share.
+ * ui.js: screen transitions and the handlers that both host and client share.
  */
 
 import { el, openModal, closeModal } from './dom.js';
@@ -117,7 +117,7 @@ export function onClientStateUpdate(payload) {
     const newRound = gameState.currentTableSuit && gameState.currentTableSuit !== prevSuit;
     if (newRound && gameState.gamePhase === 'playing') {
         addLog(
-            `New round — table suit is ${SUIT_SYMBOLS[gameState.currentTableSuit]} ${gameState.currentTableSuit}.`,
+            `New round: the table suit is ${SUIT_SYMBOLS[gameState.currentTableSuit]} ${gameState.currentTableSuit}.`,
             'system',
         );
         sfx.newRound();

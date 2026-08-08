@@ -1,5 +1,5 @@
 /**
- * timer.js — the turn clock.
+ * timer.js: the turn clock.
  *
  * Two halves that never talk to each other:
  *   • the visual countdown every client draws in the HUD
