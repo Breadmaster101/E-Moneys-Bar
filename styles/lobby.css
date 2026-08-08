@@ -37,11 +37,22 @@
 
 /* ---------------- Step 1: the door ---------------- */
 
+/*
+ * The sign needs air under it, but the panel must not drop to pay for it.
+ *
+ * The step centres this box, so widening the gap alone would push the sign up
+ * and the panel down by half the increase each. The margin-bottom cancels the
+ * panel's half: it makes the box taller than its contents, and centring that
+ * taller box lifts everything back up by the same amount. Net effect is the
+ * sign rises by the full gap increase and the panel does not move. Keep the
+ * two in step: margin-bottom should equal the gap increase over --sp-5.
+ */
 .menu {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--sp-5);
+    gap: var(--sp-7);
+    margin-bottom: var(--sp-5);
     width: 100%;
     max-width: 500px;
 }

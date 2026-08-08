@@ -326,8 +326,11 @@
         padding-right: 16px;
     }
 
+    /* the avatar shrinks here too, so the ring's offset has to be re-derived:
+       left = avatarCentre - ringWidth / 2 = (10 + 30 / 2) - 38 / 2 */
     .turn-pill__ring {
         width: 38px;
+        left: 6px;
     }
 
     .turn-pill__avatar {

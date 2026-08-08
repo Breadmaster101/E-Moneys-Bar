@@ -132,9 +132,17 @@
     }
 }
 
+/*
+ * Centred on the monogram tile, not on the pill. The avatar starts at the
+ * pill's 5px padding plus its own 5px margin, so the ring has to start at 5px
+ * for the drawn square to sit concentric with it. At 3px the square was 2px
+ * left of the tile: a visible gap down the left edge and an overlap on the
+ * right. If you change the pill's padding or the avatar's margin, re-derive
+ * this: left = avatarCentre - ringWidth / 2.
+ */
 .turn-pill__ring {
     position: absolute;
-    left: 3px;
+    left: 5px;
     top: 50%;
     width: 46px;
     height: 46px;

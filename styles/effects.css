@@ -4,9 +4,8 @@
    ============================================================ */
 
 /*
- * The plate the whole interface is printed on. Flat stock, hatched at a
- * consistent angle. There is no lighting model here any more: an engraving is
- * lit by the room it is in, not from inside itself.
+ * The plate the whole interface is printed on. Flat stock: the ruling lives on
+ * the single layer below, not here.
  */
 #ambience {
     position: fixed;
@@ -17,58 +16,36 @@
 }
 
 /*
- * These three were blurred pools of lamplight. They are now hatch fields at
- * three different angles and densities: the same job (breaking up a flat
- * background, giving the eye somewhere to travel) done with linework.
+ * One layer, one design, covering the whole viewport exactly once.
  *
- * Each is a hard-stop repeating pattern, and the mask is what keeps them from
- * reading as wallpaper. No blur, so no compositing cost either: the old
- * blur(90px) on three full-viewport layers was the single most expensive thing
- * on the page.
+ * It used to be three positioned patches at different angles, which overlapped
+ * each other in the corners and crossed into plaid where they met. A single
+ * inset-0 layer cannot overlap itself, so that whole class of problem is gone.
+ *
+ * The mask does the work the patches were trying to do: fully out in the
+ * middle, ramping up toward the edges, so the ruling frames the screen and
+ * leaves the table and panels sitting on clean stock. Ellipse rather than
+ * circle so the falloff tracks the viewport's aspect instead of running out
+ * early on the short axis.
  */
-.amb-glow {
+.amb-glow--key {
     position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(90deg,
+            rgba(201, 169, 97, .17) 0 1px,
+            transparent 1px 9px);
+    -webkit-mask-image: radial-gradient(ellipse 75% 75% at 50% 50%,
+            transparent 30%, rgba(0, 0, 0, .5) 68%, #000 100%);
+    mask-image: radial-gradient(ellipse 75% 75% at 50% 50%,
+            transparent 30%, rgba(0, 0, 0, .5) 68%, #000 100%);
+    animation: plateBreathe 11s var(--ease-in-out) infinite;
     will-change: opacity;
 }
 
-.amb-glow--key {
-    top: 0;
-    left: 50%;
-    width: 92vw;
-    height: 62vh;
-    transform: translateX(-50%);
-    background-image: repeating-linear-gradient(90deg,
-            rgba(201, 169, 97, .05) 0 1px,
-            transparent 1px 9px);
-    -webkit-mask-image: radial-gradient(60% 100% at 50% 0%, #000 0%, transparent 78%);
-    mask-image: radial-gradient(60% 100% at 50% 0%, #000 0%, transparent 78%);
-    animation: plateBreathe 11s var(--ease-in-out) infinite;
-}
-
-.amb-glow--red {
-    bottom: 0;
-    left: 0;
-    width: 58vw;
-    height: 55vh;
-    background-image: repeating-linear-gradient(38deg,
-            rgba(142, 34, 48, .11) 0 1px,
-            transparent 1px 7px);
-    -webkit-mask-image: radial-gradient(80% 90% at 0% 100%, #000 0%, transparent 72%);
-    mask-image: radial-gradient(80% 90% at 0% 100%, #000 0%, transparent 72%);
-    animation: plateBreathe 15s var(--ease-in-out) infinite reverse;
-}
-
+/* the other two carried the competing designs; the plate only wants the one */
+.amb-glow--red,
 .amb-glow--cyan {
-    top: 22vh;
-    right: 0;
-    width: 48vw;
-    height: 52vh;
-    background-image: repeating-linear-gradient(-38deg,
-            rgba(111, 143, 158, .07) 0 1px,
-            transparent 1px 8px);
-    -webkit-mask-image: radial-gradient(80% 80% at 100% 40%, #000 0%, transparent 74%);
-    mask-image: radial-gradient(80% 80% at 100% 40%, #000 0%, transparent 74%);
-    animation: plateBreathe 19s var(--ease-in-out) infinite;
+    display: none;
 }
 
 /* the plate is still, but not dead still */
@@ -76,7 +53,7 @@
 
     0%,
     100% {
-        opacity: .7;
+        opacity: .85;
     }
 
     50% {
@@ -128,18 +105,27 @@
     pointer-events: none;
 }
 
+/*
+ * Flush to the viewport edge. Inset from it, the dead band outside the rule
+ * read as a black border framing the interface rather than as the edge of a
+ * plate, which is the opposite of the intent.
+ */
 #vignette::before {
     content: '';
     position: absolute;
-    inset: 10px;
-    border: 1px solid var(--rule-faint);
+    inset: 0;
+    border: 1px solid var(--rule);
 }
 
+/* the faint inner rule of the doubled plate mark. Safe to have back now that
+   the outer one is flush to the edge: the gap sits between the two rules
+   rather than outside them, so it reads as a double rule and not as a border
+   around the whole interface. */
 #vignette::after {
     content: '';
     position: absolute;
-    inset: 14px;
-    border: 1px solid rgba(201, 169, 97, .07);
+    inset: 4px;
+    border: 1px solid var(--rule-faint);
 }
 
 /* ---------------- Particle canvas ---------------- */

@@ -167,13 +167,16 @@
  * was a soft gradient sweep; it is now a solid cut bar that slides, which is
  * both hard-edged and cheaper (transform instead of background-position).
  */
+/* 1px, sitting exactly over the bottom border rather than on top of it. At 2px
+   it stacked with the border and the plate read as thicker along the bottom
+   than the other three sides. */
 .seat.is-turn .seat__plate::after {
     content: '';
     position: absolute;
     left: 0;
     bottom: -1px;
     width: 40%;
-    height: 2px;
+    height: 1px;
     background: var(--seat-color, var(--gold));
     animation: plateSweep 2.4s var(--ease-in-out) infinite;
 }
