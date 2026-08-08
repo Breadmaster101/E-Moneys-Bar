@@ -60,18 +60,27 @@
 
 /* ---------------- The hand ---------------- */
 
+/*
+ * --fan-swing reserves the room the outer cards need below their own boxes:
+ * rotating about the bottom edge pushes a corner down by (width/2)·sin(angle),
+ * and --lift drops the outer cards further still. Without it the fan sits on
+ * top of the Play / Liar buttons.
+ */
 .hand {
+    --fan-swing: 30px;
+
     position: relative;
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    height: calc(var(--card-h) + 26px);
-    padding-top: 26px;
+    height: calc(var(--card-h) + 26px + var(--fan-swing));
+    padding: 26px 0 var(--fan-swing);
 }
 
 .hand .card {
     margin: 0 calc(var(--card-overlap, -18px) / 2);
-    transform-origin: 50% 145%;
+    /* pivot at the card's own bottom edge, not far below it */
+    transform-origin: 50% 100%;
     transform: rotate(var(--rot, 0deg)) translateY(var(--lift, 0px));
     transition:
         transform var(--t-med) var(--ease-back),

@@ -1,20 +1,60 @@
 /**
- * lobby.js — the front-of-house: name entry, hosting, joining, table options.
+ * lobby.js — front of house, as three discrete steps:
+ *
+ *   menu  →  join  →  table          (client)
+ *   menu  ─────────→  table          (host)
+ *
+ * Each step fully replaces the last, so nothing from an earlier step (the name
+ * field especially) lingers on screen. Back is handled by the global top bar.
  */
 
 import { el, $$ } from './dom.js';
 import {
-    ROOM_CODE_LENGTH, NAME_MIN, NAME_MAX, MIN_PLAYERS, TURN_TIMER_OPTIONS,
+    ROOM_CODE_LENGTH, NAME_MIN, NAME_MAX, MIN_PLAYERS, MAX_PLAYERS, TURN_TIMER_OPTIONS,
+    PLAYER_COLORS,
 } from './constants.js';
-import { gameState, localPlayer, session } from './state.js';
-import { hostRoom, joinRoom, isConnected, sendMessage } from './net.js';
+import { gameState, localPlayer, session, initialsFor } from './state.js';
+import { hostRoom, joinRoom, isConnected } from './net.js';
 import { startNewGame } from './game.js';
-import { showGameBoard, updateLobbySeats } from './ui.js';
+import { showGameBoard } from './ui.js';
+import { setTopbar } from './topbar.js';
+import { icon } from './icons.js';
 import { toast } from './toast.js';
 import { sfx } from './audio.js';
 import { addLog } from './log.js';
 
 const NAME_KEY = 'emb.name';
+
+/** Which lobby step is on screen. One of 'menu' | 'join' | 'table'. */
+let step = 'menu';
+
+/* ------------------------------------------------------------------ */
+/* steps                                                               */
+/* ------------------------------------------------------------------ */
+
+export function goToStep(next) {
+    step = next;
+    el.stepMenu.classList.toggle('is-active', next === 'menu');
+    el.stepJoin.classList.toggle('is-active', next === 'join');
+    el.stepTable.classList.toggle('is-active', next === 'table');
+
+    if (next === 'menu') {
+        setTopbar({ title: "E-Money's Bar", back: false });
+        el.nameInput.focus();
+    } else if (next === 'join') {
+        setTopbar({ title: 'Join a table', back: true });
+        el.roomCodeInput.focus();
+    } else {
+        setTopbar({
+            title: localPlayer.isHost ? 'Your table' : 'Table',
+            back: true,
+            roomCode: session.roomCode,
+        });
+        renderWaitroom();
+    }
+}
+
+export const currentStep = () => step;
 
 /* ------------------------------------------------------------------ */
 /* marquee                                                             */
@@ -23,8 +63,8 @@ const NAME_KEY = 'emb.name';
 function buildBulbs() {
     const svg = el.marqueeBulbs;
     if (!svg) return;
-    const count = 22;
     const NS = 'http://www.w3.org/2000/svg';
+    const count = 22;
     for (let i = 0; i < count; i++) {
         const c = document.createElementNS(NS, 'circle');
         c.setAttribute('cx', String((i + 0.5) * (400 / count)));
@@ -36,15 +76,96 @@ function buildBulbs() {
 }
 
 /* ------------------------------------------------------------------ */
+/* the waiting room                                                    */
+/* ------------------------------------------------------------------ */
+
+/** Seat positions around the preview table, clockwise from the far side. */
+const WAIT_SLOTS = [
+    { x: 50, y: -4 },
+    { x: 108, y: 50 },
+    { x: 50, y: 104 },
+    { x: -8, y: 50 },
+];
+
+function occupantSeat(player, index) {
+    const seat = document.createElement('div');
+    seat.className = 'wseat is-taken';
+    seat.style.setProperty('--seat-color', PLAYER_COLORS[index % PLAYER_COLORS.length]);
+
+    const avatar = document.createElement('div');
+    avatar.className = 'seat__avatar';
+    avatar.style.setProperty('--seat-color', PLAYER_COLORS[index % PLAYER_COLORS.length]);
+    avatar.textContent = initialsFor(player.name);
+    if (player.isHost) avatar.appendChild(icon('star', 'ico--fill seat__host-mark'));
+
+    const meta = document.createElement('div');
+    meta.className = 'wseat__meta';
+
+    const name = document.createElement('div');
+    name.className = 'wseat__name';
+    name.textContent = player.name;
+
+    const tag = document.createElement('div');
+    tag.className = 'wseat__tag';
+    tag.textContent = player.id === localPlayer.id ? 'You' : (player.isHost ? 'Host' : 'Ready');
+
+    meta.append(name, tag);
+    seat.append(avatar, meta);
+    return seat;
+}
+
+function emptySeat() {
+    const seat = document.createElement('div');
+    seat.className = 'wseat is-empty';
+    seat.innerHTML = '<span class="wseat__waiting">Empty seat</span>';
+    return seat;
+}
+
+export function renderWaitroom() {
+    if (!el.waitroomSeats) return;
+
+    const seated = localPlayer.isHost
+        ? gameState.players.filter((p) => p.isHost || session.hostConnections[p.id])
+        : gameState.players;
+
+    el.waitroomSeats.innerHTML = '';
+    for (let i = 0; i < MAX_PLAYERS; i++) {
+        const player = seated[i];
+        const node = player ? occupantSeat(player, i) : emptySeat();
+        const slot = WAIT_SLOTS[i];
+        node.style.left = `${slot.x}%`;
+        node.style.top = `${slot.y}%`;
+        node.style.setProperty('--wseat-delay', `${i * 70}ms`);
+        el.waitroomSeats.appendChild(node);
+    }
+
+    el.playersCount.textContent = `${seated.length} / ${MAX_PLAYERS}`;
+    el.turnTimerRow.hidden = !localPlayer.isHost;
+    el.startGameBtn.hidden = !localPlayer.isHost;
+
+    if (localPlayer.isHost) {
+        const canStart = seated.length >= MIN_PLAYERS;
+        el.waitroomTitle.textContent = 'Your table';
+        el.waitroomSub.textContent = 'Share the code on the felt to fill the seats.';
+        el.startGameBtn.disabled = !canStart;
+        el.startHint.textContent = canStart
+            ? `Ready to deal ${seated.length} in.`
+            : 'Waiting for at least one more player…';
+    } else {
+        el.waitroomTitle.textContent = 'Waiting on the host';
+        el.waitroomSub.textContent = 'The game starts when the host deals.';
+        el.startHint.textContent = 'Sit tight.';
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* helpers                                                             */
 /* ------------------------------------------------------------------ */
 
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1
     let code = '';
-    for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
-        code += chars[Math.floor(Math.random() * chars.length)];
-    }
+    for (let i = 0; i < ROOM_CODE_LENGTH; i++) code += chars[Math.floor(Math.random() * chars.length)];
     return code;
 }
 
@@ -72,12 +193,6 @@ function requireConnection() {
     if (isConnected()) return true;
     toast('Still waking the server — give it a moment.', { type: 'warn' });
     return false;
-}
-
-function showChoice() {
-    el.lobbyChoice.hidden = false;
-    el.hostControls.hidden = true;
-    el.clientControls.hidden = true;
 }
 
 async function copyRoomCode() {
@@ -109,41 +224,25 @@ export function initLobby() {
 
     el.nameInput.addEventListener('input', () => {
         if (el.nameInput.value.trim().length >= NAME_MIN) showHint('');
-        // let a joined client rename themselves on the fly
-        if (session.roomCode && !localPlayer.isHost && el.nameInput.value.trim().length >= NAME_MIN) {
-            localPlayer.name = el.nameInput.value.trim();
-            sendMessage('CLIENT_NAME_UPDATE', { name: localPlayer.name });
-        }
+    });
+    el.nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') el.createRoomBtn.click();
     });
 
     el.createRoomBtn.addEventListener('click', () => {
         if (!takeName() || !requireConnection()) return;
-        el.lobbyChoice.hidden = true;
-        el.clientControls.hidden = true;
-        el.hostControls.hidden = false;
-
         const code = generateRoomCode();
         el.roomCodeDisplay.textContent = code;
-        el.roomCodeDisplay.classList.remove('is-waiting');
         hostRoom(code);
+        goToStep('table');
         sfx.tap();
     });
 
     el.joinRoomBtn.addEventListener('click', () => {
         if (!takeName()) return;
-        el.lobbyChoice.hidden = true;
-        el.hostControls.hidden = true;
-        el.clientControls.hidden = false;
-        el.roomCodeInput.focus();
+        goToStep('join');
         sfx.tap();
     });
-
-    $$('[data-back-to-choice]').forEach((btn) =>
-        btn.addEventListener('click', () => {
-            showChoice();
-            sfx.tap();
-        }),
-    );
 
     el.copyRoomCodeBtn.addEventListener('click', copyRoomCode);
 
@@ -168,7 +267,7 @@ export function initLobby() {
     });
 
     el.connectBtn.addEventListener('click', () => {
-        if (!takeName() || !requireConnection()) return;
+        if (!requireConnection()) return;
 
         const code = el.roomCodeInput.value.trim().toUpperCase();
         if (code.length !== ROOM_CODE_LENGTH) {
@@ -180,6 +279,7 @@ export function initLobby() {
         el.clientStatus.textContent = `Knocking on ${code}…`;
         el.clientStatus.dataset.tone = 'busy';
         el.connectBtn.disabled = true;
+        el.roomCodeDisplay.textContent = code;
         joinRoom(code);
         sfx.tap();
 
@@ -204,6 +304,17 @@ export function initLobby() {
         startNewGame();
         showGameBoard();
     });
+}
 
-    updateLobbySeats();
+/** Reset the lobby back to the front door. */
+export function resetLobby() {
+    el.roomCodeDisplay.textContent = '•••••';
+    el.roomCodeInput.value = '';
+    el.roomCodeInput.disabled = false;
+    el.connectBtn.disabled = false;
+    el.clientStatus.textContent = "Enter the host's room code to join.";
+    el.clientStatus.removeAttribute('data-tone');
+    el.startGameBtn.disabled = true;
+    el.waitroomSeats.innerHTML = '';
+    goToStep('menu');
 }

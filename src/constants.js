@@ -38,7 +38,7 @@ export const DEFAULT_TURN_SECONDS = 30;
  * at 52–54%) so name plates never sit on top of the suit medallion.
  */
 export const SEAT_LAYOUTS = {
-    1: [{ x: 50, y: 14 }],
+    1: [{ x: 50, y: 16 }],
     2: [{ x: 16, y: 34 }, { x: 84, y: 34 }],
-    3: [{ x: 13, y: 44 }, { x: 50, y: 14 }, { x: 87, y: 44 }],
+    3: [{ x: 13, y: 44 }, { x: 50, y: 16 }, { x: 87, y: 44 }],
 };

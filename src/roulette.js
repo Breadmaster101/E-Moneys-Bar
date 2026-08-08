@@ -20,12 +20,15 @@ import { addLog } from './log.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 let timers = [];
+let spin = null;
 
 const after = (ms, fn) => timers.push(setTimeout(fn, ms));
 
 function clearTimers() {
     timers.forEach(clearTimeout);
     timers = [];
+    spin?.cancel();
+    spin = null;
 }
 
 function svgEl(tag, attrs) {
@@ -61,8 +64,8 @@ function buildRevolver(spentIndices) {
         fill: '#0d0b12', stroke: '#3a343f', 'stroke-width': '3',
     }));
 
+    // transform-origin lives in modals.css — one source of truth
     const cylinder = svgEl('g', { class: 'revolver-cylinder' });
-    cylinder.setAttribute('style', 'transform-origin: 100px 108px');
 
     cylinder.appendChild(svgEl('circle', {
         cx: '100', cy: '108', r: '76',
@@ -186,7 +189,19 @@ export function playRoulette(data, targetAfter) {
 
     after(400, () => {
         const turns = 4 + Math.floor(Math.random() * 2);
-        cylinder.style.transform = `rotate(${turns * 360 + landingStep * 60}deg)`;
+        const end = `rotate(${turns * 360 + landingStep * 60}deg)`;
+        /*
+         * Driven by the Web Animations API rather than a CSS transition. A
+         * transition needs the browser to have already computed the "before"
+         * value in an earlier frame; when timers coalesce (a throttled or
+         * just-restored tab) the set lands in the same frame as the insert and
+         * the cylinder snaps to its final angle without ever spinning.
+         * animate() states both ends explicitly, so it cannot mis-fire.
+         */
+        spin = cylinder.animate(
+            [{ transform: 'rotate(0deg)' }, { transform: end }],
+            { duration: 2100, easing: 'cubic-bezier(.16,.82,.18,1)', fill: 'forwards' },
+        );
         sfx.revolverSpin(2.1);
     });
 

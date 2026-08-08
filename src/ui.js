@@ -19,6 +19,8 @@ import { addLog, clearLog, toggleLog } from './log.js';
 import { sfx } from './audio.js';
 import * as fx from './fx.js';
 import { activeConnectedIds } from './net.js';
+import { resetLobby, renderWaitroom, goToStep } from './lobby.js';
+import { setTopbar } from './topbar.js';
 
 /* ------------------------------------------------------------------ */
 /* screens                                                             */
@@ -35,21 +37,6 @@ export function showLobby() {
     el.game.classList.remove('is-active');
     el.lobby.classList.add('is-active');
 
-    el.hostControls.hidden = true;
-    el.clientControls.hidden = true;
-    el.lobbyChoice.hidden = false;
-
-    el.roomCodeDisplay.textContent = '•••••';
-    el.roomCodeDisplay.classList.add('is-waiting');
-    el.roomCodeInput.value = '';
-    el.roomCodeInput.disabled = false;
-    el.connectBtn.disabled = false;
-    el.clientStatus.textContent = "Enter the host's room code to join.";
-    el.clientStatus.removeAttribute('data-tone');
-    el.clientSeatList.hidden = true;
-    el.startGameBtn.disabled = true;
-    el.playersList.innerHTML = '';
-
     const name = el.nameInput.value.trim() || localPlayer.name;
     resetGameState();
     resetSession();
@@ -58,9 +45,9 @@ export function showLobby() {
     resetSeatMemory();
     clearLog();
     clearSelection();
-
     if (name) el.nameInput.value = name;
-    updateLobbySeats();
+
+    resetLobby();
 }
 
 export function showGameBoard() {
@@ -68,7 +55,14 @@ export function showGameBoard() {
 
     el.lobby.classList.remove('is-active');
     el.game.classList.add('is-active');
-    el.hudRoomCode.textContent = session.roomCode ?? '';
+
+    setTopbar({
+        title: '',
+        back: true,
+        backLabel: 'Leave table',
+        roomCode: session.roomCode,
+        inGame: true,
+    });
 
     invalidateHand();
     refreshBoard({ dealt: true });
@@ -84,71 +78,12 @@ export function refreshBoard({ dealt = false } = {}) {
 }
 
 /* ------------------------------------------------------------------ */
-/* lobby seat list                                                     */
+/* lobby seats                                                         */
 /* ------------------------------------------------------------------ */
 
-function seatRow(player, index) {
-    const row = document.createElement('div');
-    row.className = 'seat-row';
-    row.style.setProperty('--seat-color', PLAYER_COLORS[index % PLAYER_COLORS.length]);
-
-    const avatar = document.createElement('div');
-    avatar.className = 'seat__avatar';
-    avatar.style.setProperty('--seat-color', PLAYER_COLORS[index % PLAYER_COLORS.length]);
-    avatar.textContent = initialsFor(player.name);
-
-    const name = document.createElement('span');
-    name.className = 'seat-row__name';
-    name.textContent = player.name;
-
-    row.append(avatar, name);
-
-    if (player.isHost) {
-        const tag = document.createElement('span');
-        tag.className = 'seat-row__tag';
-        tag.textContent = 'Host';
-        row.appendChild(tag);
-    }
-    if (player.id === localPlayer.id) {
-        const tag = document.createElement('span');
-        tag.className = 'seat-row__tag';
-        tag.textContent = 'You';
-        row.appendChild(tag);
-    }
-    return row;
-}
-
-function fillSeatList(container, countNode) {
-    const seated = localPlayer.isHost
-        ? gameState.players.filter((p) => p.isHost || session.hostConnections[p.id])
-        : gameState.players;
-
-    container.innerHTML = '';
-    seated.forEach((player, i) => container.appendChild(seatRow(player, i)));
-
-    for (let i = seated.length; i < MAX_PLAYERS; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'seat-row seat-row--empty';
-        empty.textContent = 'Empty seat';
-        container.appendChild(empty);
-    }
-
-    countNode.textContent = `${seated.length} / ${MAX_PLAYERS}`;
-    return seated.length;
-}
-
+/** The waiting room owns its own rendering; this is just the hand-off. */
 export function updateLobbySeats() {
-    if (localPlayer.isHost) {
-        const count = fillSeatList(el.playersList, el.playersCount);
-        const canStart = count >= MIN_PLAYERS && count <= MAX_PLAYERS;
-        el.startGameBtn.disabled = !canStart;
-        el.startHint.textContent = canStart
-            ? `Ready to deal ${count} players in.`
-            : 'Waiting for at least one more player…';
-    } else if (!el.clientControls.hidden && gameState.players.length) {
-        el.clientSeatList.hidden = false;
-        fillSeatList(el.clientPlayersList, el.clientPlayersCount);
-    }
+    renderWaitroom();
 }
 
 /* ------------------------------------------------------------------ */

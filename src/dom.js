@@ -11,35 +11,40 @@ export const el = {
     lobby: $('#screen-lobby'),
     game: $('#screen-game'),
 
-    // lobby
+    // lobby steps
+    stepMenu: $('#lobby-menu'),
+    stepJoin: $('#lobby-join'),
+    stepTable: $('#lobby-table'),
+
+    // step 1 — menu
     nameInput: $('#playerNameInput'),
     nameHint: $('#nameHint'),
-    lobbyChoice: $('#lobbyChoice'),
     createRoomBtn: $('#createRoomBtn'),
     joinRoomBtn: $('#joinRoomBtn'),
-    showRulesBtn: $('#showRulesBtn'),
     marqueeBulbs: $('.marquee-bulbs'),
 
-    hostControls: $('#host-controls'),
-    roomCodeDisplay: $('#roomCodeDisplay'),
-    copyRoomCodeBtn: $('#copyRoomCodeBtn'),
-    turnTimerSeg: $('#turnTimerSeg'),
-    playersCount: $('#connected-players-count'),
-    playersList: $('#connected-players-list'),
-    startGameBtn: $('#startGameBtn'),
-    startHint: $('#startHint'),
-
-    clientControls: $('#client-controls'),
+    // step 2 — join
     roomCodeInput: $('#roomCodeInput'),
     connectBtn: $('#connectToHostBtn'),
     clientStatus: $('#client-status'),
-    clientSeatList: $('#client-seat-list'),
-    clientPlayersCount: $('#client-players-count'),
-    clientPlayersList: $('#client-players-list'),
 
-    // hud
+    // step 3 — waiting room
+    roomCodeDisplay: $('#roomCodeDisplay'),
+    copyRoomCodeBtn: $('#copyRoomCodeBtn'),
+    turnTimerRow: $('#turnTimerRow'),
+    turnTimerSeg: $('#turnTimerSeg'),
+    waitroomSeats: $('#waitroom-seats'),
+    waitroomTitle: $('#waitroomTitle'),
+    waitroomSub: $('#waitroomSub'),
+    playersCount: $('#connected-players-count'),
+    startGameBtn: $('#startGameBtn'),
+    startHint: $('#startHint'),
+
+    // top bar
+    topbar: $('#topbar'),
+    topbarTitle: $('#topbarTitle'),
+    backBtn: $('#backBtn'),
     hudRoomCode: $('#hudRoomCode'),
-    leaveGameBtn: $('#leaveGameBtn'),
     soundToggleBtn: $('#soundToggleBtn'),
     soundIconUse: $('#soundIconUse'),
     rulesBtnGame: $('#rulesBtnGame'),

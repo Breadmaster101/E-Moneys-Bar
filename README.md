@@ -14,11 +14,13 @@ it has to be served over HTTP — opening `index.html` off the filesystem will n
 work (module scripts are blocked by `file://` CORS).
 
 ```bash
-python -m http.server 5173
+python tools/devserver.py
 ```
 
-Then open <http://localhost:5173>. There's also a `.claude/launch.json` wired up
-for the same thing.
+Then open <http://localhost:5180>. That's `http.server` with caching turned off —
+plain `python -m http.server` answers with `304 Not Modified`, so an edited
+stylesheet or module keeps serving the old copy and it looks like your change
+did nothing. `.claude/launch.json` runs the same command.
 
 Multiplayer runs through a Socket.IO relay at `quicklash-server.onrender.com`
 (set in `src/constants.js`). It's a free instance, so the first connection of the
@@ -62,6 +64,9 @@ src/
   toast.js          notices and the confirm dialog
   log.js            the game log panel
   icons.js          engraved line icons (symbols live in index.html)
+  topbar.js         the persistent bar (title, back, sound, rules, log)
+tools/
+  devserver.py      no-cache static server for local development
   lobby.js          name entry, hosting, joining, table options
   main.js           boot and global wiring
 ```
@@ -104,6 +109,24 @@ the room-code plate, the LIAR button, and the muzzle flash.
   rather than width. The table is sized from the play area's height with
   `max-height` + a fixed `aspect-ratio`, so it can't grow into the seats above it
   on a short screen.
+- **Lobby steps**: `#lobby-menu` → `#lobby-join` → `#lobby-table`, switched by
+  `goToStep()` in `lobby.js`. Only one is mounted at a time, so nothing from an
+  earlier step (the name field in particular) can linger. Back lives in the top
+  bar; `main.js` owns what it means on each screen via `onBack()`.
+- **`#screen-lobby` must not be given `position` of its own.** `.screen` already
+  makes it `absolute; inset: 0`, and the steps size against that — an ID rule
+  would out-specify it and collapse them to zero height.
+- **The table** is sized from the play area's *height*, with the width derived
+  by `aspect-ratio`. Do not switch it to `max-height` + `aspect-ratio`: that
+  clamps the height while the width keeps its own value, which squashes the
+  ellipse.
+- **The revolver spin** uses `element.animate()`, not a CSS transition. A
+  transition needs the browser to have computed the "before" value in an earlier
+  frame; when timers coalesce, the set lands in the same frame as the insert and
+  the cylinder jumps straight to its final angle without spinning.
+- **The hand fan** pivots at `transform-origin: 50% 100%` and reserves
+  `--fan-swing` below itself. A pivot below the card (the old `145%`) swings the
+  outer cards down onto the Play / Liar buttons.
 - **The turn timer** is a square path, not a circle: `M20 3 H37 V37 H3 V3 H20`,
   perimeter 136. If you resize it, update `ARC_LENGTH` in `timer.js` and
   `stroke-dasharray` in `board.css` to match, or the countdown will desync.

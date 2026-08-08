@@ -116,20 +116,32 @@
     position: relative;
     display: grid;
     place-items: center;
-    height: 244px;
+    /* sized off viewport height so the whole scene, Continue button included,
+       still fits on a 720p screen without the dialog scrolling */
+    height: clamp(150px, 26vh, 236px);
     margin: var(--sp-3) auto var(--sp-2);
 }
 
 .revolver-svg {
-    width: 222px;
-    height: 222px;
+    width: clamp(140px, 24vh, 214px);
+    height: clamp(140px, 24vh, 214px);
     overflow: visible;
     filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .7));
 }
 
+/* the challenge dialog is the tallest one — keep its parts trim */
+.modal--roulette .revealed-cards .card {
+    width: clamp(52px, 7vh, 76px);
+    height: clamp(78px, 10.5vh, 114px);
+}
+
+.modal--roulette .modal__box {
+    padding: var(--sp-5) var(--sp-5) var(--sp-4);
+}
+
+/* the spin itself is driven by the Web Animations API in roulette.js */
 .revolver-cylinder {
-    transform-origin: 100px 100px;
-    transition: transform 2.1s cubic-bezier(.16, .82, .18, 1);
+    transform-origin: 100px 108px;
 }
 
 .revolver-hammer {

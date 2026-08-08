@@ -16,7 +16,7 @@ let renderedIds = '';
 function fanGeometry(n) {
     if (n <= 1) return { step: 0, curve: 0, overlap: -10 };
     const step = Math.min(52 / n, 7.5); // degrees between neighbours
-    const curve = Math.min(2.6, 14 / n); // px of arc drop per unit offset²
+    const curve = Math.min(2.2, 11 / n); // px of arc drop per unit offset²
     const overlap = n > 7 ? -34 : n > 5 ? -26 : -16;
     return { step, curve, overlap };
 }

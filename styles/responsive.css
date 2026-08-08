@@ -121,6 +121,89 @@
 
 /* ---------------- Tablet ---------------- */
 
+/* ---------------- Waiting room: ring → stack ----------------
+   The seat ring is the nicest way to preview the table, but it needs real
+   width. Below ~820px it flattens into a code plate with the seats gridded
+   underneath, which says the same thing in a column. */
+
+@media (max-width: 1040px) and (min-width: 821px) {
+    .waitroom {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: var(--sp-4);
+    }
+
+    .waitroom__side {
+        padding: var(--sp-4);
+    }
+}
+
+@media (max-width: 820px) {
+    .lobby-step.is-active {
+        align-items: start;
+    }
+
+    .waitroom {
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-4);
+        height: auto;
+        max-height: none;
+        max-width: 520px;
+        margin: auto;
+    }
+
+    .waitroom__stage {
+        display: block;
+        height: auto;
+    }
+
+    .wtable {
+        position: static;
+        width: 100%;
+        aspect-ratio: auto;
+        max-height: none;
+        padding: var(--sp-5) var(--sp-4);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--r-md);
+        background: radial-gradient(130% 150% at 50% 0%, var(--felt-hi), var(--felt) 58%, var(--felt-edge));
+        box-shadow: var(--sh-2);
+    }
+
+    .wtable__rim,
+    .wtable__felt,
+    .wtable__inlay {
+        display: none;
+    }
+
+    .wtable__center {
+        position: static;
+    }
+
+    #waitroom-seats {
+        position: static;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--sp-2);
+        margin-top: var(--sp-4);
+    }
+
+    .wseat {
+        position: static;
+        width: auto;
+        transform: none !important;
+        animation: fadeIn .3s var(--ease-out) backwards;
+    }
+
+    .waitroom__side {
+        padding: var(--sp-4);
+    }
+
+    .waitroom__foot {
+        margin-top: var(--sp-4);
+        padding-top: 0;
+    }
+}
+
 @media (max-width: 900px) {
     :root {
         --log-w: 100%;
@@ -157,26 +240,51 @@
     }
 
     /* --- lobby --- */
-    .lobby-scroll {
-        padding: var(--sp-4) var(--sp-3) var(--sp-6);
+    .lobby-step {
+        padding: var(--sp-3);
     }
 
-    .lobby-panel {
+    .menu {
+        gap: var(--sp-4);
+    }
+
+    .menu__panel {
         padding: var(--sp-4);
     }
 
-    .marquee {
-        padding: var(--sp-3) 0 var(--sp-2);
-    }
-
-    .lobby-choice {
+    .menu__actions {
         grid-template-columns: 1fr;
     }
 
-    .roomcode__value {
-        font-size: 25px;
-        letter-spacing: .24em;
-        text-indent: .24em;
+    .join-card {
+        padding: var(--sp-5) var(--sp-4) var(--sp-4);
+    }
+
+    /* the seat ring needs more room than a phone has — stack it */
+    .wtable {
+        width: min(100%, 300px);
+    }
+
+    .wseat {
+        width: 132px;
+        padding: 5px 8px 5px 5px;
+        gap: 6px;
+    }
+
+    .wseat .seat__avatar {
+        width: 26px;
+        height: 26px;
+        font-size: 15px;
+    }
+
+    .wseat__name {
+        font-size: 12px;
+    }
+
+    .wtable__code {
+        font-size: 26px;
+        letter-spacing: .18em;
+        text-indent: .18em;
     }
 
     .option-row {
@@ -304,8 +412,7 @@
 
     #table {
         top: 58%;
-        width: 84vw;
-        max-height: 56%;
+        height: min(56%, 56vw);
     }
 
     .suit-medallion {

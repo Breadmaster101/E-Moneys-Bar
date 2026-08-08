@@ -2,13 +2,26 @@
    board.css — HUD, table, dock, action bar, game log
    ============================================================ */
 
+/* ---------------- App shell ---------------- */
+
+#app {
+    display: flex;
+    flex-direction: column;
+}
+
+#screens {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 #screen-game {
     height: 100%;
 }
 
-/* ---------------- HUD ---------------- */
+/* ---------------- Persistent top bar ---------------- */
 
-#hud {
+#topbar {
     flex: none;
     display: flex;
     align-items: center;
@@ -16,23 +29,39 @@
     gap: var(--sp-3);
     height: calc(var(--hud-h) + env(safe-area-inset-top));
     padding: env(safe-area-inset-top) var(--sp-4) 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, .55), transparent);
-    z-index: 30;
+    background: linear-gradient(180deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .18));
+    border-bottom: 1px solid var(--line);
+    z-index: 60;
 }
 
-.hud__side {
+.topbar__side {
     display: flex;
     align-items: center;
     gap: var(--sp-2);
     flex: 1 1 0;
+    min-width: 0;
 }
 
-.hud__side--right {
+.topbar__side--right {
     justify-content: flex-end;
 }
 
-.hud__center {
+.topbar__center {
     flex: 0 0 auto;
+}
+
+.topbar__title {
+    font-family: var(--font-display);
+    font-size: 21px;
+    letter-spacing: .1em;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#topbar.is-ingame .topbar__title {
+    display: none;
 }
 
 .hud-chip {
@@ -164,53 +193,90 @@
 /* ---------------- The table ---------------- */
 
 /*
- * Sized off the *height* of the play area, not the width. max-height with a
- * fixed aspect-ratio keeps the ellipse honest while guaranteeing the table can
- * never grow tall enough to run into the seats above it on a short screen.
+ * Sized off the *height* of the play area, with the width derived from it.
+ * (max-height + aspect-ratio does NOT work here: the height gets clamped but
+ * the width keeps its own value, which squashes the ellipse.) The 46vw term
+ * stops a tall narrow window from pushing the table off the sides.
  */
 #table {
     position: absolute;
     left: 50%;
     top: 56%;
-    width: min(62vw, 700px);
+    height: min(60%, 46vw);
+    width: auto;
     aspect-ratio: 1.5 / 1;
-    max-height: 60%;
     transform: translate(-50%, -50%);
     z-index: 10;
 }
+
+/*
+ * The table is four stacked ellipses: a wood rim, a brass bead, the baize, and
+ * a painted deco inlay. Lit from the upper-left, as if from the lamp above it.
+ */
 
 .table__felt {
     position: absolute;
     inset: 0;
     border-radius: 50%;
     background:
-        radial-gradient(78% 78% at 50% 30%, var(--felt-hi) 0%, var(--felt) 52%, var(--felt-edge) 100%);
+        radial-gradient(58% 58% at 38% 26%, rgba(255, 226, 170, .12) 0%, transparent 62%),
+        radial-gradient(82% 82% at 50% 34%, var(--felt-hi) 0%, var(--felt) 56%, var(--felt-edge) 100%);
     box-shadow:
-        inset 0 0 60px rgba(0, 0, 0, .65),
-        inset 0 6px 30px rgba(255, 255, 255, .06),
-        0 34px 70px rgba(0, 0, 0, .7);
+        inset 0 0 44px rgba(0, 0, 0, .5),
+        inset 0 0 0 1px rgba(0, 0, 0, .5),
+        0 34px 70px rgba(0, 0, 0, .6);
 }
 
 .table__felt::after {
-    /* felt fuzz */
+    /* baize nap */
     content: '';
     position: absolute;
     inset: 0;
     border-radius: 50%;
-    opacity: .3;
+    opacity: .22;
     mix-blend-mode: overlay;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)'/%3E%3C/svg%3E");
 }
 
+/* painted double ring, set in from the cushion */
+.table__felt::before {
+    content: '';
+    position: absolute;
+    inset: 7%;
+    border: 1px solid rgba(214, 178, 118, .22);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.table__inlay {
+    position: absolute;
+    inset: calc(7% + 5px);
+    border: 1px solid rgba(214, 178, 118, .1);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+}
+
 .table__rim {
     position: absolute;
-    inset: -13px;
+    inset: -18px;
     border-radius: 50%;
-    background: linear-gradient(160deg, var(--wood-hi), var(--wood) 45%, #150c08 100%);
+    background:
+        linear-gradient(158deg, var(--wood-hi) 0%, var(--wood) 42%, #170d07 100%);
     box-shadow:
-        inset 0 2px 3px rgba(255, 190, 120, .18),
-        inset 0 -3px 8px rgba(0, 0, 0, .7),
-        0 12px 34px rgba(0, 0, 0, .55);
+        inset 0 3px 4px rgba(255, 196, 130, .22),
+        inset 0 -4px 10px rgba(0, 0, 0, .75),
+        0 18px 44px rgba(0, 0, 0, .55);
+    z-index: -2;
+}
+
+/* thin brass bead where the wood meets the baize */
+.table__bead {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #e8bb6a, #8a5f22 40%, #3a280e 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .7);
     z-index: -1;
 }
 
@@ -554,7 +620,7 @@
 
 #log-panel {
     position: absolute;
-    top: var(--hud-h);
+    top: 0;
     right: 0;
     bottom: 0;
     width: var(--log-w);

@@ -7,7 +7,8 @@ import { gameState, localPlayer, session, isMyTurn, amEliminated } from './state
 import { connectServer, sendMessage } from './net.js';
 import { handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers } from './game.js';
 import { showLobby, refreshBoard, isBoardVisible } from './ui.js';
-import { initLobby } from './lobby.js';
+import { initLobby, goToStep, currentStep } from './lobby.js';
+import { initTopbar, onBack } from './topbar.js';
 import { updateActions } from './board.js';
 import { clearSelection, invalidateHand, animateSelectedOut } from './hand.js';
 import { cancelRoulette } from './roulette.js';
@@ -41,7 +42,6 @@ paintSoundButton();
 /* ------------------------------------------------------------------ */
 
 const openRules = () => openModal(el.rulesModal);
-el.showRulesBtn.addEventListener('click', openRules);
 el.rulesBtnGame.addEventListener('click', openRules);
 el.closeRulesBtn.addEventListener('click', () => closeModal(el.rulesModal));
 el.rulesModal.querySelector('.modal__backdrop').addEventListener('click', () => closeModal(el.rulesModal));
@@ -140,16 +140,29 @@ function leaveTable() {
 
 el.exitGameBtn.addEventListener('click', leaveTable);
 
-el.leaveGameBtn.addEventListener('click', async () => {
-    const ok = await confirmDialog({
-        title: 'Leave the table?',
-        message: localPlayer.isHost
-            ? 'You are the host — leaving ends the game for everyone.'
-            : 'You will be eliminated from the current round.',
-        confirmText: 'Leave',
-        cancelText: 'Stay',
-    });
-    if (ok) leaveTable();
+/*
+ * One back button, three meanings — the top bar doesn't know the rules, so the
+ * decision about what "back" costs you lives here.
+ */
+onBack(async () => {
+    sfx.tap();
+
+    if (isBoardVisible()) {
+        const ok = await confirmDialog({
+            title: 'Leave the table?',
+            message: localPlayer.isHost
+                ? 'You are the host — leaving ends the game for everyone.'
+                : 'You will be eliminated from the current round.',
+            confirmText: 'Leave',
+            cancelText: 'Stay',
+        });
+        if (ok) leaveTable();
+        return;
+    }
+
+    // in the waiting room: quietly give up the seat. on the join step: just back out.
+    if (currentStep() === 'table') leaveTable();
+    else goToStep('menu');
 });
 
 // beforeunload is unreliable on mobile Safari; pagehide is the one that fires
@@ -203,5 +216,6 @@ window.addEventListener('resize', () => {
 /* ------------------------------------------------------------------ */
 
 connectServer();
+initTopbar();
 initLobby();
 showLobby();

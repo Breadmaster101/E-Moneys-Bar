@@ -27,6 +27,7 @@ import {
     onClientStateUpdate,
     updateLobbySeats,
 } from './ui.js';
+import { goToStep } from './lobby.js';
 
 /* ------------------------------------------------------------------ */
 /* connection                                                          */
@@ -231,13 +232,11 @@ function clientReceive(msg) {
             if (me) Object.assign(localPlayer, me);
             session.lastSeenState = JSON.parse(JSON.stringify(gameState));
 
-            el.clientStatus.textContent = `Seated at ${msg.payload.hostName}'s table. Waiting for the deal…`;
+            el.clientStatus.textContent = `Seated at ${msg.payload.hostName}'s table.`;
             el.clientStatus.dataset.tone = 'ok';
-            el.connectBtn.disabled = true;
-            el.roomCodeInput.disabled = true;
             sfx.join();
             addLog(`Joined ${msg.payload.hostName}'s table.`, 'success');
-            updateLobbySeats();
+            goToStep('table');
             break;
         }
 

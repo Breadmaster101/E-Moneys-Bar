@@ -128,52 +128,116 @@
     <!-- ============ App ============ -->
     <div id="app">
 
-        <!-- ---------- LOBBY ---------- -->
-        <section id="screen-lobby" class="screen is-active">
-            <div class="lobby-scroll">
-                <div class="lobby-inner">
+        <!-- ---------- Persistent top bar (every screen) ---------- -->
+        <header id="topbar">
+            <div class="topbar__side">
+                <button id="backBtn" class="icon-btn" title="Back" aria-label="Back" hidden>
+                    <svg class="ico" aria-hidden="true"><use href="#i-exit" /></svg>
+                </button>
+                <span id="topbarTitle" class="topbar__title">E-Money's Bar</span>
+                <span id="hudRoomCode" class="hud-chip hud-chip--mono" hidden></span>
+            </div>
 
-                    <div class="marquee">
-                        <svg class="marquee-bulbs" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true">
-                        </svg>
-                        <h1 class="neon-sign">
-                            <span class="neon-sign__line1" data-text="E-MONEY'S">E-MONEY'S</span>
-                            <span class="neon-sign__line2" data-text="BAR">BAR</span>
-                        </h1>
-                        <p class="marquee-sub">Bluff. Challenge. Pull the trigger.</p>
-                    </div>
+            <div class="topbar__center">
+                <div id="turn-pill" class="turn-pill" hidden>
+                    <!-- square perimeter, drawn from top-centre clockwise, so the
+                         countdown matches the profile of the monogram tile it frames -->
+                    <svg class="turn-pill__ring" viewBox="0 0 40 40" aria-hidden="true">
+                        <path class="turn-pill__ring-bg" d="M20 3 H37 V37 H3 V3 H20" />
+                        <path id="turnTimerArc" class="turn-pill__ring-arc" d="M20 3 H37 V37 H3 V3 H20" />
+                    </svg>
+                    <span id="turn-pill-avatar" class="turn-pill__avatar"></span>
+                    <span id="turn-pill-text" class="turn-pill__text">Waiting…</span>
+                </div>
+            </div>
 
-                    <div class="panel lobby-panel">
-                        <label class="field">
-                            <span class="field__label">Your name</span>
-                            <input type="text" id="playerNameInput" maxlength="14" autocomplete="off"
-                                spellcheck="false" placeholder="Min. 3 characters">
-                            <span class="field__hint" id="nameHint"></span>
-                        </label>
+            <div class="topbar__side topbar__side--right">
+                <button id="soundToggleBtn" class="icon-btn" title="Sound on/off" aria-label="Toggle sound">
+                    <svg class="ico" aria-hidden="true"><use id="soundIconUse" href="#i-sound-on" /></svg>
+                </button>
+                <button id="rulesBtnGame" class="icon-btn icon-btn--glyph" title="How to play"
+                    aria-label="How to play">?</button>
+                <button id="logToggleBtn" class="icon-btn" title="Game log" aria-label="Toggle game log" hidden>
+                    <svg class="ico" aria-hidden="true"><use href="#i-log" /></svg>
+                </button>
+            </div>
+        </header>
 
-                        <div class="lobby-choice" id="lobbyChoice">
-                            <button id="createRoomBtn" class="btn btn--primary btn--lg">
-                                <svg class="ico" aria-hidden="true"><use href="#i-deal" /></svg> Host a table
-                            </button>
-                            <button id="joinRoomBtn" class="btn btn--ghost btn--lg">
-                                <svg class="ico" aria-hidden="true"><use href="#i-enter" /></svg> Join a table
-                            </button>
+        <main id="screens">
+
+            <!-- ---------- LOBBY ---------- -->
+            <section id="screen-lobby" class="screen is-active">
+
+                <!-- STEP 1 — the door -->
+                <div class="lobby-step is-active" id="lobby-menu">
+                    <div class="menu">
+                        <div class="marquee">
+                            <svg class="marquee-bulbs" viewBox="0 0 400 12" preserveAspectRatio="none"
+                                aria-hidden="true"></svg>
+                            <h1 class="neon-sign">
+                                <span class="neon-sign__line1">E-MONEY'S</span>
+                                <span class="neon-sign__line2">BAR</span>
+                            </h1>
+                            <p class="marquee-sub">Bluff. Challenge. Pull the trigger.</p>
                         </div>
 
-                        <!-- Host panel -->
-                        <div id="host-controls" class="subpanel" hidden>
-                            <div class="subpanel__head">
-                                <h2>Your table</h2>
-                                <button class="btn btn--quiet btn--sm" data-back-to-choice>Back</button>
-                            </div>
+                        <div class="panel menu__panel">
+                            <label class="field">
+                                <span class="field__label">Who's asking?</span>
+                                <input type="text" id="playerNameInput" maxlength="14" autocomplete="off"
+                                    spellcheck="false" placeholder="Your name">
+                                <span class="field__hint" id="nameHint"></span>
+                            </label>
 
-                            <p class="subpanel__hint">Share this code with your friends.</p>
-                            <div class="roomcode">
-                                <span id="roomCodeDisplay" class="roomcode__value">•••••</span>
-                                <button id="copyRoomCodeBtn" class="btn btn--ghost btn--sm" title="Copy room code">Copy</button>
+                            <div class="menu__actions">
+                                <button id="createRoomBtn" class="btn btn--primary btn--lg">
+                                    <svg class="ico" aria-hidden="true"><use href="#i-deal" /></svg> Host a table
+                                </button>
+                                <button id="joinRoomBtn" class="btn btn--ghost btn--lg">
+                                    <svg class="ico" aria-hidden="true"><use href="#i-enter" /></svg> Join a table
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="option-row">
+                <!-- STEP 2 — knock on a door -->
+                <div class="lobby-step" id="lobby-join">
+                    <div class="panel join-card">
+                        <h2 class="step-title">Join a table</h2>
+                        <p class="step-sub">Ask the host for their five-character code.</p>
+                        <label class="field">
+                            <span class="field__label">Room code</span>
+                            <input type="text" id="roomCodeInput" class="input--code" maxlength="5" autocomplete="off"
+                                spellcheck="false" placeholder="ABC12">
+                        </label>
+                        <button id="connectToHostBtn" class="btn btn--primary btn--lg btn--block">Connect</button>
+                        <p id="client-status" class="status-line">Enter the host's room code to join.</p>
+                    </div>
+                </div>
+
+                <!-- STEP 3 — the waiting room -->
+                <div class="lobby-step" id="lobby-table">
+                    <div class="waitroom">
+                        <div class="waitroom__stage">
+                            <div class="wtable">
+                                <div class="wtable__rim"></div>
+                                <div class="wtable__felt"></div>
+                                <div class="wtable__inlay"></div>
+                                <div class="wtable__center">
+                                    <span class="wtable__label">Room code</span>
+                                    <span id="roomCodeDisplay" class="wtable__code">•••••</span>
+                                    <button id="copyRoomCodeBtn" class="btn btn--ghost btn--sm">Copy</button>
+                                </div>
+                                <div id="waitroom-seats"></div>
+                            </div>
+                        </div>
+
+                        <aside class="panel waitroom__side">
+                            <h2 class="step-title" id="waitroomTitle">Your table</h2>
+                            <p class="step-sub" id="waitroomSub">Waiting for players to sit down.</p>
+
+                            <div class="option-row" id="turnTimerRow">
                                 <div>
                                     <span class="option-row__label">Turn timer</span>
                                     <span class="option-row__hint">Auto-plays for idle players</span>
@@ -186,91 +250,34 @@
                                 </div>
                             </div>
 
-                            <div class="seat-list">
-                                <div class="seat-list__head">
-                                    <span>At the table</span>
-                                    <span id="connected-players-count" class="tally">1 / 4</span>
-                                </div>
-                                <div id="connected-players-list" class="seat-list__body"></div>
+                            <div class="waitroom__tally">
+                                <span>At the table</span>
+                                <span id="connected-players-count" class="tally">1 / 4</span>
                             </div>
 
-                            <button id="startGameBtn" class="btn btn--danger btn--lg btn--block" disabled>
-                                Start game
-                            </button>
-                            <p class="subpanel__foot" id="startHint">Waiting for at least one more player…</p>
-                        </div>
-
-                        <!-- Join panel -->
-                        <div id="client-controls" class="subpanel" hidden>
-                            <div class="subpanel__head">
-                                <h2>Join a table</h2>
-                                <button class="btn btn--quiet btn--sm" data-back-to-choice>Back</button>
+                            <div class="waitroom__foot">
+                                <button id="startGameBtn" class="btn btn--danger btn--lg btn--block" disabled>
+                                    Start game
+                                </button>
+                                <p class="step-foot" id="startHint">Waiting for at least one more player…</p>
                             </div>
-                            <label class="field">
-                                <span class="field__label">Room code</span>
-                                <input type="text" id="roomCodeInput" class="input--code" maxlength="5"
-                                    autocomplete="off" spellcheck="false" placeholder="ABC12">
-                            </label>
-                            <button id="connectToHostBtn" class="btn btn--primary btn--lg btn--block">Connect</button>
-                            <p id="client-status" class="status-line">Enter the host's room code to join.</p>
-
-                            <div class="seat-list" id="client-seat-list" hidden>
-                                <div class="seat-list__head">
-                                    <span>At the table</span>
-                                    <span id="client-players-count" class="tally">0 / 4</span>
-                                </div>
-                                <div id="client-players-list" class="seat-list__body"></div>
-                            </div>
-                        </div>
-
-                        <button id="showRulesBtn" class="btn btn--quiet btn--block">How to play</button>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- ---------- GAME BOARD ---------- -->
-        <section id="screen-game" class="screen">
-            <header id="hud">
-                <div class="hud__side hud__side--left">
-                    <button id="leaveGameBtn" class="icon-btn" title="Leave game" aria-label="Leave game">
-                        <svg class="ico" aria-hidden="true"><use href="#i-exit" /></svg>
-                    </button>
-                    <span id="hudRoomCode" class="hud-chip hud-chip--mono"></span>
-                </div>
-
-                <div class="hud__center">
-                    <div id="turn-pill" class="turn-pill">
-                        <!-- square perimeter, drawn from top-centre clockwise, so the
-                             countdown matches the profile of the monogram tile it frames -->
-                        <svg class="turn-pill__ring" viewBox="0 0 40 40" aria-hidden="true">
-                            <path class="turn-pill__ring-bg" d="M20 3 H37 V37 H3 V3 H20" />
-                            <path id="turnTimerArc" class="turn-pill__ring-arc" d="M20 3 H37 V37 H3 V3 H20" />
-                        </svg>
-                        <span id="turn-pill-avatar" class="turn-pill__avatar"></span>
-                        <span id="turn-pill-text" class="turn-pill__text">Waiting…</span>
+                        </aside>
                     </div>
                 </div>
 
-                <div class="hud__side hud__side--right">
-                    <button id="soundToggleBtn" class="icon-btn" title="Sound on/off" aria-label="Toggle sound">
-                        <svg class="ico" aria-hidden="true"><use id="soundIconUse" href="#i-sound-on" /></svg>
-                    </button>
-                    <button id="rulesBtnGame" class="icon-btn icon-btn--glyph" title="How to play"
-                        aria-label="How to play">?</button>
-                    <button id="logToggleBtn" class="icon-btn" title="Game log" aria-label="Toggle game log">
-                        <svg class="ico" aria-hidden="true"><use href="#i-log" /></svg>
-                    </button>
-                </div>
-            </header>
+            </section>
 
-            <div id="table-area">
+            <!-- ---------- GAME BOARD ---------- -->
+            <section id="screen-game" class="screen">
+
+                <div id="table-area">
                 <div id="seats"></div>
 
                 <div id="table">
-                    <div class="table__felt"></div>
                     <div class="table__rim"></div>
+                    <div class="table__bead"></div>
+                    <div class="table__felt"></div>
+                    <div class="table__inlay"></div>
 
                     <div class="table__content">
                         <div id="suit-medallion" class="suit-medallion" title="Table suit">
@@ -313,7 +320,8 @@
                 </div>
                 <div id="log-messages" class="log-panel__body"></div>
             </aside>
-        </section>
+            </section>
+        </main>
     </div>
 
     <!-- ---------- Big turn announcement ---------- -->
