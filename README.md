@@ -115,9 +115,22 @@ table.
 
 - **Adding a sound**: add a method to `sfx` in `audio.js`. It composes from two
   primitives, `noise()` and `tone()`. Mute state persists in `localStorage`.
-- **Retiming the roulette**: the beat sheet is at the top of `roulette.js`. If
-  you make it longer, raise `ROULETTE_RESOLVE_MS` in `constants.js` to match,
-  since that's how long the host waits before dealing the next round.
+- **Retiming the roulette**: the beat sheet is at the top of `roulette.js`, but
+  the timings live in `planRoulette()` in `constants.js`, and that is the only
+  place to change them. The host waits `plan.totalMs` before dealing the next
+  round, so the animation and the pacing cannot drift apart.
+- **The roulette is planned, not improvised.** The hold before the trigger is
+  2 to 5 seconds and the landing chamber is random, so both are derived from a
+  single `rouletteSeed` the host puts in the payload. Never reach for
+  `Math.random()` inside `roulette.js`: every client has to run the identical
+  sequence, or players see different guns and the host cuts the ending short
+  for everyone but itself.
+- **The cylinder indexes, it does not spin.** Each revolver is a six-item deck
+  that gets popped from, so the odds climb as it empties. A free spin would say
+  the opposite (that every shot is a fresh 1-in-6), which is why it advances a
+  notch at a time instead. Spent chambers stay struck out and live rounds stay
+  drawn, so the table can count what is left; only *which* round is live is
+  hidden.
 - **Moving seats**: `SEAT_LAYOUTS` in `constants.js` is percentages of the table
   area. On phones a media query overrides it into a flat row across the top.
 - **Scale**: the base sizes in `tokens.css` target a desktop monitor.

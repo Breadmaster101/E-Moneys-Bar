@@ -5,7 +5,7 @@
 
 import {
     SUITS, RANKS, SUIT_SYMBOLS, HAND_SIZE, MIN_PLAYERS, MAX_CARDS_PER_PLAY,
-    REVOLVER_CHAMBERS, REVOLVER_BULLETS, ROULETTE_RESOLVE_MS,
+    REVOLVER_CHAMBERS, REVOLVER_BULLETS, planRoulette,
 } from './constants.js';
 import { gameState, localPlayer, session } from './state.js';
 import { sendMessage, activeConnectedIds } from './net.js';
@@ -284,6 +284,10 @@ function fireRevolver(targetPlayer) {
         target.revolverChambersLeft = REVOLVER_CHAMBERS;
     }
 
+    // captured before the pop: the animation draws the cylinder as it stood
+    // when the target picked it up, then takes this round out of it
+    const chambersBefore = target.revolverDeck.length;
+
     const fired = target.revolverDeck.pop();
     target.revolverChambersLeft = target.revolverDeck.length;
 
@@ -307,6 +311,10 @@ function fireRevolver(targetPlayer) {
         rouletteTarget: { id: target.id, name: target.name },
         rouletteOutcome: fired,
         rouletteOutcomeText: outcomeText,
+        chambersBefore,
+        // every client plans the same sequence from this, so the cylinder lands
+        // on the same chamber and holds for the same beat everywhere
+        rouletteSeed: (Math.random() * 0x7fffffff) | 0,
         updatedPlayersData: gameState.players.map((p) => ({
             id: p.id,
             name: p.name,
@@ -326,6 +334,17 @@ function resolveRoulette(results) {
     gameState.gamePhase = 'roulette_resolved';
     broadcastState();
 
+    /*
+     * The hold before the trigger is 2 to 5 seconds depending on the seed, so
+     * the wait here cannot be a constant: the host would either talk over the
+     * end of the animation or leave everyone staring at a spent cylinder. Same
+     * seed, same plan, same length on every client.
+     */
+    const { totalMs } = planRoulette({
+        seed: results.rouletteSeed,
+        chambersBefore: results.chambersBefore,
+    });
+
     setTimeout(() => {
         const survivors = gameState.players.filter((p) => !p.eliminated);
         if (survivors.length <= 1) {
@@ -340,7 +359,7 @@ function resolveRoulette(results) {
         } else {
             startNewRound();
         }
-    }, ROULETTE_RESOLVE_MS);
+    }, totalMs);
 }
 
 /* ------------------------------------------------------------------ */

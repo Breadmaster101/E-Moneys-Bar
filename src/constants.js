@@ -47,8 +47,88 @@ export const PLAYER_COLORS = [
     '#b8a06a', // buff
 ];
 
-/** How long the host waits after a roulette before dealing the next round. */
-export const ROULETTE_RESOLVE_MS = 4600;
+/* ------------------------------------------------------------------ */
+/* the roulette, planned up front                                      */
+/* ------------------------------------------------------------------ */
+
+/** Beats either side of the variable part of the sequence. */
+export const ROULETTE_LEAD_IN_MS = 260;   // modal open, cards flip, before the first notch
+export const ROULETTE_TAIL_MS = 1150;     // strike, result text, a beat to read it
+
+/**
+ * One chamber turning over. Deliberately constant rather than running down
+ * like a real cylinder: an even, unhurried tick gives away nothing about how
+ * close the sequence is to stopping, so the tension holds all the way through.
+ */
+export const ROULETTE_NOTCH_MS = 500;
+
+/** How long the cylinder sits on the chosen chamber before the trigger. */
+export const ROULETTE_HOLD_MIN_MS = 2000;
+export const ROULETTE_HOLD_MAX_MS = 5000;
+
+/** Small deterministic PRNG (mulberry32), so a seed gives everyone the same run. */
+function rngFrom(seed) {
+    let t = (Math.imul(seed | 0, 0x9e3779b9) ^ 0x85ebca6b) >>> 0;
+    return () => {
+        t = (t + 0x6d2b79f5) >>> 0;
+        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+        x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
+/**
+ * Work out the whole roulette sequence from a seed the host broadcasts.
+ *
+ * This is pure and lives here, at the bottom of the dependency graph, because
+ * two very different callers need the identical answer: `roulette.js` plays the
+ * sequence, and `game.js` has to know exactly how long it runs so the host
+ * doesn't deal the next round over the top of it. Deriving the hold from a
+ * shared seed rather than calling Math.random() per client is what keeps those
+ * two in step, and keeps every player watching the same gun.
+ *
+ * Chambers are numbered clockwise from the index mark at twelve o'clock. Spent
+ * ones are the low indices, so the live rounds are always `spentCount`..5.
+ *
+ * @param {object}  opts
+ * @param {number}  opts.seed            integer from the host
+ * @param {number}  opts.chambersBefore  live rounds left *before* this shot
+ */
+export function planRoulette({ seed = 0, chambersBefore = REVOLVER_CHAMBERS } = {}) {
+    const live = Math.min(Math.max(chambersBefore, 1), REVOLVER_CHAMBERS);
+    const spentCount = REVOLVER_CHAMBERS - live;
+    const rand = rngFrom(seed);
+
+    // land on a chamber that still holds a round
+    const landingChamber = spentCount + Math.floor(rand() * live);
+
+    /*
+     * At least one full revolution, then however much further it takes to bring
+     * the chosen chamber under the mark. Always clockwise: one notch moves the
+     * chamber at the mark from i to i-1, so N notches puts chamber (-N mod 6)
+     * on top. Get this wrong and the cylinder stops on a spent chamber.
+     */
+    const notches = REVOLVER_CHAMBERS
+        + ((REVOLVER_CHAMBERS - landingChamber) % REVOLVER_CHAMBERS);
+
+    // every notch the same length: see ROULETTE_NOTCH_MS
+    const notchDurations = new Array(notches).fill(ROULETTE_NOTCH_MS);
+
+    const spinMs = notchDurations.reduce((a, b) => a + b, 0);
+    const holdMs = Math.round(
+        ROULETTE_HOLD_MIN_MS + rand() * (ROULETTE_HOLD_MAX_MS - ROULETTE_HOLD_MIN_MS),
+    );
+
+    return {
+        spentCount,
+        landingChamber,
+        notchDurations,
+        spinMs,
+        holdMs,
+        fireAt: ROULETTE_LEAD_IN_MS + spinMs + holdMs,
+        totalMs: ROULETTE_LEAD_IN_MS + spinMs + holdMs + ROULETTE_TAIL_MS,
+    };
+}
 
 /** Turn timer choices offered to the host (0 = off). */
 export const TURN_TIMER_OPTIONS = [0, 20, 30, 45];

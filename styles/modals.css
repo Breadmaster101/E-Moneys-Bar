@@ -135,22 +135,53 @@
     padding: var(--sp-5) var(--sp-5) var(--sp-4);
 }
 
-/* the spin itself is driven by the Web Animations API in roulette.js */
+/* the indexing itself is driven by the Web Animations API in roulette.js */
 .revolver-cylinder {
     transform-origin: 100px 108px;
 }
 
-.revolver-hammer {
-    transform-origin: 100px 12px;
+/*
+ * The index mark stands in for the hammer: fixed at twelve o'clock while the
+ * cylinder turns under it. It dips just before the trigger, which is the only
+ * warning you get.
+ */
+.revolver-mark {
+    transform-origin: 100px 26px;
     transition: transform .12s var(--ease-out);
 }
 
-.revolver-hammer.is-cocked {
-    transform: rotate(-26deg);
+.revolver-mark.is-striking {
+    transform: translateY(6px) scaleY(1.12);
 }
 
-.revolver-hammer.is-struck {
-    transform: rotate(6deg);
+/*
+ * A round still in the cylinder, and the moment it is spent.
+ *
+ * No transition on either this or the strike below: the round goes and the
+ * cross lands on the same frame as the shot. Fading them took 300ms, which
+ * read as the mark arriving late, and while it ran the round and the cross
+ * were both half-visible on top of each other. A gunshot should be a cut.
+ */
+.revolver-round {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.revolver-round.is-spent {
+    opacity: 0;
+}
+
+/*
+ * The cross marking a fired chamber. Present on every chamber but only painted
+ * where one has gone off, so the chamber that fires during the sequence is
+ * struck out on the same frame the round leaves it.
+ */
+.revolver-strike {
+    opacity: 0;
+}
+
+.revolver-strike.is-shown {
+    opacity: 1;
 }
 
 .revolver-stage.is-firing .revolver-svg {
@@ -171,28 +202,40 @@
     }
 }
 
+/*
+ * The flash is parked over the chamber that fired, not the middle of the
+ * cylinder: the round goes off under the index mark at twelve o'clock, so a
+ * blast from the centre pin made no sense. roulette.js sets the core's left and
+ * top from the fired chamber's real position, which also means it follows the
+ * cylinder however far it has turned.
+ */
 .revolver-flash {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
     pointer-events: none;
-    opacity: 0;
 }
 
-.revolver-flash.is-on {
+/*
+ * The animation belongs on the core, not the wrapper. Scaling the wrapper used
+ * to work because it was a grid centring the core, so both shared a centre.
+ * Now the core sits off-centre over the fired chamber, and scaling the wrapper
+ * would swing it away from that chamber instead of blooming on the spot.
+ */
+.revolver-flash.is-on .revolver-flash__core {
     animation: muzzle .3s var(--ease-out);
 }
 
+/* the translate has to be repeated in every frame, or animating transform
+   drops the centring and the flash jumps down and right as it fires */
 @keyframes muzzle {
     0% {
         opacity: 1;
-        transform: scale(.3);
+        transform: translate(-50%, -50%) scale(.3);
     }
 
     100% {
         opacity: 0;
-        transform: scale(2.4);
+        transform: translate(-50%, -50%) scale(2.4);
     }
 }
 
@@ -202,9 +245,15 @@
  * as linework would read as a mistake rather than as a choice.
  */
 .revolver-flash__core {
-    width: 150px;
-    height: 150px;
+    position: absolute;
+    /* overwritten inline with the fired chamber's position */
+    left: 50%;
+    top: 50%;
+    width: 130px;
+    height: 130px;
+    opacity: 0;
     border-radius: 50%;
+    transform: translate(-50%, -50%);
     background: radial-gradient(circle, #fff 0%, #ffdd8a 28%, rgba(255, 120, 30, .55) 55%, transparent 72%);
 }
 

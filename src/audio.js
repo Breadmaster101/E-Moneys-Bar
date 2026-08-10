@@ -156,16 +156,13 @@ export const sfx = {
         tone({ at: 0.36, freq: 1180, type: 'triangle', dur: 0.35, gain: 0.05 });
     },
 
-    /** cylinder spin-up, slowing to a stop over `dur` seconds */
-    revolverSpin(dur = 2.1) {
-        const clicks = 30;
-        for (let i = 0; i < clicks; i++) {
-            // ease-out: clicks bunch up early, spread out at the end
-            const p = i / clicks;
-            const at = dur * (1 - Math.pow(1 - p, 2.4));
-            mechClick(at, 0.45 + p * 0.5);
-        }
-        tone({ freq: 70, to: 42, type: 'sine', dur, gain: 0.05 });
+    /**
+     * One chamber turning over. Called once per notch rather than as a single
+     * spin-down, so the sound and the picture advance together. `p` runs 0 to 1
+     * across the sequence and weights the click, so the last few land hardest.
+     */
+    chamberAdvance(p = 0) {
+        mechClick(0, 0.7 + p * 0.8);
     },
 
     hammerCock() {
