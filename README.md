@@ -1,6 +1,6 @@
 # E-Money's Bar
 
-A high-stakes bluffing game for 2-4 players: standard playing cards, one shared
+A high-stakes bluffing game for 2-8 players: standard playing cards, one shared
 table suit, and a six-chamber revolver holding a single live round. Play cards
 face down and claim they're the table suit. Lie as much as you like: but if
 somebody calls "LIAR!", the cards get flipped and one of you spins the cylinder.

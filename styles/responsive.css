@@ -365,6 +365,45 @@
         gap: 3px;
     }
 
+    /*
+     * Five or more opponents will not fit across a phone as name plates: at
+     * seven they came out 47px wide and the name was squeezed to nothing, so
+     * the row was unreadable while still taking the full height. Past four,
+     * drop to monogram tiles. The initials and the seat colour still identify
+     * everyone, and the turn pill names whoever is actually up.
+     */
+    #seats[data-count="5"] .seat__meta,
+    #seats[data-count="6"] .seat__meta,
+    #seats[data-count="7"] .seat__meta {
+        display: none;
+    }
+
+    /* width must be reset explicitly: the desktop #seats[data-count] rules in
+       players.css set a fixed px width at the same specificity as this, and
+       would otherwise keep it here and push the row off the screen */
+    #seats[data-count="5"] .seat,
+    #seats[data-count="6"] .seat,
+    #seats[data-count="7"] .seat {
+        width: auto;
+        flex: 0 0 auto;
+        max-width: none;
+    }
+
+    #seats[data-count="6"] .seat__avatar,
+    #seats[data-count="7"] .seat__avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 15px;
+    }
+
+    #seats[data-count="5"] .seat__plate,
+    #seats[data-count="6"] .seat__plate,
+    #seats[data-count="7"] .seat__plate {
+        width: auto;
+        padding: 4px;
+        gap: 0;
+    }
+
     .seat.is-dying {
         animation: seatDieFlat .8s var(--ease-out) both;
     }

@@ -16,6 +16,32 @@
     transition: opacity var(--t-slow), filter var(--t-slow);
 }
 
+/*
+ * A crowded ring needs narrower plates. Seven opponents at the full 202px
+ * would collide with each other along the top of the table, so the plates
+ * step down and the mini card fans drop away at the top end, where they are
+ * the first thing you stop being able to read anyway.
+ */
+#seats[data-count="5"] .seat,
+#seats[data-count="6"] .seat {
+    width: 168px;
+}
+
+#seats[data-count="7"] .seat {
+    width: 150px;
+}
+
+#seats[data-count="6"] .seat__avatar,
+#seats[data-count="7"] .seat__avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+}
+
+#seats[data-count="7"] .seat__cards {
+    display: none;
+}
+
 /* keeps the -50%/-50% centring intact while fading in */
 @keyframes seatIn {
     from {

@@ -325,7 +325,9 @@
     display: flex;
     align-items: center;
     gap: 9px;
-    width: 172px;
+    /* eight seats have to fit around the ellipse without touching; the pair
+       either side of the top slot is the tightest spacing on the ring */
+    width: 156px;
     padding: 7px 12px 7px 7px;
     transform: translate(-50%, -50%);
     border: 1px solid var(--line-strong);

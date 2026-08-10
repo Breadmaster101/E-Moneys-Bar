@@ -73,12 +73,18 @@
     --lime: #9aa668;
 
     /* ---- Player accents ----
-       Four inks a press could actually run. The old neon set fought the
-       gold badly: anything that bright reads as backlit next to hatching. */
+       Eight inks a press could actually run, one per seat. The old neon set
+       fought the gold badly: anything that bright reads as backlit next to
+       hatching. Mirrors PLAYER_COLORS in constants.js, which is what actually
+       gets written into --seat-color; keep the two in step. */
     --p1: #c9a961;
     --p2: #6f8f9e;
     --p3: #b0616d;
     --p4: #8a9c63;
+    --p5: #a98cb0;
+    --p6: #c08552;
+    --p7: #7fa3a0;
+    --p8: #b8a06a;
 
     /* ---- Table ---- */
     --felt: #0f1310;

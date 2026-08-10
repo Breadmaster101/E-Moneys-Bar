@@ -75,6 +75,10 @@ export function renderSeats() {
 
     const layout = SEAT_LAYOUTS[opponents.length] ?? SEAT_LAYOUTS[3];
 
+    // lets the stylesheet trim the plates once the ring gets busy; at seven
+    // opponents the full-width plates would run into each other
+    el.seats.dataset.count = String(opponents.length);
+
     opponents.forEach((player, i) => {
         const slot = layout[i] ?? { x: 50, y: 20 };
 

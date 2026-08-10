@@ -77,12 +77,20 @@ function buildBulbs() {
 /* the waiting room                                                    */
 /* ------------------------------------------------------------------ */
 
-/** Seat positions around the preview table, clockwise from the far side. */
+/**
+ * Seat positions around the preview table, clockwise from the far side: eight
+ * points on an ellipse, at 45 degree steps. There must be one per seat up to
+ * MAX_PLAYERS, since renderWaitroom() indexes straight into this.
+ */
 const WAIT_SLOTS = [
     { x: 50, y: -4 },
+    { x: 91, y: 12 },
     { x: 108, y: 50 },
+    { x: 91, y: 88 },
     { x: 50, y: 104 },
+    { x: 9, y: 88 },
     { x: -8, y: 50 },
+    { x: 9, y: 12 },
 ];
 
 function occupantSeat(player, index) {
