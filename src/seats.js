@@ -83,7 +83,7 @@ export function renderSeats() {
         const slot = layout[i] ?? { x: 50, y: 20 };
 
         const seat = document.createElement('div');
-        seat.className = 'seat';
+        seat.className = `seat${slot.anchorTop ? ' seat--anchor-top' : ''}`;
         seat.dataset.playerId = player.id;
         seat.style.left = `${slot.x}%`;
         seat.style.top = `${slot.y}%`;

@@ -55,22 +55,51 @@ export const TURN_TIMER_OPTIONS = [0, 20, 30, 45];
 export const DEFAULT_TURN_SECONDS = 30;
 
 /**
- * Where opponents sit, as % of the table area. Index = opponent count.
- * Kept clear of the table ellipse (which starts around 24% and is centred
- * at 52-54%) so name plates never sit on top of the suit medallion.
+ * Where opponents sit, keyed by opponent count.
+ *
+ * These are percentages of the *table box*, not of the play area, which is why
+ * they run outside 0-100: #seats is sized and positioned to match #table
+ * exactly (see board.css), so a seat at x: -8 sits just off the table's left
+ * edge no matter how big the table is. Positioning them against the play area
+ * instead put the side seats out by the screen edges, because the table only
+ * occupies the middle third of it.
+ *
+ * Every point below is one of the eight on the ring shared with the waiting
+ * room: an ellipse at cx/cy 50, rx 58, ry 54, sampled every 45 degrees. The
+ * bottom point is left out because that is where you sit. Order runs clockwise
+ * starting to your left, matching the order renderSeats() hands them out in.
+ *
+ * Keep these in step with WAIT_SLOTS in lobby.js: the lobby ring is the
+ * preview of this one, and they are meant to read as the same table.
  */
+const RING = {
+    left: { x: -8, y: 50 },
+    upperLeft: { x: 9, y: 12 },
+    // anchorTop: sit fully above this point rather than centred on it. Every
+    // other slot is beside the table, where hanging over the felt's empty
+    // corner is fine, but the top slot hangs straight down onto the suit
+    // medallion. How far down depends on the plate's height and the table's
+    // size, so centring it can only ever be tuned per breakpoint; anchoring
+    // it is correct at every size.
+    top: { x: 50, y: -4, anchorTop: true },
+    upperRight: { x: 91, y: 12 },
+    right: { x: 108, y: 50 },
+    lowerRight: { x: 91, y: 88 },
+    lowerLeft: { x: 9, y: 88 },
+};
+
 export const SEAT_LAYOUTS = {
-    1: [{ x: 50, y: 16 }],
-    2: [{ x: 16, y: 34 }, { x: 84, y: 34 }],
-    3: [{ x: 13, y: 44 }, { x: 50, y: 16 }, { x: 87, y: 44 }],
-    4: [{ x: 11, y: 46 }, { x: 33, y: 15 }, { x: 67, y: 15 }, { x: 89, y: 46 }],
-    5: [{ x: 9, y: 48 }, { x: 22, y: 18 }, { x: 50, y: 12 }, { x: 78, y: 18 }, { x: 91, y: 48 }],
+    1: [RING.top],
+    2: [RING.upperLeft, RING.upperRight],
+    3: [RING.left, RING.top, RING.right],
+    4: [RING.left, RING.upperLeft, RING.upperRight, RING.right],
+    5: [RING.left, RING.upperLeft, RING.top, RING.upperRight, RING.right],
     6: [
-        { x: 8, y: 50 }, { x: 15, y: 24 }, { x: 36, y: 13 },
-        { x: 64, y: 13 }, { x: 85, y: 24 }, { x: 92, y: 50 },
+        RING.lowerLeft, RING.left, RING.upperLeft,
+        RING.upperRight, RING.right, RING.lowerRight,
     ],
     7: [
-        { x: 8, y: 52 }, { x: 12, y: 28 }, { x: 29, y: 14 }, { x: 50, y: 10 },
-        { x: 71, y: 14 }, { x: 88, y: 28 }, { x: 92, y: 52 },
+        RING.lowerLeft, RING.left, RING.upperLeft, RING.top,
+        RING.upperRight, RING.right, RING.lowerRight,
     ],
 };

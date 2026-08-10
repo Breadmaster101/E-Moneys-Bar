@@ -201,11 +201,31 @@
     min-height: 0;
 }
 
+/*
+ * #seats deliberately shares #table's exact box rather than filling the play
+ * area. SEAT_LAYOUTS is expressed in percentages of the table, so the ring of
+ * players hugs the felt at any size, the way the waiting-room preview does.
+ * Against the play area the side seats ended up out by the screen edges,
+ * because the table only occupies the middle third of it.
+ *
+ * The geometry below must stay identical to #table above. Nothing clips here,
+ * so seats can sit outside the box (x: -8, y: 104) and still show.
+ */
 #seats {
     position: absolute;
-    inset: 0;
+    left: 50%;
+    top: 56%;
+    height: min(60%, 46vw);
+    width: auto;
+    aspect-ratio: 1.5 / 1;
+    transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 20;
+    /* makes cqw units inside resolve against the table's width, so the plates
+       scale with the table rather than staying a fixed size on a shrinking
+       one. Size containment does not clip, so seats still show outside the
+       box. */
+    container-type: size;
 }
 
 /* ---------------- The table ---------------- */

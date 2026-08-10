@@ -3,17 +3,33 @@
    ============================================================ */
 
 .seat {
+    /* how the plate hangs off its ring point. Every transform below goes
+       through this so the anchor stays consistent through the animations. */
+    --anchor-y: -50%;
+
     position: absolute;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 7px;
-    width: 202px;
-    transform: translate(-50%, -50%);
+    /*
+     * Sized from the table, not from the viewport. A fixed width looks right
+     * on a big board and enormous on a small one, and once a plate is wide
+     * relative to the table the diagonal seats start clipping the suit
+     * medallion. cqw resolves against #seats, which is the table's box.
+     */
+    width: clamp(112px, 30cqw, 202px);
+    transform: translate(-50%, var(--anchor-y));
     pointer-events: auto;
     animation: seatIn .4s var(--ease-out) backwards;
     animation-delay: var(--seat-delay, 0ms);
     transition: opacity var(--t-slow), filter var(--t-slow);
+}
+
+/* the seat at the head of the table sits fully above its point, so it cannot
+   hang down onto the suit medallion however tall the plate or small the table */
+.seat--anchor-top {
+    --anchor-y: -100%;
 }
 
 /*
@@ -24,11 +40,11 @@
  */
 #seats[data-count="5"] .seat,
 #seats[data-count="6"] .seat {
-    width: 168px;
+    width: clamp(104px, 25cqw, 168px);
 }
 
 #seats[data-count="7"] .seat {
-    width: 150px;
+    width: clamp(96px, 22cqw, 150px);
 }
 
 #seats[data-count="6"] .seat__avatar,
@@ -46,7 +62,7 @@
 @keyframes seatIn {
     from {
         opacity: 0;
-        transform: translate(-50%, calc(-50% + 14px));
+        transform: translate(-50%, calc(var(--anchor-y) + 14px));
     }
 }
 
@@ -247,7 +263,7 @@
 
     18% {
         filter: brightness(2.4) saturate(0);
-        transform: translate(-50%, -50%) scale(1.06);
+        transform: translate(-50%, var(--anchor-y)) scale(1.06);
     }
 
     100% {

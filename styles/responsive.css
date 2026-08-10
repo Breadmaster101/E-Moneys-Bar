@@ -18,10 +18,6 @@
         --dock-h: 238px;
         --log-w: 348px;
     }
-
-    .seat {
-        width: 190px;
-    }
 }
 
 @media (max-width: 1180px) {
@@ -33,11 +29,12 @@
         --dock-h: 222px;
         --log-w: 324px;
     }
-
-    .seat {
-        width: 178px;
-    }
 }
+
+/* Seat plate width is intentionally absent from the width breakpoints: it is
+   sized from the table itself with cqw in players.css, so it already tracks
+   every viewport change. A fixed px width here would out-specify that and
+   leave oversized plates on a shrunken table. */
 
 /* ---------------- Short viewports ---------------- */
 
@@ -73,6 +70,20 @@
     .btn--action {
         height: 56px;
         min-width: 168px;
+    }
+
+    /*
+     * Plate *width* needs no help here: it scales with the table via cqw in
+     * players.css. Height does, though. A plate is ~112px tall because of the
+     * mini fan, that height is fixed, and the gap between the side and
+     * upper-side slots is only 38% of the table's height, so on a short window
+     * the two collide. Dropping the fans takes a plate to ~50px, which is what
+     * actually buys the clearance. Three opponents or fewer keep theirs.
+     */
+    #seats[data-count="4"] .seat__cards,
+    #seats[data-count="5"] .seat__cards,
+    #seats[data-count="6"] .seat__cards {
+        display: none;
     }
 }
 
@@ -215,10 +226,6 @@
         left: auto;
     }
 
-    .seat {
-        width: 162px;
-    }
-
     .seat__name {
         font-size: 13px;
     }
@@ -346,8 +353,18 @@
         text-overflow: ellipsis;
     }
 
+    /* the ring becomes a row across the top, so undo the table-shaped box that
+       board.css gives #seats on larger screens */
     #seats {
         inset: 0 0 auto 0;
+        width: auto;
+        height: auto;
+        aspect-ratio: auto;
+        transform: none;
+        /* must go too: size containment sizes the box as if it were empty, so
+           with auto width it collapses to 0 and justify-content has nothing to
+           centre the row within. Nothing here needs cqw anyway. */
+        container-type: normal;
         display: flex;
         align-items: flex-start;
         justify-content: center;
