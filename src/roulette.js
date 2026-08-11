@@ -136,10 +136,17 @@ function buildRevolver(spentCount) {
          * just the spent ones: the chamber that goes off during this sequence
          * needs one too, and it has to appear the instant the round leaves
          * rather than only on the next cylinder we build.
+         *
+         * Rotated onto its own spoke. The arms are plain diagonals in absolute
+         * coordinates, so without this every cross points the same way and the
+         * cylinder reads as six unrelated marks stamped on it. i * 60 is the
+         * chamber's own angle off the top, which leaves each cross symmetric
+         * about the line back to the centre pin.
          */
         const d = 9;
         const strike = svgEl('path', {
             d: `M${cx - d} ${cy - d} L${cx + d} ${cy + d} M${cx + d} ${cy - d} L${cx - d} ${cy + d}`,
+            transform: `rotate(${i * 60} ${cx} ${cy})`,
             stroke: 'rgba(201,169,97,.22)', 'stroke-width': '1.5', fill: 'none',
             class: `revolver-strike${spent ? ' is-shown' : ''}`,
         });
@@ -245,11 +252,21 @@ export function playRoulette(data, targetAfter) {
      * same frame as the insert and the cylinder jumps straight to its final
      * angle. animate() states both ends explicitly, so it cannot mis-fire.
      */
+    /*
+     * Fall back to clockwise rather than trusting the plan blindly. A missing or
+     * junk direction multiplies out to NaN, `rotate(NaNdeg)` is invalid, and
+     * WAAPI drops an invalid property without complaining: the animation still
+     * runs, still reports "running", and turns nothing. That failure is silent
+     * and looks exactly like the cylinder being broken, so it is worth a line to
+     * make impossible.
+     */
+    const spinDir = plan.direction === -1 ? -1 : 1;
+
     let elapsed = ROULETTE_LEAD_IN_MS;
     plan.notchDurations.forEach((dur, i) => {
         after(elapsed, () => {
-            const from = i * 60 * plan.direction;
-            const to = (i + 1) * 60 * plan.direction;
+            const from = i * 60 * spinDir;
+            const to = (i + 1) * 60 * spinDir;
             spin = cylinder.animate(
                 [{ transform: `rotate(${from}deg)` }, { transform: `rotate(${to}deg)` }],
                 {

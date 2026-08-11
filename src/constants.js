@@ -102,14 +102,21 @@ export function planRoulette({ seed = 0, chambersBefore = REVOLVER_CHAMBERS } = 
     // land on a chamber that still holds a round
     const landingChamber = spentCount + Math.floor(rand() * live);
 
+    /** 1 turns the cylinder clockwise, -1 anticlockwise. */
+    const direction = rand() < 0.5 ? 1 : -1;
+
     /*
      * At least one full revolution, then however much further it takes to bring
-     * the chosen chamber under the mark. Always clockwise: one notch moves the
-     * chamber at the mark from i to i-1, so N notches puts chamber (-N mod 6)
-     * on top. Get this wrong and the cylinder stops on a spent chamber.
+     * the chosen chamber under the mark.
+     *
+     * Turning clockwise, one notch moves the chamber at the mark from i to i-1,
+     * so N notches puts chamber (-N mod 6) on top. Anticlockwise it runs the
+     * other way and N notches puts chamber (N mod 6) on top. Get this wrong and
+     * the cylinder stops on a chamber that has already been fired.
      */
-    const notches = REVOLVER_CHAMBERS
-        + ((REVOLVER_CHAMBERS - landingChamber) % REVOLVER_CHAMBERS);
+    const notches = REVOLVER_CHAMBERS + (direction === 1
+        ? ((REVOLVER_CHAMBERS - landingChamber) % REVOLVER_CHAMBERS)
+        : (landingChamber % REVOLVER_CHAMBERS));
 
     // every notch the same length: see ROULETTE_NOTCH_MS
     const notchDurations = new Array(notches).fill(ROULETTE_NOTCH_MS);
@@ -122,6 +129,7 @@ export function planRoulette({ seed = 0, chambersBefore = REVOLVER_CHAMBERS } = 
     return {
         spentCount,
         landingChamber,
+        direction,
         notchDurations,
         spinMs,
         holdMs,
