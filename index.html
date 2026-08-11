@@ -72,6 +72,72 @@
                 <stop offset="0%" stop-color="#0a0908" />
                 <stop offset="100%" stop-color="#0a0908" />
             </radialGradient>
+            <!--
+                The muzzle flash. In the SVG rather than CSS so it can be pinned
+                to the chamber under the index mark in viewBox coordinates: as an
+                HTML layer it had to be placed from JS every shot, which meant
+                trusting a containing block, an inline style and a screen-matrix
+                conversion all at once.
+            -->
+            <radialGradient id="grad-muzzle">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="26%" stop-color="#ffdd8a" stop-opacity=".95" />
+                <stop offset="55%" stop-color="#ff781e" stop-opacity=".5" />
+                <stop offset="100%" stop-color="#ff781e" stop-opacity="0" />
+            </radialGradient>
+            <!--
+                The overexposed core, blown out to white and held flat almost to
+                its edge. The bloom above falls off from its centre, which is
+                what made it read as a glow; a real flash is a clipped highlight
+                with a hard shoulder, so this one stays at full white until 62%
+                and then stops. It is on screen for two frames.
+            -->
+            <radialGradient id="grad-muzzle-core">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+                <stop offset="62%" stop-color="#ffffff" stop-opacity=".96" />
+                <stop offset="82%" stop-color="#fff3cf" stop-opacity=".6" />
+                <stop offset="100%" stop-color="#ffe6a1" stop-opacity="0" />
+            </radialGradient>
+            <!--
+                The occluder: a flash big enough to hide the gun behind it. Any
+                effect you can still see through reads as weak, so for two frames
+                this covers the whole cylinder and the cross and the spent round
+                appear from behind it rather than in front of it.
+            -->
+            <radialGradient id="grad-muzzle-occlude">
+                <stop offset="0%" stop-color="#fffdf4" stop-opacity=".97" />
+                <stop offset="45%" stop-color="#ffe9b4" stop-opacity=".8" />
+                <stop offset="75%" stop-color="#ff9a2e" stop-opacity=".28" />
+                <stop offset="100%" stop-color="#ff781e" stop-opacity="0" />
+            </radialGradient>
+            <!-- the muzzle cone, fired at the viewer: hot at the mouth, gone by the tip -->
+            <linearGradient id="grad-muzzle-cone" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity=".95" />
+                <stop offset="35%" stop-color="#ffd884" stop-opacity=".7" />
+                <stop offset="100%" stop-color="#ff781e" stop-opacity="0" />
+            </linearGradient>
+            <!--
+                Chromatic split for the 60ms peak. The red and cyan channels are
+                pulled a fraction of a unit apart and screened back over the
+                original, which reads as the camera failing to cope with the
+                light rather than as the gun glowing. Driven by the .is-punched
+                class in modals.css so it costs nothing when idle.
+            -->
+            <filter id="fx-chroma" x="-20%" y="-20%" width="140%" height="140%"
+                color-interpolation-filters="sRGB">
+                <feOffset in="SourceGraphic" dx="-2.2" dy="0" result="rShift" />
+                <feColorMatrix in="rShift" result="rOnly" type="matrix" values="1 0 0 0 0
+                           0 0 0 0 0
+                           0 0 0 0 0
+                           0 0 0 1 0" />
+                <feOffset in="SourceGraphic" dx="2.2" dy="0" result="cShift" />
+                <feColorMatrix in="cShift" result="cOnly" type="matrix" values="0 0 0 0 0
+                           0 1 0 0 0
+                           0 0 1 0 0
+                           0 0 0 1 0" />
+                <feBlend in="rOnly" in2="cOnly" mode="screen" result="split" />
+                <feBlend in="SourceGraphic" in2="split" mode="screen" />
+            </filter>
         </defs>
 
         <!-- Engraved line icons. Referenced with <use href="#i-name"> via .ico -->
@@ -130,6 +196,14 @@
     </div>
     <canvas id="fx-canvas" aria-hidden="true"></canvas>
     <div id="fx-flash" aria-hidden="true"></div>
+    <!--
+        The aftermath layer. #fx-flash screens a colour over the whole viewport,
+        which is right for the blow-out but wrong for the seconds after it: a
+        flat red wash over the middle of the screen hid the table. This one is a
+        vignette, dark at the edges and clear in the centre, so it can sit and
+        pulse without covering anything.
+    -->
+    <div id="fx-blood" aria-hidden="true"></div>
 
     <!-- ============ App ============ -->
     <div id="app">

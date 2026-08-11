@@ -151,42 +151,39 @@
     mix-blend-mode: screen;
 }
 
+/* ---------------- Blood vignette ---------------- */
+/*
+   The seconds after a lethal shot. Sits above the particle canvas but below the
+   impact flash, and is clear through the middle so the table stays readable
+   while the edges close in. Driven by fx.bloodVignette().
+*/
+
+#fx-blood {
+    position: fixed;
+    inset: 0;
+    z-index: 940;
+    opacity: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 78% 68% at 50% 50%,
+            transparent 34%,
+            rgba(88, 6, 18, .5) 72%,
+            rgba(52, 2, 10, .92) 100%);
+}
+
 /* ---------------- Screen shake ---------------- */
-/* JS sets --shake-amp and toggles .is-shaking on <html>. */
+/*
+   The offsets come from fx.shake(), one frame at a time, because a keyframe
+   plays the same wobble every shot. All this does is apply them: the class is
+   the on switch and the vars are the position.
+*/
 
 html.is-shaking #app,
 html.is-shaking #ambience {
-    animation: shake .42s var(--ease-out) both;
-}
-
-@keyframes shake {
-    0% {
-        transform: translate3d(0, 0, 0) rotate(0deg);
-    }
-
-    12% {
-        transform: translate3d(calc(var(--shake-amp) * -1), calc(var(--shake-amp) * .6), 0) rotate(-.4deg);
-    }
-
-    26% {
-        transform: translate3d(calc(var(--shake-amp) * .85), calc(var(--shake-amp) * -.7), 0) rotate(.35deg);
-    }
-
-    41% {
-        transform: translate3d(calc(var(--shake-amp) * -.6), calc(var(--shake-amp) * -.35), 0) rotate(-.25deg);
-    }
-
-    58% {
-        transform: translate3d(calc(var(--shake-amp) * .42), calc(var(--shake-amp) * .3), 0) rotate(.18deg);
-    }
-
-    75% {
-        transform: translate3d(calc(var(--shake-amp) * -.2), calc(var(--shake-amp) * .12), 0) rotate(-.08deg);
-    }
-
-    100% {
-        transform: translate3d(0, 0, 0) rotate(0deg);
-    }
+    transform:
+        translate3d(var(--shake-x, 0px), var(--shake-y, 0px), 0)
+        rotate(var(--shake-r, 0deg));
+    will-change: transform;
 }
 
 /* ---------------- Struck lettering ----------------
@@ -257,8 +254,13 @@ html.is-shaking #ambience {
         animation: none;
     }
 
+    /*
+       fx.shake() already returns early under this preference, so the vars never
+       move. Zeroing the transform is belt and braces: nothing should be able to
+       leave the table sitting off-centre.
+    */
     html.is-shaking #app,
     html.is-shaking #ambience {
-        animation: none;
+        transform: none;
     }
 }

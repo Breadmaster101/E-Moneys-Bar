@@ -184,78 +184,113 @@
     opacity: 1;
 }
 
+/*
+ * Recoil. Two things were wrong with easing this out of a 16% keyframe: the
+ * whole move was vertical, and the ease meant the gun arrived at its extreme
+ * gently. A shot is an impulse, so the kick is on the first frame and everything
+ * after it is the gun coming back: 0% is already thrown, and the overshoot at
+ * 62% is the settle rather than a second hit.
+ *
+ * --recoil-x is re-rolled per shot in roulette.js. Without it the gun jumps the
+ * same direction every time, which is the same problem the old screen shake had.
+ */
 .revolver-stage.is-firing .revolver-svg {
-    animation: recoil .34s var(--ease-out);
+    animation: recoil .42s cubic-bezier(.22, .9, .3, 1) both;
 }
 
 @keyframes recoil {
     0% {
-        transform: translateY(0) scale(1);
+        transform:
+            translate(var(--recoil-x, -9px), 15px) scale(1.16)
+            rotate(calc(var(--recoil-x, -9px) * .28));
     }
 
-    16% {
-        transform: translateY(16px) scale(1.09);
+    38% {
+        transform: translate(calc(var(--recoil-x, -9px) * -.18), -5px) scale(.975) rotate(0deg);
+    }
+
+    62% {
+        transform: translate(0, 2px) scale(1.012) rotate(0deg);
     }
 
     100% {
-        transform: translateY(0) scale(1);
+        transform: translate(0, 0) scale(1) rotate(0deg);
     }
 }
 
 /*
- * The flash is parked over the chamber that fired, not the middle of the
- * cylinder: the round goes off under the index mark at twelve o'clock, so a
- * blast from the centre pin made no sense. roulette.js sets the core's left and
- * top from the fired chamber's real position, which also means it follows the
- * cylinder however far it has turned.
+ * The chromatic punch: on for about 130ms across the shot.
+ *
+ * Blowing out the brightness and pulling the channels apart says the camera
+ * could not cope with the light, which is a statement about the room. Making the
+ * gun brighter is a statement about the gun, and that is the difference between
+ * this and a glow. The filter itself is #fx-chroma in index.html.
+ */
+.revolver-stage.is-punched {
+    filter: url(#fx-chroma) brightness(1.5) contrast(1.2) saturate(1.12);
+}
+
+/*
+ * The muzzle flash is an SVG circle inside the revolver, pinned to the chamber
+ * under the index mark, so it goes off over the round that fired rather than the
+ * centre pin. Nothing here positions it: that is the point of moving it into the
+ * SVG, and the reason it cannot drift out of place again.
+ *
+ * transform-box: fill-box makes the scale grow from the circle's own centre. On
+ * an SVG element the default origin is the viewBox origin, so without it the
+ * flash would sling away from the top-left corner as it blooms.
  */
 .revolver-flash {
-    position: absolute;
-    inset: 0;
+    opacity: 0;
     pointer-events: none;
+    transform-box: fill-box;
+    transform-origin: center;
 }
 
 /*
- * The animation belongs on the core, not the wrapper. Scaling the wrapper used
- * to work because it was a grid centring the core, so both shared a centre.
- * Now the core sits off-centre over the fired chamber, and scaling the wrapper
- * would swing it away from that chamber instead of blooming on the spot.
+ * The rest of the flash, in the order it is felt: the blown-out core, the spikes
+ * it throws, the shockwave leaving the muzzle, and the sheet of light that hides
+ * the gun while all of that happens.
+ *
+ * These all take transform-origin in viewBox coordinates rather than
+ * `transform-box: fill-box` like the bloom above, because two of them are not
+ * centred on the muzzle: the ray group's own box is whatever the spikes happen to
+ * span this shot, and the occluder is centred on the frame. Naming the muzzle
+ * point outright is the only version that stays correct when the geometry is
+ * re-rolled per shot.
  */
-.revolver-flash.is-on .revolver-flash__core {
-    animation: muzzle .3s var(--ease-out);
+.revolver-core,
+.revolver-rays,
+.revolver-shock {
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: 100px 62px;
 }
 
-/* the translate has to be repeated in every frame, or animating transform
-   drops the centring and the flash jumps down and right as it fires */
-@keyframes muzzle {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(.3);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(2.4);
-    }
+/*
+ * The shockwave stays a hairline as it expands. Scaling a stroked circle scales
+ * its stroke too, so the ring got fatter as it grew and read as another bloom;
+ * non-scaling-stroke is what makes it read as a geometric edge travelling
+ * outwards, which is the one thing in the whole effect that is crisp.
+ */
+.revolver-shock {
+    vector-effect: non-scaling-stroke;
 }
+
+.revolver-occlude {
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: 100px 100px;
+}
+
+/* the bloom itself is fireMuzzleFlash() in roulette.js: a CSS animation here
+   would be clamped to 0.01ms by the reduced-motion block in effects.css */
 
 /*
  * The single deliberate exception to the no-glow rule in tokens.css. A muzzle
  * flash is an actual light source, and it is on screen for 300ms; drawing it
  * as linework would read as a mistake rather than as a choice.
  */
-.revolver-flash__core {
-    position: absolute;
-    /* overwritten inline with the fired chamber's position */
-    left: 50%;
-    top: 50%;
-    width: 130px;
-    height: 130px;
-    opacity: 0;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle, #fff 0%, #ffdd8a 28%, rgba(255, 120, 30, .55) 55%, transparent 72%);
-}
 
 .roulette-result {
     min-height: 36px;

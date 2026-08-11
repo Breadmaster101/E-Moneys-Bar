@@ -116,6 +116,7 @@ export const el = {
     serverStatusText: $('#server-status-text'),
     fxCanvas: $('#fx-canvas'),
     fxFlash: $('#fx-flash'),
+    fxBlood: $('#fx-blood'),
 };
 
 /** Show/hide a modal with its transition. Returns nothing. */

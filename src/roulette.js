@@ -49,12 +49,163 @@ function clearTimers() {
     el.revolverStage?.querySelectorAll('*').forEach((node) => {
         node.getAnimations?.().forEach((a) => a.cancel());
     });
+    /*
+     * The shot leaves two classes on the stage, and one of them is a filter.
+     * Walking out of the table during the 130ms the punch is up would otherwise
+     * leave the revolver blown out and channel-split for as long as the dialog
+     * lives, so the teardown that cancels the animations drops these too.
+     */
+    el.revolverStage?.classList.remove('is-firing', 'is-punched');
 }
 
 function svgEl(tag, attrs) {
     const node = document.createElementNS(NS, tag);
     for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
     return node;
+}
+
+const reducedMotion = () =>
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+
+/**
+ * How long the picture is held at the moment of the shot, in ms.
+ *
+ * The freeze is the reason the rest of this reads as an impact. Everything
+ * arrives on one frame and then nothing moves for a twentieth of a second: the
+ * eye gets an instant to take the peak in, and the release afterwards lands
+ * against something. Long enough to register, short enough that it is felt
+ * rather than seen as a stutter.
+ */
+const HITSTOP_MS = 70;
+
+const rand = (a, b) => a + Math.random() * (b - a);
+
+/**
+ * The muzzle spikes, cut fresh for this shot.
+ *
+ * A flash seen down the barrel is a ragged star, not a disc, and the raggedness
+ * has to differ per shot or the sixth one is visibly the same picture as the
+ * first. Each spike is a triangle with its base on the muzzle and its tip out in
+ * the dark, rotated onto its own angle; the gradient runs base-to-tip inside
+ * each one's own box, so it is hot where it leaves the chamber and gone by the
+ * point no matter which way it is turned.
+ */
+function cutRays(rays) {
+    rays.innerHTML = '';
+    const count = Math.round(rand(4, 7));
+    const base = rand(0, Math.PI * 2);
+
+    for (let i = 0; i < count; i++) {
+        // spread around the circle, then knocked off it, so they are neither
+        // evenly spaced nor clumped
+        const angle = (base + (i / count) * Math.PI * 2 + rand(-0.34, 0.34)) * (180 / Math.PI);
+        // one spike per shot is a long one: an even star reads as a decoration
+        const len = i === 0 ? rand(96, 150) : rand(34, 92);
+        const half = rand(4, 11);
+
+        rays.appendChild(svgEl('path', {
+            d: `M${100 - half} 62 L100 ${62 - len} L${100 + half} 62 Z`,
+            transform: `rotate(${angle.toFixed(1)} 100 62)`,
+            fill: 'url(#grad-muzzle-cone)',
+        }));
+    }
+}
+
+/**
+ * Fire the flash: the held peak, then the release.
+ *
+ * Driven by the Web Animations API, not CSS animations, for the same reason the
+ * cylinder is: `effects.css` clamps every CSS `animation-duration` to 0.01ms
+ * under prefers-reduced-motion, which silently reduced this to a flash nobody
+ * could see. Honouring that preference is right, but it has to be an explicit
+ * choice rather than an animation that fires and paints nothing, so the check is
+ * done here and the timing is set in JS where nothing can rewrite it. Matches
+ * how `fx.js` gates its particles.
+ *
+ * The one bloom this used to be is now the slowest of five layers, and the
+ * fastest of them is gone in three frames. That spread is the whole difference:
+ * a single 330ms ease has no instant in it to be startled by.
+ *
+ * @param {object} parts the flash nodes from buildRevolver
+ * @param {() => void} onRelease run when the held frame breaks
+ */
+function fireMuzzleFlash({ flash, core, rays, shock, occlude }, onRelease) {
+    if (reducedMotion()) {
+        onRelease();
+        return;
+    }
+
+    cutRays(rays);
+
+    /*
+     * The held frame, set rather than animated: for HITSTOP_MS the flash is a
+     * still picture with the gun behind it. `fill: 'forwards'` on a zero-length
+     * animation is what pins it there without touching inline styles, so the
+     * release animations below start from a state nothing has to clean up.
+     */
+    const holds = [];
+    const hold = (node, keyframe) =>
+        holds.push(node.animate([keyframe], { duration: HITSTOP_MS, fill: 'forwards' }));
+
+    hold(occlude, { opacity: 1 });
+    hold(core, { opacity: 1, transform: 'scale(1.05)' });
+    hold(flash, { opacity: 1, transform: 'scale(1.15)' });
+    hold(rays, { opacity: 1, transform: 'scale(1)' });
+    hold(shock, { opacity: 0, transform: 'scale(.3)' });
+
+    // `after` rather than a bare setTimeout so leaving the table mid-shot takes
+    // the release with it: clearTimers() owns everything this scene starts
+    after(HITSTOP_MS, () => {
+        /*
+         * Drop the holds before animating out. They fill forwards, and a
+         * forwards fill outranks a finished animation in the cascade: leaving
+         * them in place would snap every layer back to full opacity the instant
+         * the release ended, which is a flash that never goes away.
+         */
+        holds.forEach((a) => a.cancel());
+
+        onRelease();
+
+        // the sheet of light goes first, uncovering the struck chamber
+        occlude.animate(
+            [{ opacity: 1 }, { opacity: 0 }],
+            { duration: 130, easing: 'linear' },
+        );
+        // and the core with it: three frames, straight out, no curve
+        core.animate(
+            [
+                { opacity: 1, transform: 'scale(1.05)' },
+                { opacity: 0, transform: 'scale(1.9)' },
+            ],
+            { duration: 90, easing: 'linear' },
+        );
+        // the spikes collapse rather than fade: powder burning out
+        rays.animate(
+            [
+                { opacity: 1, transform: 'scale(1)' },
+                { opacity: .7, transform: 'scale(1.28)', offset: .3 },
+                { opacity: 0, transform: 'scale(.42)' },
+            ],
+            { duration: 180, easing: 'cubic-bezier(.3,.7,.4,1)' },
+        );
+        // the hairline leaves the muzzle and keeps going
+        shock.animate(
+            [
+                { opacity: .95, transform: 'scale(.3)' },
+                { opacity: 0, transform: 'scale(5.4)' },
+            ],
+            { duration: 420, easing: 'cubic-bezier(.1,.85,.25,1)' },
+        );
+        // the bloom is the only slow part, and now it is the tail rather than
+        // the whole effect
+        flash.animate(
+            [
+                { opacity: 1, transform: 'scale(1.15)' },
+                { opacity: 0, transform: 'scale(3.4)' },
+            ],
+            { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' },
+        );
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -74,7 +225,7 @@ function svgEl(tag, attrs) {
  */
 function buildRevolver(spentCount) {
     el.revolverStage.innerHTML = '';
-    el.revolverStage.classList.remove('is-firing');
+    el.revolverStage.classList.remove('is-firing', 'is-punched');
 
     const svg = svgEl('svg', { class: 'revolver-svg', viewBox: '0 0 200 200' });
 
@@ -174,12 +325,61 @@ function buildRevolver(spentCount) {
     }));
     svg.appendChild(mark);
 
-    const flashWrap = document.createElement('div');
-    flashWrap.className = 'revolver-flash';
-    flashWrap.appendChild(Object.assign(document.createElement('div'), { className: 'revolver-flash__core' }));
+    /*
+     * The muzzle flash, drawn in the SVG and sitting outside the cylinder group
+     * so it does not turn with it.
+     *
+     * (100, 62) is the chamber under the index mark: the centre at (100, 108)
+     * less the 46 chamber radius. Because it is a sibling in the same viewBox,
+     * it is over the fired chamber by construction, and scales with the stage
+     * for free. It was an absolutely positioned HTML div before, placed from JS
+     * on every shot, which meant its position depended on the flash layer's
+     * containing block, an inline style landing, and a getScreenCTM conversion.
+     * All three had to be right and there was no way to check them.
+     */
+    /*
+     * The spikes. Empty until the shot: their number, length, width and angles
+     * are re-rolled in fireMuzzleFlash() so that consecutive shots do not paint
+     * the same star, which is most of what stopped the old single circle from
+     * reading as an event.
+     */
+    const rays = svgEl('g', { class: 'revolver-rays' });
+    svg.appendChild(rays);
 
-    el.revolverStage.append(svg, flashWrap);
-    return { svg, cylinder, mark, rounds, strikes, flashWrap };
+    // the shockwave leaving the muzzle: one hairline, expanding
+    const shock = svgEl('circle', {
+        class: 'revolver-shock', cx: '100', cy: '62', r: '18',
+        fill: 'none', stroke: '#fff3cf', 'stroke-width': '2.4',
+    });
+    svg.appendChild(shock);
+
+    const flash = svgEl('circle', {
+        class: 'revolver-flash', cx: '100', cy: '62', r: '44',
+        fill: 'url(#grad-muzzle)',
+    });
+    svg.appendChild(flash);
+
+    // the clipped white centre, over the bloom
+    const core = svgEl('circle', {
+        class: 'revolver-core', cx: '100', cy: '62', r: '26',
+        fill: 'url(#grad-muzzle-core)',
+    });
+    svg.appendChild(core);
+
+    /*
+     * Last, so it is over everything: the sheet of light that hides the gun for
+     * the couple of frames the shot takes. Appended after the cylinder rather
+     * than composited under it on purpose, because an effect you can see the
+     * mechanism through is an effect the eye discounts.
+     */
+    const occlude = svgEl('circle', {
+        class: 'revolver-occlude', cx: '100', cy: '100', r: '104',
+        fill: 'url(#grad-muzzle-occlude)',
+    });
+    svg.appendChild(occlude);
+
+    el.revolverStage.append(svg);
+    return { svg, cylinder, mark, rounds, strikes, flash, core, rays, shock, occlude };
 }
 
 /* ------------------------------------------------------------------ */
@@ -235,7 +435,8 @@ export function playRoulette(data, targetAfter) {
         seed: data.rouletteSeed,
         chambersBefore: data.chambersBefore,
     });
-    const { svg, cylinder, mark, rounds, strikes, flashWrap } = buildRevolver(plan.spentCount);
+    const parts = buildRevolver(plan.spentCount);
+    const { svg, cylinder, mark, rounds, strikes } = parts;
 
     openModal(el.rouletteModal);
 
@@ -290,54 +491,78 @@ export function playRoulette(data, targetAfter) {
 
     after(plan.fireAt, () => {
         /*
-         * The shot comes out of the chamber under the mark, not the middle of
-         * the cylinder.
-         *
-         * That chamber is always at the same place on the plate, whichever one
-         * it is: the mark is at twelve o'clock and the cylinder turns beneath
-         * it, so in viewBox terms the shot is always (100, 62), the centre
-         * (100, 108) less the 46 chamber radius. Do NOT get this from the
-         * chamber element's own getBoundingClientRect: that reports where the
-         * chamber was drawn, and only picks up the rotation once the transform
-         * has actually been committed, so it hands back the pre-spin position
-         * and the flash goes off over the wrong hole.
-         *
-         * getScreenCTM does the viewBox-to-screen mapping including the
-         * preserveAspectRatio letterboxing, so this survives any stage size.
+         * The flash itself needs no positioning: it is an SVG sibling pinned to
+         * the fired chamber. This is only for the canvas particles, which live
+         * in viewport space. getScreenCTM does the viewBox-to-screen mapping
+         * including the preserveAspectRatio letterboxing, so it holds at any
+         * stage size.
          */
         const shot = new DOMPoint(100, 62).matrixTransform(svg.getScreenCTM());
         const shotX = shot.x;
         const shotY = shot.y;
-
-        const stage = el.revolverStage.getBoundingClientRect();
-        const core = flashWrap.querySelector('.revolver-flash__core');
-        core.style.left = `${shotX - stage.left}px`;
-        core.style.top = `${shotY - stage.top}px`;
-
-        if (lethal) {
-            el.revolverStage.classList.add('is-firing');
-            flashWrap.classList.add('is-on');
-            sfx.gunshot();
-            fx.flash('#ffdca8', 0.85, 260);
-            fx.shake(targetIsMe ? 26 : 16);
-            fx.muzzleFlash(shotX, shotY);
-            after(300, () => fx.flash('#ff2f4e', 0.22, 700));
-            after(180, () => sfx.eliminate());
-        } else {
-            sfx.dryFire();
-            fx.shake(5);
-            fx.smokePuff(shotX, shotY);
-        }
+        // where sparks and the spent case come to rest: the foot of the stage,
+        // so debris settles inside the scene instead of falling past the dialog
+        const floorY = el.revolverStage.getBoundingClientRect().bottom - 4;
 
         /*
          * That round is gone, whichever way it went. Spending it here rather
          * than drawing the cylinder post-shot is what ties the picture to the
          * rules: the chamber you were just looking at is now one of the struck
          * ones, and next time round there is one fewer.
+         *
+         * On a lethal shot this happens underneath the occluder, so the cross
+         * and the empty chamber are already there when the light clears rather
+         * than appearing in front of it. The change is hidden inside the event.
          */
-        rounds[plan.landingChamber]?.classList.add('is-spent');
-        strikes[plan.landingChamber]?.classList.add('is-shown');
-        mark.classList.remove('is-striking');
+        const spendRound = () => {
+            rounds[plan.landingChamber]?.classList.add('is-spent');
+            strikes[plan.landingChamber]?.classList.add('is-shown');
+            mark.classList.remove('is-striking');
+        };
+
+        if (lethal) {
+            /*
+             * Everything below lands on this one frame: the audio transient, the
+             * white blow-out, the peak of the flash and the first particle. A few
+             * milliseconds of drift between the bang and the picture is the
+             * difference between a gunshot and a cartoon, so none of it is
+             * deferred and the recoil is the only part that waits.
+             */
+            sfx.gunshot();
+            fx.flashPunch('#ffdca8', 0.85, 260);
+            /*
+             * Gated here rather than in the stylesheet. The reduced-motion block
+             * in effects.css only clamps animations, and this is a static filter:
+             * it would sit there blowing the revolver out at 150% brightness for
+             * everyone who asked for less, which is the opposite of the ask.
+             */
+            if (!reducedMotion()) el.revolverStage.classList.add('is-punched');
+            fx.muzzleFlash(shotX, shotY, { floorY });
+            fx.freeze(HITSTOP_MS);
+            spendRound();
+
+            /*
+             * The kick and the camera come out of the freeze, not into it. Held
+             * first, then thrown: the shake reads as the release of something
+             * that was stopped rather than as a wobble that happened to start.
+             */
+            fireMuzzleFlash(parts, () => {
+                el.revolverStage.style.setProperty(
+                    '--recoil-x', `${(Math.random() < 0.5 ? -1 : 1) * (7 + Math.random() * 6)}px`,
+                );
+                el.revolverStage.classList.add('is-firing');
+                fx.shake(targetIsMe ? 30 : 19);
+            });
+
+            after(HITSTOP_MS + 60, () => el.revolverStage.classList.remove('is-punched'));
+            after(300, () => fx.bloodVignette(targetIsMe ? 0.95 : 0.7, 1500));
+            after(180, () => sfx.eliminate());
+        } else {
+            sfx.dryFire();
+            fx.shake(6);
+            fx.smokePuff(shotX, shotY);
+            spendRound();
+        }
     });
 
     after(plan.fireAt + 260, () => {

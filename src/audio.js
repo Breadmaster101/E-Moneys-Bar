@@ -178,12 +178,31 @@ export const sfx = {
         tone({ at: 0.24, freq: 750, type: 'sine', dur: 0.45, gain: 0.045 });
     },
 
-    /** did not survive */
+    /**
+     * did not survive
+     *
+     * Layered the way the picture is: a crack, a body, and something you feel
+     * rather than hear. The crack is deliberately the shortest thing in the whole
+     * sound board, because the transient has to land on the same frame as the
+     * white blow-out in roulette.js; anything with an attack on it would arrive
+     * late and read as a firework.
+     */
     gunshot() {
+        // the crack: 2ms of full-band noise, no envelope worth the name
+        noise({ at: 0, dur: 0.02, type: 'highpass', freq: 1200, gain: 0.85 });
         noise({ dur: 0.42, type: 'lowpass', freq: 8000, gain: 0.75, sweepTo: 260 });
         noise({ at: 0.005, dur: 0.16, type: 'highpass', freq: 3000, gain: 0.45 });
         tone({ freq: 130, to: 28, type: 'sawtooth', dur: 0.5, gain: 0.4 });
         tone({ at: 0.01, freq: 62, to: 20, type: 'sine', dur: 0.7, gain: 0.35 });
+        /*
+         * The sub. Below about 45Hz a laptop speaker reproduces almost none of
+         * this, which is the point: on anything with a woofer or a pair of
+         * headphones it is the part that makes the shot feel like it has mass,
+         * and on speakers that cannot render it nothing is missing. Two layers so
+         * it has a floor rather than a pitch.
+         */
+        tone({ at: 0, freq: 44, to: 17, type: 'sine', dur: 0.85, gain: 0.5, attack: 0.002 });
+        tone({ at: 0.008, freq: 88, to: 30, type: 'triangle', dur: 0.4, gain: 0.22, attack: 0.002 });
         // tail slap
         noise({ at: 0.13, dur: 0.7, type: 'lowpass', freq: 1600, gain: 0.13, sweepTo: 180 });
     },
