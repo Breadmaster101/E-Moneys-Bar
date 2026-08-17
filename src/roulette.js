@@ -72,12 +72,17 @@ function svgEl(tag, attrs) {
  * How long the picture is held at the moment of the shot, in ms.
  *
  * The freeze is the reason the rest of this reads as an impact. Everything
- * arrives on one frame and then nothing moves for a twentieth of a second: the
+ * arrives on one frame and then nothing moves for a fraction of a second: the
  * eye gets an instant to take the peak in, and the release afterwards lands
  * against something. Long enough to register, short enough that it is felt
  * rather than seen as a stutter.
+ *
+ * Came down from 70ms with the rest of the envelope. A hold is dead air, and it
+ * only reads as weight while the decay after it is long enough to be worth
+ * bracing for; against a release that is now a quarter of what it was, 70ms of
+ * nothing moving was most of the effect and it read as the frame having dropped.
  */
-const HITSTOP_MS = 70;
+const HITSTOP_MS = 45;
 
 const rand = (a, b) => a + Math.random() * (b - a);
 
@@ -90,6 +95,12 @@ const rand = (a, b) => a + Math.random() * (b - a);
  * the dark, rotated onto its own angle; the gradient runs base-to-tip inside
  * each one's own box, so it is hot where it leaves the chamber and gone by the
  * point no matter which way it is turned.
+ *
+ * Lengths are set against the chamber, which is r18 in viewBox units: the long
+ * spike reaches about three chamber radii and the rest under two, so the widest
+ * star a shot can cut is a little over two chamber diameters across. Spikes that
+ * ran to 150 units put the star across the whole cylinder, which stopped reading
+ * as light coming out of one hole and started reading as the gun being lit.
  */
 function cutRays(rays) {
     rays.innerHTML = '';
@@ -101,8 +112,8 @@ function cutRays(rays) {
         // evenly spaced nor clumped
         const angle = (base + (i / count) * Math.PI * 2 + rand(-0.34, 0.34)) * (180 / Math.PI);
         // one spike per shot is a long one: an even star reads as a decoration
-        const len = i === 0 ? rand(96, 150) : rand(34, 92);
-        const half = rand(4, 11);
+        const len = i === 0 ? rand(34, 52) : rand(14, 32);
+        const half = rand(2.5, 6);
 
         rays.appendChild(svgEl('path', {
             d: `M${100 - half} 62 L100 ${62 - len} L${100 + half} 62 Z`,
@@ -167,10 +178,21 @@ function fireMuzzleFlash({ flash, core, rays, shock, occlude }, onRelease) {
 
         onRelease();
 
+        /*
+         * Durations are set by how far each layer actually travels, not picked
+         * to feel right in isolation. Pinning the flash onto the chamber cut
+         * every layer's travel by about three, and leaving these at their old
+         * values cut the expansion rate by the same three: the picture was the
+         * right size and crawled, because a bloom covering a quarter of the
+         * ground in the same time is a quarter of the speed. Each one below is
+         * back to roughly the units-per-ms it used to run at, which is the thing
+         * the eye was reading as speed all along.
+         */
+
         // the sheet of light goes first, uncovering the struck chamber
         occlude.animate(
             [{ opacity: 1 }, { opacity: 0 }],
-            { duration: 130, easing: 'linear' },
+            { duration: 80, easing: 'linear' },
         );
         // and the core with it: three frames, straight out, no curve
         core.animate(
@@ -178,7 +200,7 @@ function fireMuzzleFlash({ flash, core, rays, shock, occlude }, onRelease) {
                 { opacity: 1, transform: 'scale(1.05)' },
                 { opacity: 0, transform: 'scale(1.9)' },
             ],
-            { duration: 90, easing: 'linear' },
+            { duration: 55, easing: 'linear' },
         );
         // the spikes collapse rather than fade: powder burning out
         rays.animate(
@@ -187,24 +209,29 @@ function fireMuzzleFlash({ flash, core, rays, shock, occlude }, onRelease) {
                 { opacity: .7, transform: 'scale(1.28)', offset: .3 },
                 { opacity: 0, transform: 'scale(.42)' },
             ],
-            { duration: 180, easing: 'cubic-bezier(.3,.7,.4,1)' },
+            { duration: 90, easing: 'cubic-bezier(.3,.7,.4,1)' },
         );
-        // the hairline leaves the muzzle and keeps going
+        /*
+         * The hairline leaves the muzzle and keeps going. It ends at 3.4x of r10
+         * rather than 5.4x of r18: the old ring finished wider than the frame,
+         * so the last third of its travel was a hoop expanding around the whole
+         * revolver rather than an edge leaving a barrel.
+         */
         shock.animate(
             [
                 { opacity: .95, transform: 'scale(.3)' },
-                { opacity: 0, transform: 'scale(5.4)' },
+                { opacity: 0, transform: 'scale(3.4)' },
             ],
-            { duration: 420, easing: 'cubic-bezier(.1,.85,.25,1)' },
+            { duration: 170, easing: 'cubic-bezier(.1,.85,.25,1)' },
         );
         // the bloom is the only slow part, and now it is the tail rather than
         // the whole effect
         flash.animate(
             [
                 { opacity: 1, transform: 'scale(1.15)' },
-                { opacity: 0, transform: 'scale(3.4)' },
+                { opacity: 0, transform: 'scale(2.4)' },
             ],
-            { duration: 340, easing: 'cubic-bezier(.16,1,.3,1)' },
+            { duration: 130, easing: 'cubic-bezier(.16,1,.3,1)' },
         );
     });
 }
@@ -349,32 +376,39 @@ function buildRevolver(spentCount) {
 
     // the shockwave leaving the muzzle: one hairline, expanding
     const shock = svgEl('circle', {
-        class: 'revolver-shock', cx: '100', cy: '62', r: '18',
+        class: 'revolver-shock', cx: '100', cy: '62', r: '10',
         fill: 'none', stroke: '#fff3cf', 'stroke-width': '2.4',
     });
     svg.appendChild(shock);
 
     const flash = svgEl('circle', {
-        class: 'revolver-flash', cx: '100', cy: '62', r: '44',
+        class: 'revolver-flash', cx: '100', cy: '62', r: '21',
         fill: 'url(#grad-muzzle)',
     });
     svg.appendChild(flash);
 
     // the clipped white centre, over the bloom
     const core = svgEl('circle', {
-        class: 'revolver-core', cx: '100', cy: '62', r: '26',
+        class: 'revolver-core', cx: '100', cy: '62', r: '13',
         fill: 'url(#grad-muzzle-core)',
     });
     svg.appendChild(core);
 
     /*
-     * Last, so it is over everything: the sheet of light that hides the gun for
-     * the couple of frames the shot takes. Appended after the cylinder rather
-     * than composited under it on purpose, because an effect you can see the
-     * mechanism through is an effect the eye discounts.
+     * Last, so it is over everything: the sheet of light that hides the chamber
+     * for the couple of frames the shot takes. Appended after the cylinder
+     * rather than composited under it on purpose, because an effect you can see
+     * the mechanism through is an effect the eye discounts.
+     *
+     * On the muzzle, not on the frame. It used to be r104 about the centre pin,
+     * which whited out all six chambers off one round going off; its actual job
+     * is to hide the chamber that fired while the round vanishes and the cross
+     * lands, and that chamber is r18 at the muzzle. r30 covers it with room for
+     * the falloff and leaves the rest of the cylinder visible, so the flash
+     * stays something happening at one hole in the gun.
      */
     const occlude = svgEl('circle', {
-        class: 'revolver-occlude', cx: '100', cy: '100', r: '104',
+        class: 'revolver-occlude', cx: '100', cy: '62', r: '30',
         fill: 'url(#grad-muzzle-occlude)',
     });
     svg.appendChild(occlude);
@@ -524,13 +558,18 @@ export function playRoulette(data, targetAfter) {
         if (lethal) {
             /*
              * Everything below lands on this one frame: the audio transient, the
-             * white blow-out, the peak of the flash and the first particle. A few
-             * milliseconds of drift between the bang and the picture is the
-             * difference between a gunshot and a cartoon, so none of it is
-             * deferred and the recoil is the only part that waits.
+             * peak of the flash and the first particle. A few milliseconds of
+             * drift between the bang and the picture is the difference between a
+             * gunshot and a cartoon, so none of it is deferred and the recoil is
+             * the only part that waits.
+             *
+             * No fx.flashPunch here. That was a full-viewport wash, which put
+             * the brightest part of the shot everywhere except the barrel and
+             * covered the revolver at the one moment the table is looking at it.
+             * The blow-out now happens where the round does: the occluder over
+             * the fired chamber, and the exposure punch on the gun below.
              */
             sfx.gunshot();
-            fx.flashPunch('#ffdca8', 0.85, 260);
             /*
              * Gated here rather than in the stylesheet. The reduced-motion block
              * in effects.css only clamps animations, and this is a static filter:

@@ -129,11 +129,20 @@
 }
 
 /* ---------------- Particle canvas ---------------- */
+/*
+   Above .modal (1000), below the server pill (1100) and the toasts (1200).
+   Everything this canvas draws is thrown by something happening inside a
+   dialog: the muzzle flash comes off the revolver on the roulette stage, the
+   confetti off the game-over box. At 900 all of it painted under the dialog and
+   its near-opaque backdrop, so the shot had no particles at all and the smoke
+   only became visible when Continue took the modal away, seconds late and
+   already fading. This canvas is the top of the effects stack, not the bottom.
+*/
 
 #fx-canvas {
     position: fixed;
     inset: 0;
-    z-index: 900;
+    z-index: 1010;
     width: 100%;
     height: 100%;
     pointer-events: none;
@@ -144,7 +153,7 @@
 #fx-flash {
     position: fixed;
     inset: 0;
-    z-index: 950;
+    z-index: 1030;
     opacity: 0;
     pointer-events: none;
     background: #fff;
@@ -156,12 +165,16 @@
    The seconds after a lethal shot. Sits above the particle canvas but below the
    impact flash, and is clear through the middle so the table stays readable
    while the edges close in. Driven by fx.bloodVignette().
+
+   Above the modal for the same reason the canvas is: it plays out while the
+   roulette dialog is still up, and a vignette underneath a backdrop that is
+   already 90% black is a vignette nobody sees.
 */
 
 #fx-blood {
     position: fixed;
     inset: 0;
-    z-index: 940;
+    z-index: 1020;
     opacity: 0;
     pointer-events: none;
     background:

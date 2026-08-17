@@ -253,15 +253,15 @@
  * the gun while all of that happens.
  *
  * These all take transform-origin in viewBox coordinates rather than
- * `transform-box: fill-box` like the bloom above, because two of them are not
- * centred on the muzzle: the ray group's own box is whatever the spikes happen to
- * span this shot, and the occluder is centred on the frame. Naming the muzzle
- * point outright is the only version that stays correct when the geometry is
- * re-rolled per shot.
+ * `transform-box: fill-box` like the bloom above, because the ray group's own box
+ * is whatever the spikes happen to span this shot, so fill-box would grow it from
+ * a centre that moves per shot. Naming the muzzle point outright is the only
+ * version that stays correct when the geometry is re-rolled.
  */
 .revolver-core,
 .revolver-rays,
-.revolver-shock {
+.revolver-shock,
+.revolver-occlude {
     opacity: 0;
     pointer-events: none;
     transform-origin: 100px 62px;
@@ -275,12 +275,6 @@
  */
 .revolver-shock {
     vector-effect: non-scaling-stroke;
-}
-
-.revolver-occlude {
-    opacity: 0;
-    pointer-events: none;
-    transform-origin: 100px 100px;
 }
 
 /* the bloom itself is fireMuzzleFlash() in roulette.js: a CSS animation here

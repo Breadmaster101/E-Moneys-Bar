@@ -191,19 +191,24 @@ export function muzzleFlash(x, y, opts = {}) {
     const axis = rand(-Math.PI, Math.PI);
 
     /*
-     * Blown-out core. Huge, white, and dead within about four frames: this is
-     * the part that is over before you can look at it, which is exactly why the
-     * shot registers as bright rather than as glowing.
+     * Blown-out core. White and dead within about four frames: this is the part
+     * that is over before you can look at it, which is exactly why the shot
+     * registers as bright rather than as glowing.
+     *
+     * Kept to roughly a chamber's width. These are viewport pixels and the
+     * revolver renders at about one pixel per viewBox unit, so radii of 16 to 30
+     * were painting a white disc wider than the cylinder from a point that is
+     * meant to be one chamber mouth.
      */
     for (let i = 0; i < 7; i++) {
         spawn({
-            x: x + rand(-5, 5), y: y + rand(-5, 5),
+            x: x + rand(-3, 3), y: y + rand(-3, 3),
             vx: rand(-40, 40), vy: rand(-40, 40),
-            size: rand(16, 30),
+            size: rand(7, 13),
             maxLife: rand(0.05, 0.1),
             drag: 0.85,
             color: '#ffffff',
-            glow: 34,
+            glow: 22,
             shrink: true,
         });
     }
@@ -234,6 +239,13 @@ export function muzzleFlash(x, y, opts = {}) {
      * The plume: unburnt powder pushed out of the barrel towards the viewer, so
      * it grows in place instead of travelling. Tinted warm while it is lit by
      * the flash it came out of.
+     *
+     * Which is the constraint on how long it can live: it is only warm because
+     * something is lighting it, and that light is now gone in about 170ms. At
+     * 0.4s it outlasted the flash and went on glowing on its own, so it became
+     * the slowest bright thing at the muzzle and took the speed out of the shot
+     * it was supposed to be trailing. Past this it is grey, which is the smoke
+     * below.
      */
     for (let i = 0; i < 14; i++) {
         const a = axis + rand(-0.8, 0.8);
@@ -241,11 +253,11 @@ export function muzzleFlash(x, y, opts = {}) {
             x: x + rand(-6, 6), y: y + rand(-6, 6),
             vx: Math.cos(a) * rand(30, 150),
             vy: Math.sin(a) * rand(30, 150),
-            size: rand(10, 22),
-            maxLife: rand(0.22, 0.4),
+            size: rand(7, 15),
+            maxLife: rand(0.12, 0.22),
             drag: 0.9,
             color: 'rgba(255,196,110,0.5)',
-            grow: 40,
+            grow: 26,
             alphaScale: 0.8,
         });
     }
