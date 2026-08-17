@@ -61,10 +61,11 @@ src/
   timer.js          turn clock (visual countdown + host enforcement)
   audio.js          every sound, synthesised with WebAudio: no asset files
   fx.js             particles, screen shake, colour flashes
+  motion.js         the one reduced-motion decision, OS default + player override
   toast.js          notices and the confirm dialog
   log.js            the game log panel
   icons.js          engraved line icons (symbols live in index.html)
-  topbar.js         the floating controls (back, sound, rules, log)
+  topbar.js         the floating controls (back, sound, motion, rules, log)
 tools/
   devserver.py      no-cache static server for local development
   lobby.js          name entry, hosting, joining, table options

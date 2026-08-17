@@ -2,7 +2,7 @@
  * seats.js: opponents around the table, plus your own status plate.
  */
 
-import { el } from './dom.js';
+import { el, isModalOpen } from './dom.js';
 import { REVOLVER_CHAMBERS, SEAT_LAYOUTS } from './constants.js';
 import { gameState, localPlayer, colorFor, initialsFor } from './state.js';
 import { createCard } from './cards.js';
@@ -10,6 +10,46 @@ import { icon } from './icons.js';
 
 /** playerId -> was eliminated last render, so we can play the death beat once */
 const wasEliminated = new Map();
+
+/*
+ * A death arrives in state the moment the revolver resolves, which is several
+ * seconds before the modal comes off the screen. Painting the beat there means
+ * painting it behind a full-viewport backdrop: it runs, it finishes, and the
+ * board is still covered when it does. So the map is only advanced once the
+ * table is actually in view; until then the player stays marked alive and the
+ * death is held, and the repaint after the modal closes is what spends it.
+ *
+ * Game over counts as cover too. The killing shot in a two-hander goes straight
+ * from the revolver to the result, and a beat played under that dialog is as
+ * unseen as one played under the other; it stays owed, and the rematch clears
+ * it when everyone comes back alive.
+ */
+const canShowDeath = () =>
+    el.game.classList.contains('is-active')
+    && !isModalOpen(el.rouletteModal)
+    && !isModalOpen(el.gameOverModal);
+
+/**
+ * Marks `node` for whichever elimination state `player` is in, and reports
+ * whether this is the render that gets to play the death beat.
+ */
+function applyElimination(node, player) {
+    if (!player.eliminated) {
+        // no-ops on a freshly built seat; the self plate is reused across games
+        node.classList.remove('is-out', 'is-dying');
+        wasEliminated.set(player.id, false);
+        return false;
+    }
+
+    node.classList.add('is-out');
+
+    // pending: seen alive on an earlier render, so the death is still owed
+    const pending = wasEliminated.get(player.id) === false;
+    if (pending && !canShowDeath()) return false;
+
+    wasEliminated.set(player.id, true);
+    return pending;
+}
 
 function revolverNode(chambersLeft) {
     const wrap = document.createElement('div');
@@ -93,11 +133,8 @@ export function renderSeats() {
         if (player.id === gameState.currentPlayerId && gameState.gamePhase === 'playing') {
             seat.classList.add('is-turn');
         }
-        if (player.eliminated) {
-            seat.classList.add('is-out');
-            if (wasEliminated.get(player.id) === false) seat.classList.add('is-dying');
-        }
-        wasEliminated.set(player.id, !!player.eliminated);
+        // a fresh node every render, so the class alone starts the animation
+        if (applyElimination(seat, player)) seat.classList.add('is-dying');
 
         seat.appendChild(miniFan(player.eliminated ? 0 : player.cardCount ?? 0));
 
@@ -131,7 +168,15 @@ export function renderSelfPlate() {
 
     el.selfPlate.hidden = false;
     el.selfPlate.classList.toggle('is-turn', gameState.currentPlayerId === me.id);
-    el.selfPlate.classList.toggle('is-out', !!me.eliminated);
+
+    // the plate outlives the render, so the class has to be taken off and the
+    // layout flushed before it will run a second time
+    if (applyElimination(el.selfPlate, me)) {
+        el.selfPlate.classList.remove('is-dying');
+        void el.selfPlate.offsetWidth;
+        el.selfPlate.classList.add('is-dying');
+    }
+
     el.selfPlate.innerHTML = '';
 
     const meta = document.createElement('div');

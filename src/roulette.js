@@ -22,6 +22,7 @@
  */
 
 import { el, openModal } from './dom.js';
+import { reducedMotion } from './motion.js';
 import { REVOLVER_CHAMBERS, SUIT_SYMBOLS, ROULETTE_LEAD_IN_MS, planRoulette } from './constants.js';
 import { localPlayer } from './state.js';
 import { createCard } from './cards.js';
@@ -64,8 +65,8 @@ function svgEl(tag, attrs) {
     return node;
 }
 
-const reducedMotion = () =>
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+// re-exported shape kept identical; the decision now lives in motion.js so the
+// topbar toggle reaches the revolver as well as the particles
 
 /**
  * How long the picture is held at the moment of the shot, in ms.

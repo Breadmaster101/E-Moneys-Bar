@@ -240,17 +240,29 @@ html.is-shaking #ambience {
 
 /* ---------------- Reduced motion ---------------- */
 
+/*
+ * Two ways in, and the order matters.
+ *
+ * The media query is the default and runs before any script has: someone whose
+ * machine asks for less motion gets it from the first frame. `motion.js` writes
+ * data-motion only when the player has overridden that from the topbar, so the
+ * :not() is what lets an explicit "full" out of the clamp, and the second block
+ * is what lets an explicit "reduced" in on a machine that never asked.
+ *
+ * Under `auto` the attribute is absent and the media query governs alone, which
+ * is why there is no flash of motion while the module loads.
+ */
 @media (prefers-reduced-motion: reduce) {
 
-    *,
-    *::before,
-    *::after {
+    :root:not([data-motion="full"]) *,
+    :root:not([data-motion="full"]) *::before,
+    :root:not([data-motion="full"]) *::after {
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
     }
 
-    #grain {
+    :root:not([data-motion="full"]) #grain {
         animation: none;
     }
 
@@ -259,8 +271,25 @@ html.is-shaking #ambience {
        move. Zeroing the transform is belt and braces: nothing should be able to
        leave the table sitting off-centre.
     */
-    html.is-shaking #app,
-    html.is-shaking #ambience {
+    html.is-shaking:not([data-motion="full"]) #app,
+    html.is-shaking:not([data-motion="full"]) #ambience {
         transform: none;
     }
+}
+
+:root[data-motion="reduced"] *,
+:root[data-motion="reduced"] *::before,
+:root[data-motion="reduced"] *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+}
+
+:root[data-motion="reduced"] #grain {
+    animation: none;
+}
+
+html.is-shaking[data-motion="reduced"] #app,
+html.is-shaking[data-motion="reduced"] #ambience {
+    transform: none;
 }

@@ -296,6 +296,37 @@
     background-color: var(--ink-700);
 }
 
+/*
+ * Your own plate is dimmed rather than gutted. The seats can drop to .32 and
+ * grey out because they are only a tally of who is left; this one still has to
+ * be read, so it keeps its contrast and takes the oxblood edge instead.
+ */
+.self-plate.is-out {
+    border-color: var(--oxblood-hot);
+    filter: grayscale(1);
+    opacity: .66;
+}
+
+.self-plate.is-dying {
+    animation: selfPlateDie .8s var(--ease-out) both;
+}
+
+@keyframes selfPlateDie {
+    0% {
+        filter: brightness(1);
+    }
+
+    18% {
+        filter: brightness(2.4) saturate(0);
+        transform: translateY(-3px) scale(1.04);
+    }
+
+    100% {
+        filter: grayscale(1) brightness(.7);
+        opacity: .66;
+    }
+}
+
 .self-plate .seat__avatar {
     width: 42px;
     height: 42px;

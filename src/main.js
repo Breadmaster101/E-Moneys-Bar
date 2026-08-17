@@ -2,7 +2,7 @@
  * main.js: boot, global wiring, keyboard shortcuts.
  */
 
-import { el, openModal, closeModal, isModalOpen } from './dom.js';
+import { el, openModal, closeModal, isModalOpen, MODAL_CLOSE_MS } from './dom.js';
 import { gameState, localPlayer, session, isMyTurn, amEliminated } from './state.js';
 import { connectServer, sendMessage } from './net.js';
 import { handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers } from './game.js';
@@ -15,6 +15,7 @@ import { cancelRoulette } from './roulette.js';
 import { toggleLog } from './log.js';
 import { confirmDialog, isConfirmOpen, dismissConfirm, toast } from './toast.js';
 import { unlock as unlockAudio, toggleMute, isMuted, sfx } from './audio.js';
+import { reducedMotion, toggleMotion, motionPref, systemPrefersReduced } from './motion.js';
 import { setIcon } from './icons.js';
 
 /* ------------------------------------------------------------------ */
@@ -36,6 +37,41 @@ el.soundToggleBtn.addEventListener('click', () => {
     if (!isMuted()) sfx.tap();
 });
 paintSoundButton();
+
+/* ------------------------------------------------------------------ */
+/* motion                                                              */
+/* ------------------------------------------------------------------ */
+
+function paintMotionButton() {
+    const off = reducedMotion();
+    setIcon(el.motionIconUse, off ? 'motion-off' : 'motion-on');
+    el.motionToggleBtn.classList.toggle('is-off', off);
+    el.motionToggleBtn.setAttribute('aria-pressed', String(off));
+    el.motionToggleBtn.title = off ? 'Motion off' : 'Motion on';
+}
+
+el.motionToggleBtn.addEventListener('click', () => {
+    const off = toggleMotion();
+    paintMotionButton();
+    sfx.tap();
+    toast(
+        off ? 'Motion off. Effects will not animate.' : 'Motion on. Full effects.',
+        { type: off ? 'info' : 'success' },
+    );
+});
+paintMotionButton();
+
+/*
+ * Said once, and only to the people it applies to: the machine asked for less
+ * motion, the game obliged, and the way back is this button. Without it the
+ * revolver fires blank-looking rounds and nothing on screen explains why.
+ */
+if (motionPref() === 'auto' && systemPrefersReduced()) {
+    setTimeout(() => toast(
+        'Your system asks for reduced motion, so effects are off. Turn them on here.',
+        { type: 'info', duration: 7000 },
+    ), 900);
+}
 
 /* ------------------------------------------------------------------ */
 /* rules + log                                                         */
@@ -100,7 +136,12 @@ el.continueBtn.addEventListener('click', () => {
     closeModal(el.rouletteModal);
     if (gameState.gamePhase === 'game_over' && !isModalOpen(el.gameOverModal)) {
         openModal(el.gameOverModal);
+        return;
     }
+    // the elimination landed while the revolver was still on screen and has
+    // been held since; repaint once the modal is out of the way so the board
+    // plays it where it can be seen
+    setTimeout(refreshBoard, MODAL_CLOSE_MS + 20);
 });
 
 /* ------------------------------------------------------------------ */

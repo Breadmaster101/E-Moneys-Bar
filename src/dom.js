@@ -46,6 +46,8 @@ export const el = {
     hudRoomCode: $('#hudRoomCode'),
     soundToggleBtn: $('#soundToggleBtn'),
     soundIconUse: $('#soundIconUse'),
+    motionToggleBtn: $('#motionToggleBtn'),
+    motionIconUse: $('#motionIconUse'),
     rulesBtnGame: $('#rulesBtnGame'),
     logToggleBtn: $('#logToggleBtn'),
     turnPill: $('#turn-pill'),
@@ -122,6 +124,9 @@ export const el = {
 /** Show/hide a modal with its transition. Returns nothing. */
 const modalTimers = new WeakMap();
 
+/** How long the close transition runs before the modal leaves the layout. */
+export const MODAL_CLOSE_MS = 280;
+
 export function openModal(modal) {
     clearTimeout(modalTimers.get(modal));
     modal.classList.add('is-open');
@@ -135,7 +140,7 @@ export function closeModal(modal) {
     modal.classList.remove('is-visible');
     modalTimers.set(
         modal,
-        setTimeout(() => modal.classList.remove('is-open'), 280),
+        setTimeout(() => modal.classList.remove('is-open'), MODAL_CLOSE_MS),
     );
 }
 
