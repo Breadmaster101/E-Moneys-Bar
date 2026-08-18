@@ -5,7 +5,12 @@
 import { el, openModal, closeModal, isModalOpen, MODAL_CLOSE_MS } from './dom.js';
 import { gameState, localPlayer, session, isMyTurn, amEliminated } from './state.js';
 import { connectServer, sendMessage } from './net.js';
-import { handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers } from './game.js';
+import {
+    handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers, broadcastReaction,
+} from './game.js';
+import {
+    initReactions, setReactionSender, sendReaction, REACTIONS, isTrayOpen, openTray,
+} from './reactions.js';
 import { showLobby, refreshBoard, isBoardVisible } from './ui.js';
 import { initLobby, goToStep, currentStep } from './lobby.js';
 import { initTopbar, onBack } from './topbar.js';
@@ -15,7 +20,6 @@ import { cancelRoulette } from './roulette.js';
 import { toggleLog } from './log.js';
 import { confirmDialog, isConfirmOpen, dismissConfirm, toast } from './toast.js';
 import { unlock as unlockAudio, toggleMute, isMuted, sfx } from './audio.js';
-import { reducedMotion, toggleMotion, motionPref, systemPrefersReduced } from './motion.js';
 import { setIcon } from './icons.js';
 
 /* ------------------------------------------------------------------ */
@@ -39,41 +43,6 @@ el.soundToggleBtn.addEventListener('click', () => {
 paintSoundButton();
 
 /* ------------------------------------------------------------------ */
-/* motion                                                              */
-/* ------------------------------------------------------------------ */
-
-function paintMotionButton() {
-    const off = reducedMotion();
-    setIcon(el.motionIconUse, off ? 'motion-off' : 'motion-on');
-    el.motionToggleBtn.classList.toggle('is-off', off);
-    el.motionToggleBtn.setAttribute('aria-pressed', String(off));
-    el.motionToggleBtn.title = off ? 'Motion off' : 'Motion on';
-}
-
-el.motionToggleBtn.addEventListener('click', () => {
-    const off = toggleMotion();
-    paintMotionButton();
-    sfx.tap();
-    toast(
-        off ? 'Motion off. Effects will not animate.' : 'Motion on. Full effects.',
-        { type: off ? 'info' : 'success' },
-    );
-});
-paintMotionButton();
-
-/*
- * Said once, and only to the people it applies to: the machine asked for less
- * motion, the game obliged, and the way back is this button. Without it the
- * revolver fires blank-looking rounds and nothing on screen explains why.
- */
-if (motionPref() === 'auto' && systemPrefersReduced()) {
-    setTimeout(() => toast(
-        'Your system asks for reduced motion, so effects are off. Turn them on here.',
-        { type: 'info', duration: 7000 },
-    ), 900);
-}
-
-/* ------------------------------------------------------------------ */
 /* rules + log                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -84,6 +53,20 @@ el.rulesModal.querySelector('.modal__backdrop').addEventListener('click', () => 
 
 el.logToggleBtn.addEventListener('click', () => toggleLog());
 el.logCloseBtn.addEventListener('click', () => toggleLog(false));
+
+/* ------------------------------------------------------------------ */
+/* reactions                                                           */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The host puts its own mark straight on the wire; everyone else asks the host
+ * to. Either way `sendReaction` has already drawn it locally, so neither branch
+ * displays anything.
+ */
+setReactionSender((mark) => {
+    if (localPlayer.isHost) broadcastReaction(localPlayer.id, mark);
+    else sendMessage('PLAYER_REACTION', { mark });
+});
 
 /* ------------------------------------------------------------------ */
 /* playing                                                             */
@@ -218,6 +201,7 @@ window.addEventListener('pagehide', announceDeparture);
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
         if (isConfirmOpen()) { dismissConfirm(); return; }
+        if (isTrayOpen()) { openTray(false); return; }
         if (isModalOpen(el.rulesModal)) { closeModal(el.rulesModal); return; }
         if (el.logPanel.classList.contains('is-open')) { toggleLog(false); return; }
         return;
@@ -226,6 +210,14 @@ document.addEventListener('keydown', (event) => {
     const typing = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName);
     if (typing || !isBoardVisible()) return;
     if (document.querySelector('.modal.is-open')) return;
+
+    // 1-6 send a mark without going near the tray, which is the whole point of
+    // them: reacting should cost less than a turn does
+    if (/^[1-6]$/.test(event.key)) {
+        event.preventDefault();
+        sendReaction(REACTIONS[Number(event.key) - 1].id);
+        return;
+    }
 
     const key = event.key.toUpperCase();
     if (key === 'P' && !el.playBtn.disabled) {
@@ -258,5 +250,6 @@ window.addEventListener('resize', () => {
 
 connectServer();
 initTopbar();
+initReactions();
 initLobby();
 showLobby();

@@ -277,8 +277,8 @@
     vector-effect: non-scaling-stroke;
 }
 
-/* the bloom itself is fireMuzzleFlash() in roulette.js: a CSS animation here
-   would be clamped to 0.01ms by the reduced-motion block in effects.css */
+/* the bloom itself is fireMuzzleFlash() in roulette.js, driven by the Web
+   Animations API so its timing cannot be rewritten from a stylesheet */
 
 /*
  * The single deliberate exception to the no-glow rule in tokens.css. A muzzle
@@ -334,6 +334,181 @@
 
 .gameover-ornament.is-danger {
     color: var(--red-hot);
+}
+
+/* ---------------- The ledger ---------------- */
+
+/*
+ * The night, accounted for. Set left-aligned inside a centred dialog on
+ * purpose: the title above it is a verdict and reads as one, but this is a
+ * document, and a centred column of figures is unreadable as either.
+ */
+.ledger {
+    margin-top: var(--sp-5);
+    padding-top: var(--sp-4);
+    text-align: left;
+    border-top: 1px solid var(--line);
+}
+
+.ledger[hidden] {
+    display: none;
+}
+
+.ledger__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+}
+
+.ledger__title {
+    font-family: var(--font-engraved);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: var(--gold);
+}
+
+.ledger__rounds {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+
+/* ---- honours ---- */
+
+.ledger__honours:not(:empty) {
+    display: grid;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-4);
+}
+
+.honour {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--ink-800);
+    background-image: var(--hatch-fine);
+    border: 1px solid var(--rule-faint);
+    border-left: 3px solid var(--seat-color, var(--rule));
+}
+
+.honour__label {
+    grid-row: 1;
+    align-self: baseline;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--text-faint);
+}
+
+.honour__name {
+    grid-row: 1;
+    font-family: var(--font-engraved);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--seat-color, var(--gold));
+}
+
+/* runs the full width under both, rather than squeezing into the second column */
+.honour__line {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--text-dim);
+}
+
+/* ---- the table ---- */
+
+/*
+ * The figures are never truncated and never given a scroller of their own. The
+ * dialog box is already the one thing on this screen that scrolls, and a second
+ * scrollport nested inside it meant a short window could hide rows behind an
+ * inner scrollbar most people never found. Everything is rendered at full
+ * length; `.modal__box` carries the overflow for all of it.
+ */
+.ledger__figures {
+    border: 1px solid var(--rule-faint);
+}
+
+.ledger__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ledger__table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 8px 10px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+    color: var(--text-faint);
+    background: var(--ink-800);
+    border-bottom: 1px solid var(--rule);
+}
+
+.ledger__table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--rule-faint);
+}
+
+.ledger__table tr:last-child td {
+    border-bottom: 0;
+}
+
+.ledger__num {
+    width: 1%;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.ledger__table th.ledger__num {
+    text-align: right;
+}
+
+.ledger__place {
+    color: var(--text-faint);
+}
+
+/* first place is the only row that gets the engraved voice */
+.ledger__table tr:first-child .ledger__place {
+    font-family: var(--font-engraved);
+    font-size: 15px;
+    color: var(--gold);
+}
+
+.ledger__who {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.ledger__chip {
+    width: 3px;
+    height: 15px;
+    flex: none;
+    background: var(--seat-color, var(--rule));
+}
+
+.ledger__table tr.is-me .ledger__who {
+    color: var(--gold-hot);
 }
 
 .rematch {

@@ -1,15 +1,9 @@
 /**
  * fx.js: screen impact: particles on a full-screen canvas, camera shake,
- * and colour flashes. Everything is opt-out under prefers-reduced-motion.
+ * and colour flashes.
  */
 
 import { el } from './dom.js';
-import { reducedMotion } from './motion.js';
-
-// asked per call, not cached at load: the preference is now something the
-// player can change mid-game from the topbar
-const reduced = () => reducedMotion();
-
 const canvas = el.fxCanvas;
 const ctx = canvas.getContext('2d');
 
@@ -62,7 +56,6 @@ function start() {
 let freezeUntil = 0;
 
 export function freeze(ms = 70) {
-    if (reduced()) return;
     freezeUntil = performance.now() + ms;
     start();
 }
@@ -185,7 +178,6 @@ export function centerOf(node) {
  * @param {{floorY?: number}} [opts] floorY: where debris comes to rest
  */
 export function muzzleFlash(x, y, opts = {}) {
-    if (reduced()) return;
     const floorY = opts.floorY ?? null;
     // the axis this particular shot throws along: fans hang off it below
     const axis = rand(-Math.PI, Math.PI);
@@ -342,7 +334,6 @@ export function muzzleFlash(x, y, opts = {}) {
 }
 
 export function smokePuff(x, y) {
-    if (reduced()) return;
     for (let i = 0; i < 16; i++) {
         const a = rand(-Math.PI, Math.PI);
         spawn({
@@ -375,7 +366,6 @@ export function smokePuff(x, y) {
 }
 
 export function sparks(x, y, color = '#ffb44d', count = 18) {
-    if (reduced()) return;
     for (let i = 0; i < count; i++) {
         const a = rand(-Math.PI, Math.PI);
         const speed = rand(90, 340);
@@ -395,7 +385,6 @@ export function sparks(x, y, color = '#ffb44d', count = 18) {
 }
 
 export function confetti() {
-    if (reduced()) return;
     const colors = ['#ffb44d', '#ffd79a', '#4fe3ff', '#ff5f9e', '#7bea6a', '#ffffff'];
     const w = window.innerWidth;
     for (let i = 0; i < 130; i++) {
@@ -418,7 +407,6 @@ export function confetti() {
 
 /** Warm embers drifting up: used behind the winner. */
 export function embers(count = 40) {
-    if (reduced()) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
     for (let i = 0; i < count; i++) {
@@ -468,7 +456,6 @@ function clearShake() {
  * A shot is one impulse settling, not a shudder.
  */
 export function shake(amplitude = 10, ms = 460) {
-    if (reduced()) return;
     const root = document.documentElement;
     clearShake();
     root.classList.add('is-shaking');
@@ -510,7 +497,6 @@ function clearFlashTimers() {
 }
 
 export function flash(color = '#ffffff', alpha = 0.55, fadeMs = 420) {
-    if (reduced()) return;
     const node = el.fxFlash;
     clearFlashTimers();
     node.style.transition = 'none';
@@ -537,7 +523,6 @@ export function flash(color = '#ffffff', alpha = 0.55, fadeMs = 420) {
  * instant to register and a decay to watch. Intensity is the step, not the ramp.
  */
 export function flashPunch(color = '#ffdca8', alpha = 0.85, fadeMs = 260, coreMs = 55) {
-    if (reduced()) return;
     const node = el.fxFlash;
     clearFlashTimers();
     node.style.transition = 'none';
@@ -566,12 +551,11 @@ export function flashPunch(color = '#ffdca8', alpha = 0.85, fadeMs = 260, coreMs
  * tint carries no dread anyway. Two beats of a vignette do, and they leave the
  * middle of the screen alone.
  *
- * WAAPI rather than CSS for the reason the cylinder uses it: the reduced-motion
- * block in effects.css clamps every CSS animation to 0.01ms, and this is gated
- * on that preference here instead.
+ * WAAPI rather than CSS for the reason the cylinder uses it: a transition needs
+ * a computed "before" value from an earlier frame, and coalesced timers can
+ * land the set in the same frame as the insert.
  */
 export function bloodVignette(peak = 0.9, ms = 1500) {
-    if (reduced()) return;
     const node = el.fxBlood;
     node.getAnimations?.().forEach((a) => a.cancel());
     node.animate(

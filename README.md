@@ -24,8 +24,9 @@ did nothing. `.claude/launch.json` runs the same command.
 
 Multiplayer runs through a Socket.IO relay at `quicklash-server.onrender.com`
 (set in `src/constants.js`). It's a free instance, so the first connection of the
-day can take up to a minute to wake up: the status pill in the corner tells you
-where it's at.
+day can take up to a minute to wake up. An inline `fetch` in `<head>` knocks on
+the relay before the module graph has even been fetched, which takes a bite out
+of that; the status pill in the corner tells you where the rest of it is at.
 
 ## How it's wired
 
@@ -44,32 +45,33 @@ styles/
   board.css         HUD, table, dock, action bar, game log
   cards.css         playing cards and the fanned hand
   players.css       seats, avatars, revolver chambers, tooltips
-  modals.css        dialogs, revolver stage, toasts, server pill
+  reactions.css     the bell, its tray, and the marks it throws
+  modals.css        dialogs, revolver stage, the ledger, toasts, server pill
   responsive.css    desktop-first; everything below adapts down
 src/
   constants.js      tunables: deck, seat layouts, timings, server URL
   state.js          the three shared objects: localPlayer, gameState, session
   dom.js            cached element refs + modal open/close
   net.js            Socket.IO transport and message routing
-  game.js           host-only: deck, turns, roulette, disconnects  ← rules live here
-  ui.js             screen transitions + handlers shared by host and client
+  game.js           host-only: deck, turns, roulette, ledger, disconnects  ← rules live here
+  ui.js             screen transitions, the ledger, handlers shared by host and client
   board.js          table centre, turn indicator, action bar
   hand.js           your cards: the fan, the picking
   seats.js          opponents around the table
   cards.js          card rendering and the card-flight animation
   roulette.js       the cinematic revolver
+  reactions.js      the six marks players can throw at each other
   timer.js          turn clock (visual countdown + host enforcement)
   audio.js          every sound, synthesised with WebAudio: no asset files
   fx.js             particles, screen shake, colour flashes
-  motion.js         the one reduced-motion decision, OS default + player override
   toast.js          notices and the confirm dialog
   log.js            the game log panel
   icons.js          engraved line icons (symbols live in index.html)
-  topbar.js         the floating controls (back, sound, motion, rules, log)
-tools/
-  devserver.py      no-cache static server for local development
+  topbar.js         the floating controls (back, bell, sound, rules, log)
   lobby.js          name entry, hosting, joining, table options
   main.js           boot and global wiring
+tools/
+  devserver.py      no-cache static server for local development
 ```
 
 Circular imports between `net`/`game`/`ui` are intentional and safe: every
@@ -116,6 +118,41 @@ table.
 
 - **Adding a sound**: add a method to `sfx` in `audio.js`. It composes from two
   primitives, `noise()` and `tone()`. Mute state persists in `localStorage`.
+- **Every sound is a one-shot.** There is no bed, no loop and nothing running
+  between events, which is what lets the whole sound board be a set of pure
+  functions over `noise()` and `tone()` with no state to start, stop or duck. If
+  you add something continuous, it needs its own gain node and a
+  `visibilitychange` handler: WebAudio keeps running in a background tab, and a
+  one-shot firing there is fine where a loop is not.
+- **Effects always animate.** There is no motion preference, no toggle and no
+  `prefers-reduced-motion` gate: `fx.js`, `cards.js`, `roulette.js` and
+  `reactions.css` all run unconditionally. This is a deliberate choice against
+  the grain of the platform — the media query exists because motion makes some
+  people ill — so if it is ever revisited, the thing to restore is the media
+  query, not just the button.
+- **Reactions go through the host, always.** A client sends `PLAYER_REACTION`
+  and the host validates the mark, enforces a per-sender cooldown and
+  re-broadcasts `REACTION`. The sender draws its own mark on the way out and
+  `showReaction` drops anything addressed to us on the way back, because
+  `host_broadcast` reaches the room the sender is also in. Adding a mark means
+  adding a `<symbol id="i-rx-…">`, an entry in `REACTIONS`, and a case in
+  `sfx.reaction()`; the array order is also the number key that sends it.
+- **The ledger is host-only and rides on `GAME_OVER`.** `gameState.stats` grows
+  with every play and nobody reads it until the game ends, so it is deliberately
+  not in `broadcastState`. It records counters and never a card: a ledger that
+  could reconstruct a hand would turn the log panel into an oracle. Honours are
+  computed on each client from the same numbers, so there is one implementation
+  of the wording rather than two.
+- **The game-over dialog is a flex column.** Eight players and three honours is
+  taller than a 720px laptop. The ledger's table is the flexible part, honours
+  are dropped by height breakpoint in `responsive.css`, and the rule that has to
+  hold is that the rematch button is never pushed below the fold.
+- **The prewarm URL is duplicated.** The inline `<head>` script in `index.html`
+  hardcodes the relay, because its whole purpose is to fire before any module
+  has loaded and it therefore cannot import `SERVER_URL`. `src/constants.js` is
+  still the source of truth; move the server and you must move both. It knocks
+  on the socket.io handshake path rather than `/`, which serves nothing and
+  would log a 404 before the page has drawn a pixel.
 - **Retiming the roulette**: the beat sheet is at the top of `roulette.js`, but
   the timings live in `planRoulette()` in `constants.js`, and that is the only
   place to change them. The host waits `plan.totalMs` before dealing the next
@@ -187,4 +224,5 @@ table.
 | `P` | Play the selected cards |
 | `L` | Call LIAR |
 | `G` | Toggle the game log |
+| `1`–`6` | Throw a reaction, without opening the tray |
 | `Esc` | Close the top dialog |

@@ -4,7 +4,6 @@
  */
 
 import { SUIT_SYMBOLS, SUIT_IS_RED } from './constants.js';
-import { reducedMotion } from './motion.js';
 
 const VB = '0 0 64 96';
 
@@ -63,7 +62,6 @@ export function createCard(card, { faceUp = true, size = 'full', className = '' 
  */
 export function flyCards(fromNode, toNode, count = 1) {
     if (!fromNode || !toNode || count < 1) return;
-    if (reducedMotion()) return;
 
     const from = fromNode.getBoundingClientRect();
     const to = toNode.getBoundingClientRect();

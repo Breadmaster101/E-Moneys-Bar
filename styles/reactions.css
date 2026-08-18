@@ -1,0 +1,195 @@
+/* ============================================================
+   reactions.css: the bell, its tray, and the marks it throws.
+
+   Two halves that never meet in the DOM. The tray is chrome and
+   lives in the floating controls; the marks are struck onto a
+   fixed layer outside #app so they can be pinned to a seat's
+   screen position without inheriting anything that clips.
+   ============================================================ */
+
+/* ---------------- The bell ---------------- */
+
+.rx-wrap {
+    position: relative;
+    /* the strip itself is pointer-events: none, so this has to claim its own */
+    pointer-events: auto;
+}
+
+.rx-wrap[hidden] {
+    display: none;
+}
+
+#reactionBtn.is-open {
+    color: var(--gold-hot);
+    background: var(--ink-700);
+    border-color: var(--rule-strong);
+    outline-color: var(--rule);
+}
+
+/*
+ * Spent. Inked out rather than faded, because a dimmed control on this plate
+ * reads as broken: the bell is still there, it just has nothing left to give
+ * for another second and a bit.
+ */
+.rx-wrap.is-spent #reactionBtn {
+    color: var(--text-faint);
+    border-color: var(--rule-faint);
+    outline-color: transparent;
+    cursor: default;
+}
+
+.rx-wrap.is-spent .rx-tray {
+    pointer-events: none;
+}
+
+.rx-wrap.is-spent .rx-btn {
+    color: var(--text-faint);
+    border-color: var(--rule-faint);
+}
+
+/* ---------------- The tray ---------------- */
+
+.rx-tray {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    z-index: 70;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-2);
+    width: max-content;
+    padding: var(--sp-3);
+    background-color: var(--ink-850);
+    background-image: var(--hatch-fine);
+    border: 1px solid var(--rule);
+    box-shadow: var(--sh-3);
+}
+
+/* the inset second rule, struck inside: the tray is a small panel */
+.rx-tray::after {
+    content: '';
+    position: absolute;
+    inset: var(--frame-inset);
+    border: 1px solid var(--rule-faint);
+    pointer-events: none;
+}
+
+.rx-tray[hidden] {
+    display: none;
+}
+
+.rx-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: 8px 10px;
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--rule-faint);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    transition: color var(--t-fast), background var(--t-fast), border-color var(--t-fast);
+}
+
+.rx-btn:hover {
+    color: var(--gold-hot);
+    background: var(--ink-700);
+    border-color: var(--rule-strong);
+}
+
+.rx-btn:active {
+    transform: translateY(1px);
+}
+
+.rx-btn .ico {
+    width: 20px;
+    height: 20px;
+    color: var(--gold);
+}
+
+.rx-btn:hover .ico {
+    color: var(--gold-hot);
+}
+
+.rx-btn__label {
+    flex: 1;
+}
+
+.rx-btn kbd {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1;
+    padding: 3px 5px;
+    color: var(--text-faint);
+    border: 1px solid var(--rule-faint);
+}
+
+/* ---------------- The marks ---------------- */
+
+/*
+ * Above the card flight (800) and below the modals (1000): a mark should be
+ * able to cross a card in the air, and should not be able to cross the
+ * revolver.
+ */
+#reaction-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.rx-mark {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    margin: 0;
+    color: var(--seat-color, var(--gold));
+    background-color: var(--ink-900);
+    background-image: var(--hatch);
+    border: 1px solid currentColor;
+    /* struck twice, like every other mark on the plate */
+    outline: 1px solid var(--rule-faint);
+    outline-offset: 2px;
+    box-shadow: var(--sh-2);
+    transform: translate(-50%, -100%);
+    animation: rxFloat 1900ms var(--ease-out) both;
+}
+
+.rx-mark .ico {
+    width: 26px;
+    height: 26px;
+}
+
+@keyframes rxFloat {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -60%) scale(.7);
+    }
+
+    12% {
+        opacity: 1;
+        transform: translate(-50%, -115%) scale(1.06);
+    }
+
+    20% {
+        transform: translate(-50%, -110%) scale(1);
+    }
+
+    70% {
+        opacity: 1;
+        transform: translate(-50%, -128%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -190%) scale(.94);
+    }
+}

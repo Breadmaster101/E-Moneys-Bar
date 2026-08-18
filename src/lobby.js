@@ -47,7 +47,9 @@ export function goToStep(next) {
         setTopbar({ back: true });
         el.roomCodeInput.focus();
     } else {
-        setTopbar({ back: true, roomCode: session.roomCode });
+        // no room code up here: the waiting room prints it on the felt, big,
+        // which is where people are already looking when they read it out
+        setTopbar({ back: true });
         renderWaitroom();
     }
 }

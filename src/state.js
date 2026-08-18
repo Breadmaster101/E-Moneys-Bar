@@ -36,6 +36,10 @@ export const gameState = {
     config: { handSize: HAND_SIZE, turnSeconds: DEFAULT_TURN_SECONDS },
     /** ms remaining on the current turn at the moment this state was sent. */
     turnRemainingMs: 0,
+    /** host only: playerId -> counters for the ledger. Never broadcast as state. */
+    stats: {},
+    roundsPlayed: 0,
+    eliminatedCount: 0,
 };
 
 /** Connection + transient UI bookkeeping. */
@@ -78,6 +82,9 @@ export function resetGameState() {
         rematchReadyStatus: {},
         lastChallengeRouletteTargetId: null,
         turnRemainingMs: 0,
+        stats: {},
+        roundsPlayed: 0,
+        eliminatedCount: 0,
     });
     gameState.config = { handSize: HAND_SIZE, turnSeconds: gameState.config.turnSeconds };
 }

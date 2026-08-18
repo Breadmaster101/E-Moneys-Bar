@@ -219,9 +219,22 @@ export const sfx = {
         noise({ at: 0.02, dur: 0.25, type: 'bandpass', freq: 5200, q: 2, gain: 0.05 });
     },
 
-    /** countdown pip */
-    tick(urgent = false) {
-        tone({ freq: urgent ? 1400 : 1000, type: 'square', dur: 0.045, gain: urgent ? 0.09 : 0.05 });
+    /**
+     * Your own pulse, under the last few seconds of your turn.
+     *
+     * Only ever played for the player whose turn it is: a heartbeat is the one
+     * sound in the game that is not coming from the table, and hearing someone
+     * else's would be nonsense. `p` runs 0 at the top of the urgent window to 1
+     * at zero, and both the weight and the gap between the two thumps follow it,
+     * so the pulse tightens as the clock runs out.
+     */
+    heartbeat(p = 0) {
+        const gap = 0.19 - p * 0.05;
+        const lift = 0.55 + p * 0.65;
+        tone({ freq: 64, to: 33, type: 'sine', dur: 0.14, gain: 0.13 * lift, attack: 0.007 });
+        noise({ dur: 0.06, type: 'lowpass', freq: 220, gain: 0.07 * lift });
+        tone({ at: gap, freq: 55, to: 28, type: 'sine', dur: 0.17, gain: 0.09 * lift, attack: 0.007 });
+        noise({ at: gap, dur: 0.07, type: 'lowpass', freq: 190, gain: 0.05 * lift });
     },
 
     newRound() {
@@ -258,5 +271,51 @@ export const sfx = {
 
     leave() {
         tone({ freq: 660, to: 330, type: 'sine', dur: 0.3, gain: 0.06 });
+    },
+
+    /**
+     * One per reaction mark. These carry the meaning when the mark itself is
+     * across the table and you are looking at your own hand, so each one has to
+     * be identifiable on its own, which is why none of them share a shape.
+     */
+    reaction(mark) {
+        switch (mark) {
+            case 'cheers': // two glasses meeting
+                tone({ freq: 2340, type: 'triangle', dur: 0.2, gain: 0.13 });
+                tone({ at: 0.05, freq: 3130, type: 'triangle', dur: 0.28, gain: 0.1 });
+                noise({ dur: 0.03, type: 'highpass', freq: 6000, gain: 0.08 });
+                break;
+
+            case 'watch': // two low notes, walking down: nothing friendly
+                tone({ freq: 300, to: 268, type: 'sine', dur: 0.22, gain: 0.09 });
+                tone({ at: 0.19, freq: 224, to: 196, type: 'sine', dur: 0.34, gain: 0.08 });
+                break;
+
+            case 'mask': // three claps, unhurried, exactly as sarcastic as it sounds
+                for (let i = 0; i < 3; i++) {
+                    noise({ at: i * 0.27, dur: 0.055, type: 'bandpass', freq: 1500, q: 0.7, gain: 0.24 });
+                    noise({ at: i * 0.27, dur: 0.11, type: 'lowpass', freq: 700, gain: 0.09 });
+                }
+                break;
+
+            case 'skull': // a tritone, left to rot
+                tone({ freq: 146, type: 'sawtooth', dur: 0.75, gain: 0.08 });
+                tone({ at: 0.04, freq: 207, type: 'sawtooth', dur: 0.7, gain: 0.06 });
+                noise({ at: 0.02, dur: 0.6, type: 'lowpass', freq: 420, gain: 0.07, sweepTo: 120 });
+                break;
+
+            case 'hat': // a small courtesy, upward
+                tone({ freq: 587, type: 'triangle', dur: 0.16, gain: 0.08 });
+                tone({ at: 0.1, freq: 880, type: 'triangle', dur: 0.3, gain: 0.07 });
+                break;
+
+            case 'hourglass': // sand, and the impatience under it
+            default:
+                for (let i = 0; i < 3; i++) {
+                    tone({ at: i * 0.13, freq: 1250, type: 'square', dur: 0.04, gain: 0.06 });
+                }
+                noise({ dur: 0.42, type: 'bandpass', freq: 5600, q: 1.2, gain: 0.04 });
+                break;
+        }
     },
 };

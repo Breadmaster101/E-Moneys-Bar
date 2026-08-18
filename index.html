@@ -10,6 +10,35 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://quicklash-server.onrender.com">
+
+    <!--
+        Knock before anything else does.
+
+        The relay is a free Render instance that sleeps, and waking it is the
+        single longest thing that happens on a first visit. Left to itself the
+        wake-up does not start until the socket.io bundle below has downloaded
+        and the whole module graph has been fetched and evaluated, all of which
+        is dead time the server could have spent getting up. This is a bare
+        request whose response nobody reads: it exists to start the clock
+        earlier.
+
+        It knocks on the socket.io handshake endpoint rather than on `/`,
+        because the relay serves nothing at the root and a 404 logged before
+        the page has drawn a pixel is the wrong first impression for anyone who
+        opens the console. The handshake leaves a session nobody claims, which
+        socket.io reaps on its own timeout a few seconds later.
+
+        The URL is duplicated from SERVER_URL in src/constants.js, which is
+        still the source of truth: nothing here can import, and importing is
+        what this is avoiding. If you move the server, move it in both places.
+    -->
+    <script>
+        try {
+            fetch('https://quicklash-server.onrender.com/socket.io/?EIO=4&transport=polling',
+                { mode: 'no-cors', cache: 'no-store' });
+        } catch (e) { /* the socket will wake it the slow way */ }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap"
         rel="stylesheet">
 
@@ -20,6 +49,7 @@
     <link rel="stylesheet" href="styles/board.css">
     <link rel="stylesheet" href="styles/cards.css">
     <link rel="stylesheet" href="styles/players.css">
+    <link rel="stylesheet" href="styles/reactions.css">
     <link rel="stylesheet" href="styles/modals.css">
     <link rel="stylesheet" href="styles/responsive.css">
 
@@ -169,17 +199,6 @@
             <path d="M3.5 9h3.5L11.5 5v14L7 15H3.5z" />
             <path d="M15.5 9.5 21 15M21 9.5 15.5 15" />
         </symbol>
-        <!-- motion on: a mark thrown clear of its own trailing lines -->
-        <symbol id="i-motion-on" viewBox="0 0 24 24">
-            <path d="M14.5 6.5 20 12l-5.5 5.5" />
-            <path d="M11 12h9" />
-            <path d="M3.5 8.5H8M2 12h4.5M3.5 15.5H8" />
-        </symbol>
-        <symbol id="i-motion-off" viewBox="0 0 24 24">
-            <path d="M14.5 6.5 20 12l-5.5 5.5" />
-            <path d="M11 12h9" />
-            <path d="M3 9 8 15M8 9 3 15" />
-        </symbol>
         <symbol id="i-log" viewBox="0 0 24 24">
             <path d="M4 6.5h16M4 12h16M4 17.5h10" />
         </symbol>
@@ -197,6 +216,60 @@
             <path d="M70 3 79 16 70 29 61 16z" />
             <path d="M70 8.5 74.5 16 70 23.5 65.5 16z" />
             <path d="M52 16 58 10.5V21.5zM88 16 82 10.5V21.5z" />
+        </symbol>
+
+        <!--
+            Reactions. The counter bell opens the tray; the six marks below are
+            what you can say with it. Every one is a thing that would be on a
+            table or a face rather than a pictogram of a feeling, which is what
+            keeps them on the same plate as everything else.
+        -->
+        <symbol id="i-react" viewBox="0 0 24 24">
+            <path d="M3 18.5h18" />
+            <path d="M5.5 18.5v-1.4c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5v1.4" />
+            <path d="M12 10.6V8.2" />
+            <circle cx="12" cy="6.6" r="1.5" />
+        </symbol>
+        <symbol id="i-rx-cheers" viewBox="0 0 24 24">
+            <g transform="rotate(17 6.5 17)">
+                <path d="M3 6.6h7l-.9 10.4H3.9z" />
+                <path d="M3.4 10.6h6.2" />
+            </g>
+            <g transform="rotate(-17 17.5 17)">
+                <path d="M14 6.6h7l-.9 10.4h-5.2z" />
+                <path d="M14.4 10.6h6.2" />
+            </g>
+            <path d="M12 2.4v2.6M9.4 3.5l1.2 1.8M14.6 3.5l-1.2 1.8" />
+        </symbol>
+        <!-- watch: the iris sits off to one side, so it reads as a look rather than a stare -->
+        <symbol id="i-rx-watch" viewBox="0 0 24 24">
+            <path d="M1.8 12.4c3-4.1 6.4-6.2 10.2-6.2s7.2 2.1 10.2 6.2" />
+            <path d="M22.2 12.4c-3 3.6-6.4 5.4-10.2 5.4S4.8 16 1.8 12.4" />
+            <circle cx="9.7" cy="12.3" r="3" />
+            <circle cx="9.7" cy="12.3" r="1" />
+        </symbol>
+        <symbol id="i-rx-mask" viewBox="0 0 24 24">
+            <path d="M2.4 7.6h19.2v3.6c0 3.2-2.5 5.8-5.6 5.8-1.8 0-3.4-.9-4.4-2.2-1 1.3-2.6 2.2-4.4 2.2-3.1 0-5.6-2.6-5.6-5.8z" />
+            <path d="M6 10.8h3.6M14.4 10.8H18" />
+        </symbol>
+        <symbol id="i-rx-skull" viewBox="0 0 24 24">
+            <path d="M12 2.8c-4.6 0-8 3.2-8 7.4 0 2.5 1.1 4.3 2.6 5.4h10.8c1.5-1.1 2.6-2.9 2.6-5.4 0-4.2-3.4-7.4-8-7.4z" />
+            <circle cx="9" cy="10.1" r="1.9" />
+            <circle cx="15" cy="10.1" r="1.9" />
+            <path d="M12 12.6 10.9 14.7h2.2z" />
+            <path d="M6.6 15.6h10.8v5.6H6.6z" />
+            <path d="M9.3 15.6v5.6M12 15.6v5.6M14.7 15.6v5.6" />
+        </symbol>
+        <symbol id="i-rx-hat" viewBox="0 0 24 24">
+            <path d="M6.6 12.4V7.9c0-1.9 1.5-3.4 3.4-3.4h4c1.9 0 3.4 1.5 3.4 3.4v4.5" />
+            <path d="M6.6 9.6h10.8" />
+            <path d="M2 12.4h20c0 2.2-4.5 4-10 4s-10-1.8-10-4z" />
+        </symbol>
+        <symbol id="i-rx-hourglass" viewBox="0 0 24 24">
+            <path d="M5.5 2.8h13M5.5 21.2h13" />
+            <path d="M7 2.8v3.6L12 12l5-5.6V2.8" />
+            <path d="M7 21.2v-3.6L12 12l5 5.6v3.6" />
+            <path d="M12 12v5.2" />
         </symbol>
     </svg>
 
@@ -228,7 +301,6 @@
                 <button id="backBtn" class="icon-btn" title="Back" aria-label="Back" hidden>
                     <svg class="ico" aria-hidden="true"><use href="#i-exit" /></svg>
                 </button>
-                <span id="hudRoomCode" class="hud-chip hud-chip--mono" hidden></span>
             </div>
 
             <div class="topbar__center">
@@ -245,12 +317,20 @@
             </div>
 
             <div class="topbar__side topbar__side--right">
+                <!--
+                    The bell and its tray. Wrapped because the tray hangs off
+                    the button rather than off the strip: #topbar has no height
+                    of its own to hang anything from.
+                -->
+                <div class="rx-wrap" id="reactionWrap" hidden>
+                    <button id="reactionBtn" class="icon-btn" title="React" aria-label="React"
+                        aria-haspopup="true" aria-expanded="false">
+                        <svg class="ico" aria-hidden="true"><use href="#i-react" /></svg>
+                    </button>
+                    <div id="reaction-tray" class="rx-tray" role="menu" aria-label="Reactions" hidden></div>
+                </div>
                 <button id="soundToggleBtn" class="icon-btn" title="Sound on/off" aria-label="Toggle sound">
                     <svg class="ico" aria-hidden="true"><use id="soundIconUse" href="#i-sound-on" /></svg>
-                </button>
-                <button id="motionToggleBtn" class="icon-btn" title="Motion on/off" aria-label="Toggle motion"
-                    aria-pressed="false">
-                    <svg class="ico" aria-hidden="true"><use id="motionIconUse" href="#i-motion-on" /></svg>
                 </button>
                 <button id="rulesBtnGame" class="icon-btn icon-btn--glyph" title="How to play"
                     aria-label="How to play">?</button>
@@ -426,6 +506,13 @@
         <span class="turn-announce__text">Your turn</span>
     </div>
 
+    <!--
+        Where reactions land. Fixed and outside #app so a mark can be pinned to
+        a seat's screen position without caring what that seat is nested in or
+        whether the thing above it clips.
+    -->
+    <div id="reaction-layer" aria-hidden="true"></div>
+
     <!-- ---------- Modals ---------- -->
     <div id="modal-roulette" class="modal modal--roulette">
         <div class="modal__backdrop"></div>
@@ -452,6 +539,37 @@
             </svg>
             <h2 id="gameOverTitle" class="modal__title">Game over</h2>
             <p id="gameOverMessage" class="modal__sub"></p>
+
+            <!--
+                What the night came to. Rendered from the counters the host
+                puts on the GAME_OVER payload; hidden outright when there is
+                nothing worth printing, so a game that ended in one round
+                doesn't get a page of zeroes.
+            -->
+            <div id="game-ledger" class="ledger" hidden>
+                <div class="ledger__head">
+                    <span class="ledger__title">The ledger</span>
+                    <span id="ledgerRounds" class="ledger__rounds"></span>
+                </div>
+
+                <div id="ledgerHonours" class="ledger__honours"></div>
+
+                <div class="ledger__figures">
+                    <table class="ledger__table">
+                        <thead>
+                            <tr>
+                                <th class="ledger__num" scope="col">#</th>
+                                <th scope="col">Player</th>
+                                <th class="ledger__num ledger__col-wide" scope="col">Plays</th>
+                                <th class="ledger__num" scope="col">Lies</th>
+                                <th class="ledger__num" scope="col">Calls</th>
+                                <th class="ledger__num" scope="col">Pulls</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerRows"></tbody>
+                    </table>
+                </div>
+            </div>
 
             <div id="rematch-status" class="rematch" hidden>
                 <span class="rematch__label">Rematch</span>

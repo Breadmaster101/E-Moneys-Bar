@@ -20,6 +20,7 @@ import { flyCards } from './cards.js';
 import { seatNodeFor, resetSeatMemory } from './seats.js';
 import { el } from './dom.js';
 import { sfx } from './audio.js';
+import { isReaction, showReaction, clearReactions, REACTION_COOLDOWN_MS } from './reactions.js';
 
 /* ------------------------------------------------------------------ */
 /* deck helpers                                                        */
@@ -66,6 +67,66 @@ export const Deck = {
         return !cards?.length || cards.every((c) => c.suit === tableSuit);
     },
 };
+
+/* ------------------------------------------------------------------ */
+/* the ledger                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * What the table gets told about itself when it's over.
+ *
+ * Host-only, and kept out of `broadcastState` on purpose: this grows with every
+ * play and nobody reads it until the last player is standing, so it rides on
+ * the GAME_OVER payload instead of on all several-hundred state updates before
+ * it. Counters only — no card is ever recorded — because a ledger that could
+ * reconstruct a hand would turn the log panel into an oracle.
+ */
+function blankStats() {
+    return {
+        plays: 0,      // times they put cards down
+        cards: 0,      // cards in total
+        lies: 0,       // plays holding at least one card that wasn't the suit
+        bluff: 0,      // most off-suit cards in a single play
+        auto: 0,       // plays the turn timer made for them
+        callsMade: 0,  // times they called LIAR
+        callsGood: 0,  // ...and were right
+        accused: 0,    // times LIAR was called on them
+        caught: 0,     // ...and the caller was right
+        shots: 0,      // times they faced the revolver
+        survived: 0,   // ...and heard a click
+        emptied: 0,    // times they played their hand out
+        place: 0,      // finishing position, 1 is the last one breathing
+    };
+}
+
+function statsFor(playerId) {
+    const all = gameState.stats;
+    if (!all[playerId]) all[playerId] = blankStats();
+    return all[playerId];
+}
+
+/**
+ * Place people from the bottom up as they go out, so the order is right even
+ * though the game is only ever certain of its winner at the very end.
+ */
+function recordElimination(player) {
+    const stats = statsFor(player.id);
+    if (stats.place) return;
+    stats.place = gameState.players.length - gameState.eliminatedCount;
+    gameState.eliminatedCount += 1;
+}
+
+/** Everyone still standing when the music stops, ranked above everyone who isn't. */
+function closeLedger(survivors) {
+    survivors.forEach((player, i) => {
+        const stats = statsFor(player.id);
+        if (!stats.place) stats.place = i + 1;
+    });
+    return {
+        rounds: gameState.roundsPlayed,
+        players: gameState.players.map((p) => ({ id: p.id, name: p.name, ...statsFor(p.id) })),
+    };
+}
 
 /* ------------------------------------------------------------------ */
 /* broadcasting                                                        */
@@ -223,7 +284,14 @@ export function startNewGame() {
     gameState.lastChallengeRouletteTargetId = null;
     gameState.turnEpoch = 0;
 
+    gameState.stats = {};
+    gameState.roundsPlayed = 0;
+    gameState.eliminatedCount = 0;
+    roster.forEach((p) => statsFor(p.id));
+
     resetSeatMemory();
+    clearReactions();
+    lastReactionAt.clear();
     startNewRound();
 }
 
@@ -246,6 +314,7 @@ export function startNewRound() {
     gameState.centerPileCardCount = 0;
     gameState.lastPlayedTurn = null;
     gameState.gamePhase = 'playing';
+    gameState.roundsPlayed += 1;
 
     addLog(
         `New round: the table suit is ${SUIT_SYMBOLS[gameState.currentTableSuit]} ${gameState.currentTableSuit}.`,
@@ -291,12 +360,17 @@ function fireRevolver(targetPlayer) {
     const fired = target.revolverDeck.pop();
     target.revolverChambersLeft = target.revolverDeck.length;
 
+    const stats = statsFor(target.id);
+    stats.shots += 1;
+
     let outcomeText;
     if (fired === 'lethal') {
         target.eliminated = true;
         target.cardCount = 0;
+        recordElimination(target);
         outcomeText = `BANG! ${target.name} is eliminated.`;
     } else {
+        stats.survived += 1;
         outcomeText = `Click. ${target.name} survives.`;
         if (!target.revolverDeck.length) {
             target.revolverDeck = Deck.revolver();
@@ -353,6 +427,7 @@ function resolveRoulette(results) {
             const payload = {
                 winner: winner ? { id: winner.id, name: winner.name } : null,
                 reason: winner ? `${winner.name} is the last one standing.` : 'Nobody walked out of here.',
+                ledger: closeLedger(survivors),
             };
             sendMessage('GAME_OVER', payload);
             showGameOver(payload);
@@ -403,6 +478,16 @@ export function handlePlayCards(playerId, playedCardIds, { auto = false } = {}) 
     gameState.centerPile.push(...played);
     gameState.centerPileCardCount = gameState.centerPile.length;
 
+    const stats = statsFor(playerId);
+    const offSuit = played.filter((c) => c.suit !== gameState.currentTableSuit).length;
+    stats.plays += 1;
+    stats.cards += played.length;
+    if (auto) stats.auto += 1;
+    if (offSuit) {
+        stats.lies += 1;
+        stats.bluff = Math.max(stats.bluff, offSuit);
+    }
+
     addLog(
         `${player.name} ${auto ? 'auto-played' : 'plays'} ${played.length} as `
         + `${SUIT_SYMBOLS[gameState.currentTableSuit]}.`,
@@ -416,6 +501,7 @@ export function handlePlayCards(playerId, playedCardIds, { auto = false } = {}) 
 
     // emptied their hand → straight to the revolver
     if (player.cardCount === 0) {
+        stats.emptied += 1;
         gameState.gamePhase = 'roulette';
         const results = fireRevolver(player);
         if (!results) return;
@@ -442,6 +528,15 @@ export function handleCallLiar(challengerId) {
     const played = gameState.lastPlayedTurn.cardsPlayed;
     const tableSuit = gameState.currentTableSuit;
     const wasLie = !Deck.isTruthful(played, tableSuit);
+
+    const callerStats = statsFor(challenger.id);
+    const accusedStats = statsFor(accused.id);
+    callerStats.callsMade += 1;
+    accusedStats.accused += 1;
+    if (wasLie) {
+        callerStats.callsGood += 1;
+        accusedStats.caught += 1;
+    }
 
     addLog(`${challenger.name} calls LIAR on ${accused.name}.`, 'system');
     addLog(
@@ -490,6 +585,35 @@ export function handleRematchVote(clientId, isReady) {
 export function startRematch() {
     startNewGame();
     showGameBoard();
+}
+
+/* ------------------------------------------------------------------ */
+/* reactions                                                           */
+/* ------------------------------------------------------------------ */
+
+/** clientId -> when they last rang the bell, so nobody can lean on it. */
+const lastReactionAt = new Map();
+
+/** Put a mark on every other screen. Does not draw it here. */
+export function broadcastReaction(playerId, mark) {
+    sendMessage('REACTION', { playerId, mark });
+}
+
+/**
+ * A client rang the bell. The rate limit is the point of routing this through
+ * the host at all: a client that ignores its own cooldown gets its extra marks
+ * dropped here rather than on seven other people's tables.
+ */
+export function handleReaction(clientId, mark) {
+    if (!localPlayer.isHost || !isReaction(mark)) return;
+    if (!gameState.players.some((p) => p.id === clientId)) return;
+
+    const now = Date.now();
+    if (now - (lastReactionAt.get(clientId) ?? 0) < REACTION_COOLDOWN_MS) return;
+    lastReactionAt.set(clientId, now);
+
+    broadcastReaction(clientId, mark);
+    showReaction(clientId, mark);
 }
 
 export function handleNameUpdate(clientId, name) {
@@ -543,6 +667,7 @@ export function handleClientDisconnect(clientId) {
     if (!player.eliminated) {
         player.eliminated = true;
         player.cardCount = 0;
+        recordElimination(player);
         addLog(`${player.name} disconnected and is out.`, 'error');
         toast(`${player.name} disconnected.`, { type: 'error' });
 
@@ -556,6 +681,7 @@ export function handleClientDisconnect(clientId) {
                 reason: winner
                     ? `${winner.name} wins because everyone else walked out.`
                     : 'The table emptied out.',
+                ledger: closeLedger(survivors),
             };
             sendMessage('GAME_OVER', payload);
             showGameOver(payload);

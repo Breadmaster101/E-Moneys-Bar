@@ -22,7 +22,6 @@
  */
 
 import { el, openModal } from './dom.js';
-import { reducedMotion } from './motion.js';
 import { REVOLVER_CHAMBERS, SUIT_SYMBOLS, ROULETTE_LEAD_IN_MS, planRoulette } from './constants.js';
 import { localPlayer } from './state.js';
 import { createCard } from './cards.js';
@@ -64,9 +63,6 @@ function svgEl(tag, attrs) {
     for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
     return node;
 }
-
-// re-exported shape kept identical; the decision now lives in motion.js so the
-// topbar toggle reaches the revolver as well as the particles
 
 /**
  * How long the picture is held at the moment of the shot, in ms.
@@ -127,12 +123,9 @@ function cutRays(rays) {
  * Fire the flash: the held peak, then the release.
  *
  * Driven by the Web Animations API, not CSS animations, for the same reason the
- * cylinder is: `effects.css` clamps every CSS `animation-duration` to 0.01ms
- * under prefers-reduced-motion, which silently reduced this to a flash nobody
- * could see. Honouring that preference is right, but it has to be an explicit
- * choice rather than an animation that fires and paints nothing, so the check is
- * done here and the timing is set in JS where nothing can rewrite it. Matches
- * how `fx.js` gates its particles.
+ * cylinder is: a CSS transition needs the browser to have computed the "before"
+ * value in an earlier frame, and when timers coalesce the set lands in the same
+ * frame as the insert. The timing is set in JS where nothing can rewrite it.
  *
  * The one bloom this used to be is now the slowest of five layers, and the
  * fastest of them is gone in three frames. That spread is the whole difference:
@@ -142,11 +135,6 @@ function cutRays(rays) {
  * @param {() => void} onRelease run when the held frame breaks
  */
 function fireMuzzleFlash({ flash, core, rays, shock, occlude }, onRelease) {
-    if (reducedMotion()) {
-        onRelease();
-        return;
-    }
-
     cutRays(rays);
 
     /*
@@ -570,13 +558,7 @@ export function playRoulette(data, targetAfter) {
              * the fired chamber, and the exposure punch on the gun below.
              */
             sfx.gunshot();
-            /*
-             * Gated here rather than in the stylesheet. The reduced-motion block
-             * in effects.css only clamps animations, and this is a static filter:
-             * it would sit there blowing the revolver out at 150% brightness for
-             * everyone who asked for less, which is the opposite of the ask.
-             */
-            if (!reducedMotion()) el.revolverStage.classList.add('is-punched');
+            el.revolverStage.classList.add('is-punched');
             fx.muzzleFlash(shotX, shotY, { floorY });
             fx.freeze(HITSTOP_MS);
             spendRound();

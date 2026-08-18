@@ -43,13 +43,13 @@ export const el = {
     // top bar
     topbar: $('#topbar'),
     backBtn: $('#backBtn'),
-    hudRoomCode: $('#hudRoomCode'),
     soundToggleBtn: $('#soundToggleBtn'),
     soundIconUse: $('#soundIconUse'),
-    motionToggleBtn: $('#motionToggleBtn'),
-    motionIconUse: $('#motionIconUse'),
     rulesBtnGame: $('#rulesBtnGame'),
     logToggleBtn: $('#logToggleBtn'),
+    reactionWrap: $('#reactionWrap'),
+    reactionBtn: $('#reactionBtn'),
+    reactionTray: $('#reaction-tray'),
     turnPill: $('#turn-pill'),
     turnPillAvatar: $('#turn-pill-avatar'),
     turnPillText: $('#turn-pill-text'),
@@ -80,6 +80,7 @@ export const el = {
 
     // announcement
     turnAnnounce: $('#turn-announce'),
+    reactionLayer: $('#reaction-layer'),
 
     // roulette modal
     rouletteModal: $('#modal-roulette'),
@@ -96,6 +97,10 @@ export const el = {
     gameOverOrnament: $('#gameOverOrnament'),
     gameOverTitle: $('#gameOverTitle'),
     gameOverMessage: $('#gameOverMessage'),
+    ledger: $('#game-ledger'),
+    ledgerRounds: $('#ledgerRounds'),
+    ledgerHonours: $('#ledgerHonours'),
+    ledgerRows: $('#ledgerRows'),
     rematchStatus: $('#rematch-status'),
     rematchList: $('#rematch-status-list'),
     playAgainBtn: $('#playAgainBtn'),

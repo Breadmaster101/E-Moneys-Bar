@@ -17,7 +17,9 @@ import {
     handleClientDisconnect,
     handleRematchVote,
     handleNameUpdate,
+    handleReaction,
 } from './game.js';
+import { showReaction } from './reactions.js';
 import {
     showLobby,
     showGameBoard,
@@ -205,6 +207,9 @@ function hostReceive(msg) {
         case 'CLIENT_NAME_UPDATE':
             handleNameUpdate(msg.senderId, msg.payload.name);
             break;
+        case 'PLAYER_REACTION':
+            handleReaction(msg.senderId, msg.payload?.mark);
+            break;
         case 'CLIENT_DISCONNECTED':
             handleClientDisconnect(msg.senderId);
             break;
@@ -223,6 +228,12 @@ function clientReceive(msg) {
 
         case 'GAME_OVER':
             showGameOver(msg.payload);
+            break;
+
+        // the sender's own mark is dropped inside showReaction: it was already
+        // drawn locally on the way out, and this is the relay echoing it back
+        case 'REACTION':
+            showReaction(msg.payload?.playerId, msg.payload?.mark);
             break;
 
         case 'PLAYER_JOINED_ACK': {

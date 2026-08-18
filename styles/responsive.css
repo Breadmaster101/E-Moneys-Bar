@@ -324,10 +324,6 @@
         height: 38px;
     }
 
-    #hudRoomCode {
-        display: none;
-    }
-
     .turn-pill {
         height: 40px;
         padding-right: 16px;
@@ -610,6 +606,56 @@
     }
 }
 
+/* ---------------- Reactions + ledger ---------------- */
+
+/*
+ * Nothing in the ledger is hidden by height. It used to drop honours as the
+ * window shortened, which meant a laptop an inch off the mark quietly printed a
+ * different summary from the one everyone else was reading. The dialog scrolls
+ * instead: every row and every honour is always there.
+ */
+
+@media (max-width: 700px) {
+
+    /*
+     * The tray is two columns of labelled marks on a monitor and three columns
+     * of bare marks on a phone: the labels are what make the vocabulary
+     * learnable, and once it is learned they are the first thing that can go.
+     */
+    .rx-tray {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .rx-btn {
+        justify-content: center;
+        padding: 10px;
+    }
+
+    .rx-btn__label,
+    .rx-btn kbd {
+        display: none;
+    }
+
+    .rx-mark {
+        width: 38px;
+        height: 38px;
+    }
+
+    .rx-mark .ico {
+        width: 22px;
+        height: 22px;
+    }
+
+    /* plays is the least interesting column, and the first to go */
+    .ledger__col-wide {
+        display: none;
+    }
+
+    .honour {
+        padding: var(--sp-2);
+    }
+}
+
 /* ---------------- Very small phones ---------------- */
 
 @media (max-width: 400px) {
@@ -624,6 +670,15 @@
 
     .seat {
         gap: 0;
+    }
+
+    /* the tray would otherwise run off the left edge of a 360px screen */
+    .rx-tray {
+        position: fixed;
+        top: calc(var(--hud-h) + 8px);
+        right: var(--sp-2);
+        left: var(--sp-2);
+        width: auto;
     }
 }
 

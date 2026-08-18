@@ -74,26 +74,6 @@
     flex: 0 0 auto;
 }
 
-.hud-chip {
-    display: inline-flex;
-    align-items: center;
-    height: 34px;
-    padding: 0 13px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text-dim);
-    background: var(--ink-850);
-    border: 1px solid var(--rule);
-    border-radius: var(--r-sm);
-}
-
-.hud-chip--mono {
-    font-family: var(--font-engraved);
-    font-weight: 700;
-    letter-spacing: .16em;
-    color: var(--gold);
-}
-
 /* ---------------- Turn pill ---------------- */
 
 .turn-pill {
