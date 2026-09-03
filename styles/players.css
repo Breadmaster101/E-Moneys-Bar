@@ -383,3 +383,35 @@
         display: none;
     }
 }
+
+/* ---------------- Out of contact ---------------- */
+
+/*
+ * Away is not out. The seat is still theirs, the hand is still dealt, and the
+ * game will wait: what this has to say is "nothing is happening here yet",
+ * without borrowing any of the marks that mean eliminated. So it dims and it
+ * hatches — no grayscale, no struck rule, no OUT — and the label spells the
+ * rest out rather than leaving the table to guess at a stalled turn.
+ */
+.seat.is-away .seat__plate {
+    opacity: .55;
+    background-image: var(--hatch-fine);
+}
+
+.seat.is-away .seat__cards {
+    opacity: .4;
+}
+
+.seat__away {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+}
+
+/* an away player is still on the clock, but their turn ring shouldn't read as
+   attention: it is waiting on a phone, not on a decision */
+.seat.is-away.is-turn .seat__plate {
+    border-color: var(--rule-faint);
+}

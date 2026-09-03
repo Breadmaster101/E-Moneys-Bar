@@ -5,13 +5,15 @@
 
 import {
     SUITS, RANKS, SUIT_SYMBOLS, HAND_SIZE, MIN_PLAYERS, MAX_CARDS_PER_PLAY,
-    REVOLVER_CHAMBERS, REVOLVER_BULLETS, planRoulette,
+    REVOLVER_CHAMBERS, REVOLVER_BULLETS, AWAY_AUTOPLAY_MS, NAME_MAX, planRoulette,
 } from './constants.js';
 import { gameState, localPlayer, session } from './state.js';
-import { sendMessage, activeConnectedIds } from './net.js';
+import { sendMessage, activeConnectedIds, lastSeenOf } from './net.js';
 import { addLog } from './log.js';
 import { toast } from './toast.js';
-import { armHostTimer, disarmHostTimer, hostRemainingMs } from './timer.js';
+import {
+    armHostTimer, disarmHostTimer, hostRemainingMs, afterHostDelay, cancelHostDelays,
+} from './timer.js';
 import {
     applyRouletteResults, showGameOver, updateRematchStatus, refreshBoard, showGameBoard,
     updateLobbySeats,
@@ -132,40 +134,63 @@ function closeLedger(survivors) {
 /* broadcasting                                                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The authoritative state as one player is allowed to see it: everything
+ * public, plus their own hand and nobody else's.
+ *
+ * Split out from `broadcastState` because it is also what answers a resync —
+ * a client that noticed it had fallen behind asks for exactly this, and a
+ * player who reconnects mid-round is handed it as part of being welcomed back.
+ */
+export function stateForClient(player) {
+    return {
+        gameState: {
+            players: gameState.players.map((p) => ({
+                id: p.id,
+                name: p.name,
+                isHost: p.isHost,
+                eliminated: p.eliminated,
+                away: !!p.away,
+                revolverChambersLeft: p.revolverChambersLeft,
+                cardCount: p.cardCount,
+            })),
+            currentPlayerId: gameState.currentPlayerId,
+            currentTableSuit: gameState.currentTableSuit,
+            lastPlayedTurn: gameState.lastPlayedTurn
+                ? {
+                    playerId: gameState.lastPlayedTurn.playerId,
+                    playerName: gameState.lastPlayedTurn.playerName,
+                    cardsPlayedCount: gameState.lastPlayedTurn.cardsPlayedCount,
+                    declaredSuit: gameState.lastPlayedTurn.declaredSuit,
+                }
+                : null,
+            gamePhase: gameState.gamePhase,
+            centerPileCardCount: gameState.centerPile.length,
+            rematchReadyStatus: gameState.rematchReadyStatus,
+            lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId,
+            config: { ...gameState.config },
+            turnEpoch: gameState.turnEpoch ?? 0,
+            turnRemainingMs: hostRemainingMs(),
+            stateVersion: gameState.stateVersion ?? 0,
+        },
+        yourHand: player.hand,
+    };
+}
+
 export function broadcastState() {
     if (!localPlayer.isHost) return;
 
-    const common = {
-        players: gameState.players.map((p) => ({
-            id: p.id,
-            name: p.name,
-            isHost: p.isHost,
-            eliminated: p.eliminated,
-            revolverChambersLeft: p.revolverChambersLeft,
-            cardCount: p.cardCount,
-        })),
-        currentPlayerId: gameState.currentPlayerId,
-        currentTableSuit: gameState.currentTableSuit,
-        lastPlayedTurn: gameState.lastPlayedTurn
-            ? {
-                playerId: gameState.lastPlayedTurn.playerId,
-                playerName: gameState.lastPlayedTurn.playerName,
-                cardsPlayedCount: gameState.lastPlayedTurn.cardsPlayedCount,
-                declaredSuit: gameState.lastPlayedTurn.declaredSuit,
-            }
-            : null,
-        gamePhase: gameState.gamePhase,
-        centerPileCardCount: gameState.centerPile.length,
-        rematchReadyStatus: gameState.rematchReadyStatus,
-        lastChallengeRouletteTargetId: gameState.lastChallengeRouletteTargetId,
-        config: { ...gameState.config },
-        turnEpoch: gameState.turnEpoch ?? 0,
-        turnRemainingMs: hostRemainingMs(),
-    };
+    /*
+     * Every broadcast is numbered, and the number rides on the heartbeat as
+     * well. That is what makes a missed update recoverable: a client whose copy
+     * is behind the pulse asks for the state back within one beat, rather than
+     * finding out when somebody says "it's your turn" out loud.
+     */
+    gameState.stateVersion = (gameState.stateVersion ?? 0) + 1;
 
     gameState.players.forEach((p) => {
         if (p.id !== localPlayer.id && session.hostConnections[p.id]) {
-            sendMessage('GAME_STATE_UPDATE', { gameState: common, yourHand: p.hand }, p.id);
+            sendMessage('GAME_STATE_UPDATE', stateForClient(p), p.id);
         }
     });
 
@@ -197,7 +222,23 @@ function onTurnTimeout() {
 
     const player = gameState.players.find((p) => p.id === gameState.currentPlayerId);
     if (!player || player.eliminated) {
-        advanceTurnFrom(gameState.currentPlayerId);
+        /*
+         * Nobody left to hand the turn to. Reachable only if the survivor count
+         * and the turn disagree, but the cost of being wrong here is a table
+         * with no clock running and no player on it, which no timer will ever
+         * come back to. End it rather than hang it.
+         */
+        if (!advanceTurnFrom(gameState.currentPlayerId)) {
+            const survivors = gameState.players.filter((p) => !p.eliminated);
+            declareGameOver({
+                winner: survivors[0] ?? null,
+                reason: survivors[0]
+                    ? `${survivors[0].name} is the last one standing.`
+                    : 'Nobody walked out of here.',
+                survivors,
+            });
+            return;
+        }
         broadcastState();
         return;
     }
@@ -250,6 +291,7 @@ export function startNewGame() {
             name: p.name,
             isHost: p.isHost,
             eliminated: false,
+            away: false,
             hand: [],
             revolverDeck: Deck.revolver(),
             revolverChambersLeft: REVOLVER_CHAMBERS,
@@ -262,6 +304,7 @@ export function startNewGame() {
             name: localPlayer.name,
             isHost: true,
             eliminated: false,
+            away: false,
             hand: [],
             revolverDeck: Deck.revolver(),
             revolverChambersLeft: REVOLVER_CHAMBERS,
@@ -288,6 +331,10 @@ export function startNewGame() {
     gameState.roundsPlayed = 0;
     gameState.eliminatedCount = 0;
     roster.forEach((p) => statsFor(p.id));
+
+    // a rematch dealt over the top of the old game's hand-off would deal twice
+    cancelHostDelays();
+    lastGameOver = null;
 
     resetSeatMemory();
     clearReactions();
@@ -338,6 +385,42 @@ export function startNewRound() {
 
     setTurn(starter);
     broadcastState();
+}
+
+/* ------------------------------------------------------------------ */
+/* ending it                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * The last GAME_OVER this host declared.
+ *
+ * Kept because the announcement is a single broadcast and a single broadcast is
+ * exactly what a phone misses. Without this, a player who was offline at the
+ * moment the game ended reconnects into `gamePhase: 'game_over'` with no result,
+ * no ledger and no rematch button — stranded on a dead board, and the only way
+ * out is to leave the table, which is how a lobby stops existing.
+ *
+ * Host-only and never in `broadcastState`: it is replayed privately to whoever
+ * asks, on the handshake and on a resync.
+ */
+let lastGameOver = null;
+
+export const gameOverPayload = () => lastGameOver;
+
+/** Declare it, remember it, tell everyone. The only way the game ends. */
+function declareGameOver({ winner, reason, survivors }) {
+    gameState.gamePhase = 'game_over';
+    disarmHostTimer();
+    cancelHostDelays();
+
+    lastGameOver = {
+        winner: winner ? { id: winner.id, name: winner.name } : null,
+        reason,
+        ledger: closeLedger(survivors),
+    };
+
+    sendMessage('GAME_OVER', lastGameOver);
+    showGameOver(lastGameOver);
 }
 
 /* ------------------------------------------------------------------ */
@@ -419,22 +502,28 @@ function resolveRoulette(results) {
         chambersBefore: results.chambersBefore,
     });
 
-    setTimeout(() => {
+    /*
+     * `afterHostDelay`, not `setTimeout`: this is the hand-off that deals the
+     * next round, and the turn timer is disarmed until it runs. If it does not
+     * run — a host whose page suspends while the shot is on screen, which is
+     * precisely when a phone gets put down — nothing else is left ticking to
+     * notice, and the whole table sits on a spent cylinder for good.
+     */
+    afterHostDelay(totalMs, () => {
         const survivors = gameState.players.filter((p) => !p.eliminated);
         if (survivors.length <= 1) {
-            gameState.gamePhase = 'game_over';
             const winner = survivors[0] ?? null;
-            const payload = {
-                winner: winner ? { id: winner.id, name: winner.name } : null,
-                reason: winner ? `${winner.name} is the last one standing.` : 'Nobody walked out of here.',
-                ledger: closeLedger(survivors),
-            };
-            sendMessage('GAME_OVER', payload);
-            showGameOver(payload);
+            declareGameOver({
+                winner,
+                reason: winner
+                    ? `${winner.name} is the last one standing.`
+                    : 'Nobody walked out of here.',
+                survivors,
+            });
         } else {
             startNewRound();
         }
-    }, totalMs);
+    });
 }
 
 /* ------------------------------------------------------------------ */
@@ -620,37 +709,61 @@ export function handleNameUpdate(clientId, name) {
     if (!localPlayer.isHost) return;
     const player = gameState.players.find((p) => p.id === clientId);
     if (!player) return;
-    player.name = name;
+
+    // the host retypes what it is told rather than trusting it: this is the one
+    // client-supplied string that ends up on seven other people's screens, and
+    // the sender is only as well-behaved as the build it is running
+    const clean = String(name ?? '').trim().slice(0, NAME_MAX);
+    if (!clean) return;
+
+    player.name = clean;
     updateLobbySeats();
     broadcastState();
 }
 
 /* ------------------------------------------------------------------ */
-/* disconnects                                                         */
+/* going away, and coming back                                         */
 /* ------------------------------------------------------------------ */
 
-export function handleClientDisconnect(clientId) {
+/*
+ * Leaving used to be a single event, because the only leaving the game could
+ * see was a browser tab closing. On a table full of phones that is the rare
+ * case; the common one is a screen locking for forty seconds, and eliminating
+ * somebody for that is both wrong and unrecoverable.
+ *
+ * So there are two states. `away` is set by the heartbeat sweep and costs
+ * nothing but a struck seat: the turn timer already keeps the game moving, and
+ * the hand is still theirs when they come back. Gone is what happens after two
+ * minutes of it, or the moment somebody actually presses leave, and only that
+ * ends anyone's game.
+ */
+
+/** They pressed leave, or they have been away long enough to mean it. */
+export function handlePlayerGone(playerId, { reason = 'timeout' } = {}) {
     if (!localPlayer.isHost) return;
 
-    delete session.hostConnections[clientId];
+    delete session.hostConnections[playerId];
 
-    const player = gameState.players.find((p) => p.id === clientId);
+    const player = gameState.players.find((p) => p.id === playerId);
     if (!player) {
         updateLobbySeats();
         return;
     }
 
+    const walked = reason === 'left';
+
     if (gameState.gamePhase === 'lobby') {
-        gameState.players = gameState.players.filter((p) => p.id !== clientId);
+        gameState.players = gameState.players.filter((p) => p.id !== playerId);
         addLog(`${player.name} left the table.`, 'system');
         toast(`${player.name} left.`, { type: 'info' });
         sfx.leave();
         updateLobbySeats();
+        broadcastState();
         return;
     }
 
     if (gameState.gamePhase === 'game_over') {
-        delete gameState.rematchReadyStatus[clientId];
+        delete gameState.rematchReadyStatus[playerId];
         addLog(`${player.name} left, so they are dropped from the rematch.`, 'system');
 
         const eligible = activeConnectedIds();
@@ -663,38 +776,91 @@ export function handleClientDisconnect(clientId) {
         return;
     }
 
-    // mid-game: treat a disconnect as an elimination
+    // mid-game, and they are not coming back: that is an elimination
     if (!player.eliminated) {
         player.eliminated = true;
+        player.away = false;
         player.cardCount = 0;
         recordElimination(player);
-        addLog(`${player.name} disconnected and is out.`, 'error');
-        toast(`${player.name} disconnected.`, { type: 'error' });
+        addLog(
+            walked ? `${player.name} walked out.` : `${player.name} never came back and is out.`,
+            'error',
+        );
+        toast(walked ? `${player.name} left.` : `${player.name} timed out.`, { type: 'error' });
 
         const survivors = gameState.players.filter((p) => !p.eliminated);
         if (survivors.length <= 1) {
-            gameState.gamePhase = 'game_over';
-            disarmHostTimer();
             const winner = survivors[0] ?? null;
-            const payload = {
-                winner: winner ? { id: winner.id, name: winner.name } : null,
+            declareGameOver({
+                winner,
                 reason: winner
                     ? `${winner.name} wins because everyone else walked out.`
                     : 'The table emptied out.',
-                ledger: closeLedger(survivors),
-            };
-            sendMessage('GAME_OVER', payload);
-            showGameOver(payload);
+                survivors,
+            });
             return;
         }
 
-        if (gameState.currentPlayerId === clientId) advanceTurnFrom(clientId);
+        if (gameState.currentPlayerId === playerId) advanceTurnFrom(playerId);
     }
 
     broadcastState();
 }
 
+/** They answered again. Their seat, their hand and their turn are all still theirs. */
+export function handlePlayerBack(playerId) {
+    if (!localPlayer.isHost) return;
+
+    const player = gameState.players.find((p) => p.id === playerId);
+    if (!player) return;
+
+    if (player.away) {
+        player.away = false;
+        addLog(`${player.name} is back.`, 'success');
+        toast(`${player.name} reconnected.`, { type: 'success' });
+    }
+
+    updateLobbySeats();
+    broadcastState();
+}
+
+/**
+ * With the turn timer switched off, nothing else will move a stalled game on.
+ *
+ * The timer is the proper answer to an absent player and it does the job in
+ * every other configuration; this is only for tables that turned it off, where
+ * one locked phone would otherwise hold seven people up indefinitely.
+ */
+export function sweepAwayTurn(now) {
+    if (!localPlayer.isHost) return;
+    if (gameState.gamePhase !== 'playing') return;
+    if (gameState.config.turnSeconds) return;
+
+    const current = gameState.players.find((p) => p.id === gameState.currentPlayerId);
+    if (!current || current.eliminated || current.id === localPlayer.id) return;
+    if (now - lastSeenOf(current.id) < AWAY_AUTOPLAY_MS) return;
+
+    onTurnTimeout();
+}
+
 /** Called when the host leaves or the game resets. */
 export function stopHostTimers() {
     disarmHostTimer();
+    cancelHostDelays();
+}
+
+/**
+ * Host: forget connection records for players who are no longer seated.
+ *
+ * `startNewGame` deals in only the players who were in contact, so anyone who
+ * was away when the host dealt is dropped from the roster while their record
+ * stays behind. The liveness sweep walks the roster, so nothing would ever
+ * collect them, and they would go on counting towards "is anyone else here" for
+ * the life of the tab.
+ */
+export function pruneConnections() {
+    if (!localPlayer.isHost) return;
+    for (const key of Object.keys(session.hostConnections)) {
+        if (!gameState.players.some((p) => p.id === key)) delete session.hostConnections[key];
+    }
 }

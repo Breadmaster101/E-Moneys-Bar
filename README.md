@@ -32,8 +32,55 @@ of that; the status pill in the corner tells you where the rest of it is at.
 
 There is no server-side game logic. Whoever creates the room becomes the
 **host** and owns the authoritative state; everyone else mirrors what the host
-broadcasts. The relay just forwards messages. That means all players need to be
-on the same version of the page.
+broadcasts. The relay just forwards messages.
+
+### What the relay does not do
+
+Most of `net.js` is the consequences of three gaps, all of which bite hardest on
+phones, and all of which have to be covered client-side:
+
+- **It never reports a disconnect.** Not to the host when a player drops, not to
+  the room when the host does. Nobody is ever told that anybody left.
+- **A reconnected socket loses its room membership.** It comes back with a new
+  id and can still *send* — `client_send` and `host_broadcast` route on the room
+  code in the payload — but it no longer *receives*. The game does not look
+  broken at that point. It looks quiet.
+- **`join_room` aimed at a room whose host socket has gone stale is dropped
+  silently.** No ack, no error, no host.
+
+So the transport is treated as unreliable in both directions:
+
+| Piece | What it does |
+| --- | --- |
+| **Stable keys** | `player.id` is a key minted into `sessionStorage` (`MY_KEY` in `state.js`), never `socket.id`. A reconnect changes the address, not the identity. |
+| **Handshake** | Joining is `join_room` (for membership) *plus* a `HELLO` carrying the key and `PROTOCOL_VERSION` (for identity), retried until the host answers `WELCOME`. `player_joined` is only a nudge. |
+| **Host reclaim** | On reconnect the host re-emits `create_room`, which re-registers it as the room's host. Without this every client action is routed to a socket that no longer exists. |
+| **Heartbeat** | Clients `PING` every 3s; the host `PULSE`s the room. Both ends time each other out. |
+| **`stateVersion`** | Every broadcast is numbered and the number rides on the pulse, so a client that missed an update notices within one beat and sends `REQUEST_SYNC` instead of drawing a stale board. |
+| **Away vs gone** | Silence marks a seat *away* — dimmed, but the hand and the seat are held. Only two minutes of it (or pressing leave) ends anyone's game. |
+| **Outbox** | Plays and calls made while the socket is down are queued and flushed on reconnect; heartbeats and reactions are dropped, being worthless late. |
+| **Turn epoch** | Actions carry the turn they were decided on, so a queued play can't be applied to a hand that has since been dealt away. |
+| **Replayed ending** | `GAME_OVER` is one broadcast, and one broadcast is what a phone misses. The host keeps the last one and hands it back on any handshake or resync, so nobody reconnects into a dead board with no result and no rematch button. |
+| **Freeze credit** | Every timeout here is measured against the wall clock, which keeps running while a suspended page does not. A tick that finds a gap far wider than the tick interval pushes those clocks forward by it — see below. |
+
+All players still need to be on the same build: the host checks
+`PROTOCOL_VERSION` on the handshake and turns away anything it can't talk to
+with a message that says to reload. Bump it in `constants.js` whenever the wire
+format changes.
+
+The one failure that is still fatal is the host actually leaving — closing the
+tab, or reloading it. Clients wait out `HOST_LOST_MS` (five minutes of genuine
+silence) and then go back to the lobby, because the host holds every hand and
+every revolver and there is nowhere for that state to have been kept. Host
+migration would need the host to be shipping a full snapshot to a designated
+successor on every turn.
+
+The relay also does not check who is talking: `host_broadcast` is available to
+any socket that knows the room code, so a client running a modified page could
+speak as the host. Nothing here defends against that, and nothing can without
+server-side changes — the relay strips any sense of who sent a `game_data`
+message before it arrives. It is a five-character code shared out loud between
+friends, and the threat model is treated accordingly.
 
 ```
 index.html          markup shell + shared SVG defs (card gradients, patterns)
@@ -52,8 +99,8 @@ src/
   constants.js      tunables: deck, seat layouts, timings, server URL
   state.js          the three shared objects: localPlayer, gameState, session
   dom.js            cached element refs + modal open/close
-  net.js            Socket.IO transport and message routing
-  game.js           host-only: deck, turns, roulette, ledger, disconnects  ← rules live here
+  net.js            transport, handshake, heartbeat, reconnection ← the wire lives here
+  game.js           host-only: deck, turns, roulette, ledger, away/gone  ← rules live here
   ui.js             screen transitions, the ledger, handlers shared by host and client
   board.js          table centre, turn indicator, action bar
   hand.js           your cards: the fan, the picking
@@ -216,6 +263,41 @@ table.
   are all suspended while a tab is hidden. Anything whose *cleanup* depends on
   them needs a `setTimeout` fallback: see the turn countdown, `fx.flash()`, and
   toast removal.
+- **Never announce a departure on `pagehide`.** It fires on a phone for
+  switching apps, locking the screen and pulling down the notification shade,
+  none of which are leaving. It used to, and a host who glanced at a text
+  message sent the whole table back to the lobby. The two mistakes are not
+  symmetrical: announcing a departure that did not happen ends everyone's game
+  and cannot be taken back, while missing one that did costs a couple of minutes
+  of a struck-through seat that the heartbeat sweep clears up on its own. So
+  `beforeunload` announces and `pagehide` does not; `pageshow`,
+  `visibilitychange` and `online` all call `resumeNetwork()`.
+- **Timers do not run in a backgrounded tab**, which matters most on the host,
+  because every play goes through it. The turn clock is therefore a watchdog on
+  a 500ms tick rather than one long `setTimeout`, and it measures the gap
+  between its own ticks: a gap much wider than the tick was a freeze, and the
+  deadline moves forward by it rather than being spent on a turn nobody at the
+  table could have taken. On the client side `syncCountdown()` re-seats the arc
+  whenever it drifts from the host's `turnRemainingMs`, since a resumed tab's
+  `performance.now()` has moved on without it.
+- **Anything that advances game state on a delay needs `afterHostDelay()`, not
+  `setTimeout`.** There is exactly one such hand-off — the wait after the
+  roulette before the next round is dealt — and it is the worst moment in the
+  game to be frozen at, because the shot is on screen, nobody is touching
+  anything, and the turn timer is disarmed for the duration. A plain timeout
+  that does not fire there leaves the entire table sitting in
+  `roulette_resolved` on a spent cylinder with nothing left running to notice.
+  `afterHostDelay` keeps the exact timing and puts a watchdog behind it.
+- **A freeze must be credited back to every wall-clock timeout, not just the
+  turn clock.** This is the same hazard one level up: on resume, `netTick`
+  evaluates every liveness timeout at once against a clock that ran on without
+  it. Uncredited, a client concludes the host has been silent for the whole
+  three minutes and quits to the lobby in the frame the screen lights up — and
+  a *host* concludes that all eight players have been silent for three minutes
+  and eliminates the entire table. `creditFreeze()` in `net.js` pushes
+  `lastHostBeat` and every `lastSeen` forward by the gap, so those clocks hold
+  what they held going in and start running again from the moment somebody was
+  there to hear them.
 
 ## Keyboard
 

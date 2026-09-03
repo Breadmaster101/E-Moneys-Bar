@@ -133,6 +133,10 @@ export function renderSeats() {
         if (player.id === gameState.currentPlayerId && gameState.gamePhase === 'playing') {
             seat.classList.add('is-turn');
         }
+        // out of contact, not out of the game: the seat is still theirs and the
+        // distinction has to be visible, or the table reads a stalled turn as
+        // somebody taking their time
+        if (player.away && !player.eliminated) seat.classList.add('is-away');
         // a fresh node every render, so the class alone starts the animation
         if (applyElimination(seat, player)) seat.classList.add('is-dying');
 
@@ -147,6 +151,13 @@ export function renderSeats() {
         name.className = 'seat__name';
         name.textContent = player.name;
         meta.append(name, revolverNode(player.revolverChambersLeft ?? REVOLVER_CHAMBERS));
+
+        if (player.away && !player.eliminated) {
+            const tag = document.createElement('div');
+            tag.className = 'seat__away';
+            tag.textContent = 'Reconnecting';
+            meta.appendChild(tag);
+        }
 
         plate.append(avatarNode(player), meta);
         seat.appendChild(plate);

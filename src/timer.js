@@ -83,8 +83,25 @@ export function stopCountdown() {
 }
 
 /**
+ * How far our reading may drift from the host's before we take theirs.
+ *
+ * There has to be some tolerance or every state update would restart the
+ * countdown on network jitter alone, and there has to be some correction or a
+ * phone that was asleep for a minute comes back showing a clock that expired
+ * while the turn is still live. A second and a half is wider than the wire and
+ * narrower than anything a player would notice.
+ */
+const DRIFT_TOLERANCE_MS = 1500;
+
+/**
  * Sync the on-screen countdown with the state we just received.
- * Restarts only when the host says the turn actually changed.
+ *
+ * Restarts when the host says the turn changed, and *re-seats* when our reading
+ * has drifted away from the host's. The second case is the one that matters on
+ * a phone: a backgrounded tab has no timers, so on the way back `endsAt` is
+ * measured from a `performance.now()` that has moved on without us and the arc
+ * reads empty on a turn with twenty seconds left on it. The host's number is
+ * the real one; this is where we take it.
  */
 export function syncCountdown() {
     const seconds = gameState.config?.turnSeconds ?? 0;
@@ -96,12 +113,19 @@ export function syncCountdown() {
     }
 
     const epoch = gameState.turnEpoch ?? 0;
-    if (epoch === shownEpoch) return;
+    const hostRemaining = gameState.turnRemainingMs;
+    const newTurn = epoch !== shownEpoch;
+
+    if (!newTurn) {
+        if (hostRemaining === undefined) return;
+        const ours = Math.max(0, endsAt - performance.now());
+        if (Math.abs(ours - hostRemaining) < DRIFT_TOLERANCE_MS) return;
+    }
 
     shownEpoch = epoch;
-    nextBeatAt = PULSE_MS;
+    if (newTurn) nextBeatAt = PULSE_MS;
     totalMs = seconds * 1000;
-    endsAt = performance.now() + (gameState.turnRemainingMs || totalMs);
+    endsAt = performance.now() + (hostRemaining || totalMs);
 
     clearInterval(ticker);
     ticker = setInterval(paint, TICK_MS);
@@ -112,20 +136,123 @@ export function syncCountdown() {
 /* enforcement (host only)                                             */
 /* ------------------------------------------------------------------ */
 
-let hostTimeout = null;
+/*
+ * A watchdog rather than a single `setTimeout`, because the host is as likely
+ * to be a phone as anyone else and a backgrounded tab does not run timers. One
+ * long timeout there does not fire late, it fires *wrong*: on the way back it
+ * either goes off immediately, having "expired" during a freeze in which nobody
+ * could have played anyway, or sits waiting out a delay the browser has already
+ * decided to stretch.
+ *
+ * Checking a deadline on a short tick makes both cases the same case, and lets
+ * the gap between ticks be measured. A gap much longer than the tick means the
+ * page was frozen — and if the *host* was frozen then so was the whole table,
+ * since every play goes through here, so the deadline moves forward by however
+ * long it lost rather than being spent on a turn nobody could take.
+ */
+const WATCHDOG_MS = 500;
+
+/** A gap wider than this between ticks was a freeze, not scheduling jitter. */
+const FREEZE_GAP_MS = 2000;
+
+let watchdog = null;
+let lastWatchAt = 0;
 let hostDeadline = 0;
+let hostExpire = null;
 
 export function armHostTimer(seconds, onExpire) {
     disarmHostTimer();
     if (!seconds) return;
+
     hostDeadline = Date.now() + seconds * 1000;
-    hostTimeout = setTimeout(onExpire, seconds * 1000);
+    hostExpire = onExpire;
+    lastWatchAt = Date.now();
+    watchdog = setInterval(() => {
+        const now = Date.now();
+        const gap = now - lastWatchAt;
+        lastWatchAt = now;
+
+        if (gap > FREEZE_GAP_MS) {
+            hostDeadline += gap;
+            return;
+        }
+        if (now < hostDeadline) return;
+
+        const expire = hostExpire;
+        disarmHostTimer();
+        expire?.();
+    }, WATCHDOG_MS);
 }
 
 export function disarmHostTimer() {
-    clearTimeout(hostTimeout);
-    hostTimeout = null;
+    clearInterval(watchdog);
+    watchdog = null;
     hostDeadline = 0;
+    hostExpire = null;
+}
+
+/* ------------------------------------------------------------------ */
+/* host-side scheduling (host only)                                    */
+/* ------------------------------------------------------------------ */
+
+/*
+ * The other thing the host does on a delay: hand off to whatever comes after
+ * the roulette, once the animation everybody is watching has finished.
+ *
+ * That was a bare `setTimeout`, and it was the worst freeze in the game to be
+ * caught by. The roulette is exactly when a phone gets put down — the shot is
+ * on screen, nobody is touching anything — and a host whose page suspends
+ * there never deals the next round. The turn timer is disarmed for the
+ * duration, so nothing else is left running to notice: the whole table sits in
+ * `roulette_resolved` looking at a spent cylinder, with no path back.
+ *
+ * So the timeout keeps its exact timing for the normal case and a watchdog sits
+ * behind it for the case where it does not fire. Unlike the turn clock there is
+ * no credit for lost time: the sequence has a fixed length and if it has run
+ * out while the page was away, the right move is to get on with it.
+ */
+
+let scheduleSeq = 0;
+const scheduled = new Map();
+let scheduleTicker = null;
+
+function runDue(id) {
+    const entry = scheduled.get(id);
+    if (!entry) return;              // already fired, or cancelled
+    scheduled.delete(id);
+    clearTimeout(entry.timer);
+    if (!scheduled.size) {
+        clearInterval(scheduleTicker);
+        scheduleTicker = null;
+    }
+    entry.fn();
+}
+
+/**
+ * Run `fn` in `ms`, and run it even if this page is frozen when the timer was
+ * due. Host-only; cancelled wholesale by `cancelHostDelays()`.
+ */
+export function afterHostDelay(ms, fn) {
+    const id = ++scheduleSeq;
+    scheduled.set(id, { at: Date.now() + ms, fn, timer: setTimeout(() => runDue(id), ms) });
+
+    if (!scheduleTicker) {
+        scheduleTicker = setInterval(() => {
+            const now = Date.now();
+            for (const [key, entry] of [...scheduled]) {
+                if (now >= entry.at) runDue(key);
+            }
+        }, WATCHDOG_MS);
+    }
+    return id;
+}
+
+/** Drop everything pending: leaving the table, or starting a fresh game. */
+export function cancelHostDelays() {
+    scheduled.forEach((entry) => clearTimeout(entry.timer));
+    scheduled.clear();
+    clearInterval(scheduleTicker);
+    scheduleTicker = null;
 }
 
 /** ms left on the host's clock, for broadcasting to clients. */

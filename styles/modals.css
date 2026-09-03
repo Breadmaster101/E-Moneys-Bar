@@ -732,3 +732,33 @@
         opacity: 1;
     }
 }
+
+/*
+ * Connected, but not to the table. The one state the pill exists for: a socket
+ * that came back without its room membership looks fine at the transport level
+ * and is doing nothing at all for the game.
+ */
+.server-status[data-state="warn"] .server-status__dot {
+    background: var(--gold);
+}
+
+.server-status[data-state="warn"] {
+    color: var(--gold-hot);
+}
+
+/*
+ * The action bar while the wire is down. Plays made here are queued rather than
+ * lost, so this greys rather than disables: taking the buttons away would be
+ * claiming to know the connection is not coming back in the next second, which
+ * it usually is.
+ */
+body[data-link="offline"] #dock,
+body[data-link="reseating"] #dock {
+    opacity: .62;
+}
+
+/* Why the rematch is not starting, when it isn't. */
+.rematch__note {
+    font-size: 12px;
+    color: var(--text-dim);
+}

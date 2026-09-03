@@ -7,9 +7,47 @@
 
 import { HAND_SIZE, REVOLVER_CHAMBERS, DEFAULT_TURN_SECONDS, PLAYER_COLORS } from './constants.js';
 
+/* ------------------------------------------------------------------ */
+/* identity                                                            */
+/* ------------------------------------------------------------------ */
+
+const KEY_STORE = 'emb.key';
+
+/**
+ * A player id that outlives the socket.
+ *
+ * This used to be `socket.id`, and that was the single largest source of
+ * multiplayer breakage. A socket that drops and reconnects — which on a phone
+ * is every time the screen locks — comes back with a *different* id, so the
+ * host saw a stranger where a player used to be: it seated them a second time,
+ * eliminated the original, and there was no way back to the seat that still
+ * held your hand.
+ *
+ * So identity is ours and the socket id is just an address. This is per-tab
+ * (sessionStorage, not local) so two tabs on one machine are two players, and
+ * it survives a reload of that tab, which is what makes refreshing out of a
+ * wedged page a recovery rather than a forfeit.
+ */
+function stablePlayerKey() {
+    try {
+        const existing = sessionStorage.getItem(KEY_STORE);
+        if (existing) return existing;
+        const minted = `p_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+        sessionStorage.setItem(KEY_STORE, minted);
+        return minted;
+    } catch {
+        // private mode with storage walled off: a per-load key still works for
+        // everything except surviving a reload, which is the lesser loss
+        return `p_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+    }
+}
+
+/** Stable for the life of this tab. Every `player.id` in the game is one of these. */
+export const MY_KEY = stablePlayerKey();
+
 /** Who I am. */
 export const localPlayer = {
-    id: null,
+    id: MY_KEY,
     name: '',
     isHost: false,
     hand: [],
@@ -36,6 +74,13 @@ export const gameState = {
     config: { handSize: HAND_SIZE, turnSeconds: DEFAULT_TURN_SECONDS },
     /** ms remaining on the current turn at the moment this state was sent. */
     turnRemainingMs: 0,
+    /**
+     * Bumped by the host on every broadcast. It rides on the heartbeat too, so
+     * a client that quietly missed an update notices within one beat and asks
+     * for a resync instead of rendering a board that stopped being true.
+     */
+    stateVersion: 0,
+    turnEpoch: 0,
     /** host only: playerId -> counters for the ledger. Never broadcast as state. */
     stats: {},
     roundsPlayed: 0,
@@ -46,8 +91,21 @@ export const gameState = {
 export const session = {
     socket: null,
     roomCode: null,
-    /** host only: { socketId: true } for every connected client */
+    /** this tab's current socket address. Changes on every reconnect; never an identity. */
+    socketId: null,
+    /**
+     * host only: playerKey -> { socketId, lastSeen, away }.
+     *
+     * Keyed by the stable player key rather than the socket, so a reconnecting
+     * player updates their address in place instead of arriving as a stranger.
+     */
     hostConnections: {},
+    /** client only: true once the host has answered our handshake. */
+    seated: false,
+    /** client only: when the host was last heard from, for the silence timeout. */
+    lastHostBeat: 0,
+    /** actions written while the socket was down, flushed on reconnect. */
+    outbox: [],
     /** cards the player has tapped, in tap order */
     selected: [],
     /** client only: previous state, used to diff for log messages */
@@ -56,7 +114,7 @@ export const session = {
 
 export function resetLocalPlayer(name = '') {
     Object.assign(localPlayer, {
-        id: session.socket?.id ?? null,
+        id: MY_KEY,
         name,
         isHost: false,
         hand: [],
@@ -82,6 +140,8 @@ export function resetGameState() {
         rematchReadyStatus: {},
         lastChallengeRouletteTargetId: null,
         turnRemainingMs: 0,
+        stateVersion: 0,
+        turnEpoch: 0,
         stats: {},
         roundsPlayed: 0,
         eliminatedCount: 0,
@@ -93,6 +153,9 @@ export function resetSession({ keepSocket = true } = {}) {
     if (!keepSocket) session.socket = null;
     session.roomCode = null;
     session.hostConnections = {};
+    session.seated = false;
+    session.lastHostBeat = 0;
+    session.outbox = [];
     session.selected = [];
     session.lastSeenState = {};
 }

@@ -2,7 +2,7 @@
  * ui.js: screen transitions and the handlers that both host and client share.
  */
 
-import { el, openModal, closeModal } from './dom.js';
+import { el, openModal, closeModal, isModalOpen } from './dom.js';
 import { MAX_PLAYERS, MIN_PLAYERS, SUIT_SYMBOLS, PLAYER_COLORS } from './constants.js';
 import {
     gameState, localPlayer, session,
@@ -18,7 +18,7 @@ import { syncCountdown, stopCountdown, disarmHostTimer } from './timer.js';
 import { addLog, clearLog, toggleLog } from './log.js';
 import { sfx } from './audio.js';
 import * as fx from './fx.js';
-import { activeConnectedIds } from './net.js';
+import { activeConnectedIds, resetLink } from './net.js';
 import { resetLobby, renderWaitroom, goToStep } from './lobby.js';
 import { setTopbar } from './topbar.js';
 import { clearReactions } from './reactions.js';
@@ -31,6 +31,7 @@ export function showLobby() {
     disarmHostTimer();
     stopCountdown();
     cancelRoulette();
+    resetLink();
 
     [el.rouletteModal, el.gameOverModal, el.rulesModal, el.confirmModal].forEach(closeModal);
     toggleLog(false);
@@ -147,6 +148,21 @@ export function onClientStateUpdate(payload) {
         const current = gameState.players.find((p) => p.id === gameState.currentPlayerId);
         if (current) addLog(`${current.name}'s turn.`, 'info');
     }
+
+    /*
+     * Who is in contact is part of the state now, so every client can narrate
+     * it rather than only the host. Worth saying out loud: a table that can see
+     * somebody has dropped out waits for them instead of assuming they are
+     * ignoring their turn.
+     */
+    const wasAway = new Map((prev.players ?? []).map((p) => [p.id, !!p.away]));
+    gameState.players.forEach((p) => {
+        if (!wasAway.has(p.id) || wasAway.get(p.id) === !!p.away) return;
+        addLog(
+            p.away ? `${p.name} dropped out of contact.` : `${p.name} is back.`,
+            p.away ? 'error' : 'success',
+        );
+    });
 
     if (gameState.gamePhase !== 'lobby') refreshBoard({ dealt: newRound });
     if (gameState.gamePhase === 'game_over') updateRematchStatus();
@@ -340,13 +356,24 @@ function renderLedger(ledger) {
 /* ------------------------------------------------------------------ */
 
 export function showGameOver(data) {
+    /*
+     * The ending is replayed to anyone who reconnects, and to anyone whose
+     * resync finds them behind — which can happen to a player who is already
+     * sitting in front of this dialog. So a second showing is a repaint and
+     * nothing more: it must not clear a rematch vote somebody has already cast,
+     * and it must not throw the confetti twice.
+     */
+    const repeat = gameState.gamePhase === 'game_over' && isModalOpen(el.gameOverModal);
+
     gameState.gamePhase = 'game_over';
     disarmHostTimer();
     stopCountdown();
 
-    gameState.rematchReadyStatus = {};
-    activeConnectedIds().forEach((id) => { gameState.rematchReadyStatus[id] = false; });
-    localPlayer.readyForRematch = false;
+    if (!repeat) {
+        gameState.rematchReadyStatus = {};
+        activeConnectedIds().forEach((id) => { gameState.rematchReadyStatus[id] = false; });
+        localPlayer.readyForRematch = false;
+    }
 
     const iWon = data.winner?.id === localPlayer.id;
 
@@ -357,16 +384,24 @@ export function showGameOver(data) {
         : 'Nobody wins';
     el.gameOverTitle.className = `modal__title ${iWon ? 'is-good' : 'is-danger'}`;
     el.gameOverMessage.textContent = data.reason;
-    addLog(data.reason, 'system');
 
-    el.playAgainBtn.textContent = 'Ready for rematch';
-    el.playAgainBtn.className = 'btn btn--primary';
-    el.playAgainBtn.disabled = false;
+    if (!repeat) {
+        el.playAgainBtn.textContent = 'Ready for rematch';
+        el.playAgainBtn.className = 'btn btn--primary';
+        el.playAgainBtn.disabled = false;
+    }
 
     renderLedger(data.ledger);
     updateRematchStatus();
     closeModal(el.rouletteModal);
     openModal(el.gameOverModal);
+
+    if (repeat) {
+        refreshBoard();
+        return;
+    }
+
+    addLog(data.reason, 'system');
 
     if (iWon) {
         sfx.victory();
@@ -387,6 +422,22 @@ export function updateRematchStatus() {
 
     el.rematchStatus.hidden = false;
     el.rematchList.innerHTML = '';
+
+    /*
+     * A rematch waits on everyone still in contact, so if the room has thinned
+     * out below the minimum it will wait for ever. Nothing about the dialog
+     * showed that: the button worked, the chip went green, and nothing
+     * happened. Say it instead.
+     */
+    const present = activeConnectedIds().length;
+    if (present < MIN_PLAYERS) {
+        const note = document.createElement('span');
+        note.className = 'rematch__note';
+        note.textContent = present <= 1
+            ? 'Everyone else has gone. Leave the table to start a new one.'
+            : `Waiting for ${MIN_PLAYERS - present} more.`;
+        el.rematchList.appendChild(note);
+    }
 
     activeConnectedIds().forEach((id) => {
         const player = gameState.players.find((p) => p.id === id);

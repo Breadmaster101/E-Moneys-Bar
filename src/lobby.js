@@ -11,10 +11,10 @@
 import { el, $$ } from './dom.js';
 import {
     ROOM_CODE_LENGTH, NAME_MIN, NAME_MAX, MIN_PLAYERS, MAX_PLAYERS, TURN_TIMER_OPTIONS,
-    PLAYER_COLORS,
+    PLAYER_COLORS, JOIN_TIMEOUT_MS,
 } from './constants.js';
 import { gameState, localPlayer, session, initialsFor } from './state.js';
-import { hostRoom, joinRoom, isConnected } from './net.js';
+import { hostRoom, joinRoom, isConnected, activeConnectedIds } from './net.js';
 import { startNewGame } from './game.js';
 import { showGameBoard } from './ui.js';
 import { setTopbar } from './topbar.js';
@@ -97,7 +97,7 @@ const WAIT_SLOTS = [
 
 function occupantSeat(player, index) {
     const seat = document.createElement('div');
-    seat.className = 'wseat is-taken';
+    seat.className = `wseat is-taken${player.away ? ' is-away' : ''}`;
     seat.style.setProperty('--seat-color', PLAYER_COLORS[index % PLAYER_COLORS.length]);
 
     const avatar = document.createElement('div');
@@ -115,7 +115,8 @@ function occupantSeat(player, index) {
 
     const tag = document.createElement('div');
     tag.className = 'wseat__tag';
-    tag.textContent = player.id === localPlayer.id ? 'You' : (player.isHost ? 'Host' : 'Ready');
+    if (player.away) tag.textContent = 'Reconnecting';
+    else tag.textContent = player.id === localPlayer.id ? 'You' : (player.isHost ? 'Host' : 'Ready');
 
     meta.append(name, tag);
     seat.append(avatar, meta);
@@ -152,12 +153,15 @@ export function renderWaitroom() {
     el.startGameBtn.hidden = !localPlayer.isHost;
 
     if (localPlayer.isHost) {
-        const canStart = seated.length >= MIN_PLAYERS;
+        // only people in contact get dealt in, so only they count towards being
+        // able to start: a seat held by a phone that has gone quiet is not a player
+        const present = activeConnectedIds().length;
+        const canStart = present >= MIN_PLAYERS;
         el.waitroomTitle.textContent = 'Your table';
         el.waitroomSub.textContent = 'Share the code on the felt to fill the seats.';
         el.startGameBtn.disabled = !canStart;
         el.startHint.textContent = canStart
-            ? `Ready to deal ${seated.length} in.`
+            ? `Ready to deal ${present} in.`
             : 'Waiting for at least one more player…';
     } else {
         el.waitroomTitle.textContent = 'Waiting on the host';
@@ -169,6 +173,9 @@ export function renderWaitroom() {
 /* ------------------------------------------------------------------ */
 /* helpers                                                             */
 /* ------------------------------------------------------------------ */
+
+/** Cleared on the way back to the front door, so a stale one can't fire later. */
+let joinTimer = null;
 
 function generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no I/O/0/1
@@ -291,20 +298,28 @@ export function initLobby() {
         joinRoom(code);
         sfx.tap();
 
-        setTimeout(() => {
-            if (el.clientStatus.dataset.tone === 'busy') {
-                el.clientStatus.textContent = 'No answer. Check the code and try again.';
-                el.clientStatus.dataset.tone = 'bad';
-                el.connectBtn.disabled = false;
-            }
-        }, 8000);
+        /*
+         * Longer than it used to be, and judged on `seated` rather than on what
+         * the status line happens to say. A knock can go unanswered because the
+         * code is wrong, but just as easily because the host was three seconds
+         * into a reconnect of their own — and the re-knock loop is retrying the
+         * whole time. Calling it a bad code at eight seconds gave up on a table
+         * that was about to answer.
+         */
+        clearTimeout(joinTimer);
+        joinTimer = setTimeout(() => {
+            if (session.seated) return;
+            el.clientStatus.textContent = 'No answer. Check the code and try again.';
+            el.clientStatus.dataset.tone = 'bad';
+            el.connectBtn.disabled = false;
+            session.roomCode = null;
+        }, JOIN_TIMEOUT_MS);
     });
 
     // --- starting ---
     el.startGameBtn.addEventListener('click', () => {
         if (!localPlayer.isHost) return;
-        const seated = Object.keys(session.hostConnections).length + 1;
-        if (seated < MIN_PLAYERS) {
+        if (activeConnectedIds().length < MIN_PLAYERS) {
             toast(`Need at least ${MIN_PLAYERS} players.`, { type: 'warn' });
             return;
         }
@@ -316,6 +331,7 @@ export function initLobby() {
 
 /** Reset the lobby back to the front door. */
 export function resetLobby() {
+    clearTimeout(joinTimer);
     el.roomCodeDisplay.textContent = '•••••';
     el.roomCodeInput.value = '';
     el.roomCodeInput.disabled = false;

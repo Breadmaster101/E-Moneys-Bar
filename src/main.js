@@ -4,7 +4,7 @@
 
 import { el, openModal, closeModal, isModalOpen, MODAL_CLOSE_MS } from './dom.js';
 import { gameState, localPlayer, session, isMyTurn, amEliminated } from './state.js';
-import { connectServer, sendMessage } from './net.js';
+import { connectServer, sendMessage, announceDeparture, resumeNetwork } from './net.js';
 import {
     handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers, broadcastReaction,
 } from './game.js';
@@ -83,7 +83,10 @@ el.playBtn.addEventListener('click', () => {
     if (localPlayer.isHost) {
         handlePlayCards(localPlayer.id, ids);
     } else {
-        sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: ids });
+        // the epoch travels with the action: if this one sat in the outbox
+        // through a reconnect, the host drops it rather than applying a play
+        // meant for a hand that has since been dealt away
+        sendMessage('PLAYER_ACTION_PLAY_CARDS', { cards: ids, turnEpoch: gameState.turnEpoch ?? 0 });
         sfx.cardPlay(ids.length);
     }
 
@@ -112,7 +115,7 @@ el.liarBtn.addEventListener('click', async () => {
     }
 
     if (localPlayer.isHost) handleCallLiar(localPlayer.id);
-    else sendMessage('PLAYER_ACTION_CALL_LIAR', {});
+    else sendMessage('PLAYER_ACTION_CALL_LIAR', { turnEpoch: gameState.turnEpoch ?? 0 });
 });
 
 el.continueBtn.addEventListener('click', () => {
@@ -145,14 +148,6 @@ el.playAgainBtn.addEventListener('click', () => {
         sendMessage('PLAYER_TOGGLE_REMATCH_READY', { isReady: localPlayer.readyForRematch });
     }
 });
-
-function announceDeparture() {
-    if (localPlayer.isHost && Object.keys(session.hostConnections).length > 0) {
-        sendMessage('HOST_DISCONNECTED', { message: 'Host left.' });
-    } else if (!localPlayer.isHost && session.roomCode) {
-        sendMessage('CLIENT_DISCONNECTED', { message: 'Player left.' });
-    }
-}
 
 function leaveTable() {
     announceDeparture();
@@ -189,10 +184,39 @@ onBack(async () => {
     else goToStep('menu');
 });
 
-// beforeunload is unreliable on mobile Safari; pagehide is the one that fires
-// there. Both are best-effort: a hard tab close can still cut the socket first.
+/* ------------------------------------------------------------------ */
+/* the page going away, and coming back                                */
+/* ------------------------------------------------------------------ */
+
+/*
+ * This used to announce a departure on `pagehide` as well, on the reasoning
+ * that mobile Safari fires it where it does not reliably fire `beforeunload`.
+ * It does — and that was the bug. On a phone `pagehide` also fires for
+ * switching apps, for locking the screen, and for pulling down the
+ * notification shade, none of which are leaving. A host who glanced at a text
+ * message broadcast HOST_LEFT and sent the whole table back to the lobby.
+ *
+ * The two mistakes are not symmetrical. Announcing a departure that did not
+ * happen ends everyone's game and cannot be taken back; failing to announce
+ * one that did costs a couple of minutes of a struck-through seat, and the
+ * heartbeat sweep clears it up on its own. So this listens only to the event
+ * that means it, and lets the timeout handle everything else.
+ */
 window.addEventListener('beforeunload', announceDeparture);
-window.addEventListener('pagehide', announceDeparture);
+
+/*
+ * Coming back is the other half. A backgrounded tab has no timers, so the
+ * heartbeat has been stopped for as long as the screen was off and the socket
+ * has very likely been reaped underneath it. Nothing here can wait for the next
+ * beat: the connection has to be re-established and both ends put back into
+ * agreement in the same tick the page wakes up in.
+ */
+window.addEventListener('pageshow', resumeNetwork);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') resumeNetwork();
+});
+// fired when the network itself comes back, which the socket can be slow to notice
+window.addEventListener('online', resumeNetwork);
 
 /* ------------------------------------------------------------------ */
 /* keyboard                                                            */
