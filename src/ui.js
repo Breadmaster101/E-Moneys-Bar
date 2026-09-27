@@ -71,6 +71,8 @@ export function showGameBoard() {
         inGame: true,
     });
 
+    if (gameState.config.openCalls) addLog('Open calls: anyone can call LIAR on the last play.', 'system');
+
     invalidateHand();
     refreshBoard({ dealt: true });
     sfx.deal(localPlayer.hand?.length ?? 5);

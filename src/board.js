@@ -4,7 +4,9 @@
 
 import { el } from './dom.js';
 import { SUIT_SYMBOLS, SUIT_NAMES, SUIT_IS_RED, MAX_CARDS_PER_PLAY } from './constants.js';
-import { gameState, localPlayer, session, colorFor, initialsFor, isMyTurn, amEliminated } from './state.js';
+import {
+    gameState, localPlayer, session, colorFor, initialsFor, isMyTurn, amEliminated, canCallLiar,
+} from './state.js';
 import { createCard } from './cards.js';
 import { renderSeats, renderSelfPlate } from './seats.js';
 import { renderHand } from './hand.js';
@@ -154,7 +156,7 @@ export function updateActions() {
     el.playBtn.disabled = !mine || n === 0 || localPlayer.hand.length === 0;
     el.playBtn.querySelector('.btn__label').textContent = n > 0 ? `Play ${n}` : 'Play';
 
-    el.liarBtn.disabled = !mine || !gameState.lastPlayedTurn;
+    el.liarBtn.disabled = !canCallLiar(localPlayer.id);
 
     el.selectCounter.querySelector('b').textContent = String(n);
     el.selectCounter.classList.toggle('is-active', n > 0 && n < MAX_CARDS_PER_PLAY);

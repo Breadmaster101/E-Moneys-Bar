@@ -71,7 +71,11 @@ export const gameState = {
     centerPileCardCount: 0,
     rematchReadyStatus: {},
     lastChallengeRouletteTargetId: null,
-    config: { handSize: HAND_SIZE, turnSeconds: DEFAULT_TURN_SECONDS },
+    /**
+     * `openCalls`: anyone still in may call LIAR on the last play, not just the
+     * player whose turn it is. The accused never can.
+     */
+    config: { handSize: HAND_SIZE, turnSeconds: DEFAULT_TURN_SECONDS, openCalls: false },
     /** ms remaining on the current turn at the moment this state was sent. */
     turnRemainingMs: 0,
     /**
@@ -146,7 +150,11 @@ export function resetGameState() {
         roundsPlayed: 0,
         eliminatedCount: 0,
     });
-    gameState.config = { handSize: HAND_SIZE, turnSeconds: gameState.config.turnSeconds };
+    gameState.config = {
+        handSize: HAND_SIZE,
+        turnSeconds: gameState.config.turnSeconds,
+        openCalls: gameState.config.openCalls,
+    };
 }
 
 export function resetSession({ keepSocket = true } = {}) {
@@ -179,3 +187,15 @@ export const isMyTurn = () =>
 
 export const amEliminated = () =>
     gameState.players.find((p) => p.id === localPlayer.id)?.eliminated ?? false;
+
+/**
+ * Whether `playerId` may call LIAR right now. The host decides with this and
+ * clients use it to enable the button, so both sides agree on who can speak.
+ */
+export function canCallLiar(playerId) {
+    if (gameState.gamePhase !== 'playing' || !gameState.lastPlayedTurn) return false;
+    const player = gameState.players.find((p) => p.id === playerId);
+    if (!player || player.eliminated) return false;
+    if (playerId === gameState.currentPlayerId) return true;
+    return !!gameState.config.openCalls && playerId !== gameState.lastPlayedTurn.playerId;
+}

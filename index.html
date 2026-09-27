@@ -427,6 +427,17 @@
                                 </div>
                             </div>
 
+                            <div class="option-row" id="openCallsRow">
+                                <div>
+                                    <span class="option-row__label">Liar calls</span>
+                                    <span class="option-row__hint">Who can call out the last play</span>
+                                </div>
+                                <div class="segmented" id="openCallsSeg" role="group" aria-label="Liar calls">
+                                    <button type="button" data-open="0" class="is-active">Next</button>
+                                    <button type="button" data-open="1">Anyone</button>
+                                </div>
+                            </div>
+
                             <div class="waitroom__tally">
                                 <span>At the table</span>
                                 <span id="connected-players-count" class="tally">1 / 4</span>
@@ -625,6 +636,9 @@
                             <li>They told the truth → <strong>you</strong> face the revolver.</li>
                         </ul>
                         <p>Out of cards on your turn? You <em>must</em> call Liar.</p>
+                        <p>If the host opens calls to <strong>anyone</strong>, every player still in can
+                            call out the last play at any time, not just whoever is next. The first
+                            call to land counts.</p>
                     </div>
                 </section>
                 <section class="rule">

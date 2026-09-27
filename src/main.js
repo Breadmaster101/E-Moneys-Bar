@@ -3,7 +3,7 @@
  */
 
 import { el, openModal, closeModal, isModalOpen, MODAL_CLOSE_MS } from './dom.js';
-import { gameState, localPlayer, session, isMyTurn, amEliminated } from './state.js';
+import { gameState, localPlayer, session, isMyTurn, amEliminated, canCallLiar } from './state.js';
 import { connectServer, sendMessage, announceDeparture, resumeNetwork } from './net.js';
 import {
     handlePlayCards, handleCallLiar, handleRematchVote, stopHostTimers, broadcastReaction,
@@ -96,8 +96,11 @@ el.playBtn.addEventListener('click', () => {
 });
 
 el.liarBtn.addEventListener('click', async () => {
-    if (el.liarBtn.disabled || !isMyTurn() || !gameState.lastPlayedTurn) return;
+    if (el.liarBtn.disabled || !canCallLiar(localPlayer.id)) return;
 
+    // the epoch names the play being accused: with open calls the table keeps
+    // moving while the dialog is up, and a call must not land on a later play
+    const epoch = gameState.turnEpoch ?? 0;
     const accused = gameState.lastPlayedTurn.playerName;
     const ok = await confirmDialog({
         title: 'Call it?',
@@ -109,13 +112,13 @@ el.liarBtn.addEventListener('click', async () => {
     if (!ok) return;
 
     // the table may have moved on while the dialog was up
-    if (!isMyTurn() || !gameState.lastPlayedTurn) {
-        toast('Too late. The turn already passed.', { type: 'warn' });
+    if (!canCallLiar(localPlayer.id) || (gameState.turnEpoch ?? 0) !== epoch) {
+        toast('Too late. The table already moved on.', { type: 'warn' });
         return;
     }
 
     if (localPlayer.isHost) handleCallLiar(localPlayer.id);
-    else sendMessage('PLAYER_ACTION_CALL_LIAR', { turnEpoch: gameState.turnEpoch ?? 0 });
+    else sendMessage('PLAYER_ACTION_CALL_LIAR', { turnEpoch: epoch });
 });
 
 el.continueBtn.addEventListener('click', () => {

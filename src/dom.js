@@ -33,6 +33,8 @@ export const el = {
     copyRoomCodeBtn: $('#copyRoomCodeBtn'),
     turnTimerRow: $('#turnTimerRow'),
     turnTimerSeg: $('#turnTimerSeg'),
+    openCallsRow: $('#openCallsRow'),
+    openCallsSeg: $('#openCallsSeg'),
     waitroomSeats: $('#waitroom-seats'),
     waitroomTitle: $('#waitroomTitle'),
     waitroomSub: $('#waitroomSub'),

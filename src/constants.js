@@ -12,7 +12,7 @@ export const SERVER_URL = 'https://quicklash-server.onrender.com';
  * The host checks this on the handshake and turns away anything it can't talk
  * to, with a message that says to reload rather than one that says nothing.
  */
-export const PROTOCOL_VERSION = 3;
+export const PROTOCOL_VERSION = 4;
 
 /**
  * Socket.IO options.

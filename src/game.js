@@ -7,7 +7,7 @@ import {
     SUITS, RANKS, SUIT_SYMBOLS, HAND_SIZE, MIN_PLAYERS, MAX_CARDS_PER_PLAY,
     REVOLVER_CHAMBERS, REVOLVER_BULLETS, AWAY_AUTOPLAY_MS, NAME_MAX, planRoulette,
 } from './constants.js';
-import { gameState, localPlayer, session } from './state.js';
+import { gameState, localPlayer, session, canCallLiar } from './state.js';
 import { sendMessage, activeConnectedIds, lastSeenOf } from './net.js';
 import { addLog } from './log.js';
 import { toast } from './toast.js';
@@ -604,12 +604,13 @@ export function handlePlayCards(playerId, playedCardIds, { auto = false } = {}) 
 
 export function handleCallLiar(challengerId) {
     if (!localPlayer.isHost) return;
-    if (challengerId !== gameState.currentPlayerId) return;
-    if (!gameState.lastPlayedTurn || gameState.gamePhase !== 'playing') return;
+    // with open calls on, this is also where simultaneous calls are settled:
+    // the first to reach the host flips the phase and the rest fall through
+    if (!canCallLiar(challengerId)) return;
 
     const challenger = gameState.players.find((p) => p.id === challengerId);
     const accused = gameState.players.find((p) => p.id === gameState.lastPlayedTurn.playerId);
-    if (!challenger || challenger.eliminated || !accused) return;
+    if (!challenger || !accused) return;
 
     gameState.gamePhase = 'challenge_reveal';
     disarmHostTimer();

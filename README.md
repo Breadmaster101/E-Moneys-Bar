@@ -184,6 +184,12 @@ table.
   `host_broadcast` reaches the room the sender is also in. Adding a mark means
   adding a `<symbol id="i-rx-…">`, an entry in `REACTIONS`, and a case in
   `sfx.reaction()`; the array order is also the number key that sends it.
+- **Who may call LIAR is one predicate.** `canCallLiar()` in `state.js` is what
+  the host validates a call with and what enables the button on every client.
+  With the host's *open calls* option on, anyone still in except the accused can
+  call the last play; the first call to reach the host flips the phase and any
+  others fall through. A call carries the `turnEpoch` it was made on, so one
+  held up by the confirm dialog cannot land on a later play.
 - **The ledger is host-only and rides on `GAME_OVER`.** `gameState.stats` grows
   with every play and nobody reads it until the game ends, so it is deliberately
   not in `broadcastState`. It records counters and never a card: a ledger that
