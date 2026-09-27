@@ -150,6 +150,7 @@ export function renderWaitroom() {
 
     el.playersCount.textContent = `${seated.length} / ${MAX_PLAYERS}`;
     el.turnTimerRow.hidden = !localPlayer.isHost;
+    el.openCallsRow.hidden = !localPlayer.isHost;
     el.startGameBtn.hidden = !localPlayer.isHost;
 
     if (localPlayer.isHost) {
@@ -270,6 +271,16 @@ export function initLobby() {
 
         $$('button', el.turnTimerSeg).forEach((b) => b.classList.toggle('is-active', b === btn));
         gameState.config.turnSeconds = seconds;
+        sfx.tap();
+    });
+
+    // --- who may call LIAR (host) ---
+    el.openCallsSeg.addEventListener('click', (event) => {
+        const btn = event.target.closest('button[data-open]');
+        if (!btn) return;
+
+        $$('button', el.openCallsSeg).forEach((b) => b.classList.toggle('is-active', b === btn));
+        gameState.config.openCalls = btn.dataset.open === '1';
         sfx.tap();
     });
 
